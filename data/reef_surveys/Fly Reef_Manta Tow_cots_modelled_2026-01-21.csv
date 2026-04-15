@@ -1,9 +1,0 @@
-a_sector,nrm_region,domain_name,year,survey_date,variable,tows,cots,cotsptow
-"CL","Cape York","Fly Reef",1988,"1987.7835616438356164","COTS",24,0,"0.00"
-"CL","Cape York","Fly Reef",1992,"1991.863013698630137","COTS",22,0,"0.00"
-"CL","Cape York","Fly Reef",1994,"1993.8","COTS",23,2,"0.09"
-"CL","Cape York","Fly Reef",2000,"1999.7835616438356164","COTS",24,1,"0.04"
-"CL","Cape York","Fly Reef",2006,"2005.7780821917808219","COTS",24,0,"0.00"
-"CL","Cape York","Fly Reef",2010,"2009.8684931506849315","COTS",29,2,"0.07"
-"CL","Cape York","Fly Reef",2021,"2020.8301369863013699","COTS",23,1,"0.04"
-"CL","Cape York","Fly Reef",2025,"2024.9698630136986301","COTS",19,1,"0.05"
