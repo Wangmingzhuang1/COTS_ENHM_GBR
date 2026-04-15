@@ -1,0 +1,13 @@
+a_sector,nrm_region,domain_name,year,survey_date,variable,tows,cots,cotsptow
+"CL","Cape York","Eyrie Reef",1990,"1989.9287671232876712","COTS",64,1,"0.02"
+"CL","Cape York","Eyrie Reef",1991,"1990.8328767123287671","COTS",69,0,"0.00"
+"CL","Cape York","Eyrie Reef",1995,"1994.7780821917808219","COTS",62,1,"0.02"
+"CL","Cape York","Eyrie Reef",1998,"1997.7945205479452054","COTS",63,8,"0.13"
+"CL","Cape York","Eyrie Reef",2001,"2000.5561643835616439","COTS",64,6,"0.09"
+"CL","Cape York","Eyrie Reef",2004,"2003.6602739726027397","COTS",66,0,"0.00"
+"CL","Cape York","Eyrie Reef",2007,"2006.7671232876712328","COTS",64,0,"0.00"
+"CL","Cape York","Eyrie Reef",2013,"2012.8","COTS",67,57,"0.85"
+"CL","Cape York","Eyrie Reef",2015,"2014.9397260273972603","COTS",73,6,"0.08"
+"CL","Cape York","Eyrie Reef",2021,"2020.8273972602739726","COTS",68,0,"0.00"
+"CL","Cape York","Eyrie Reef",2024,"2024.057534246575342465","COTS",66,6,"0.09"
+"CL","Cape York","Eyrie Reef",2025,"2024.7506849315068493","COTS",65,0,"0.00"

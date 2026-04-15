@@ -1,0 +1,9 @@
+a_sector,nrm_region,domain_name,year,survey_date,variable,tows,cots,cotsptow
+"CA","Wet Tropics","Tongue Reef",1986,"1986.010958904109589041","COTS",65,0,"0.00"
+"CA","Wet Tropics","Tongue Reef",1993,"1992.6931506849315069","COTS",61,0,"0.00"
+"CA","Wet Tropics","Tongue Reef",1996,"1996.03561643835616438","COTS",65,0,"0.00"
+"CA","Wet Tropics","Tongue Reef",1999,"1999.08493150684931507","COTS",44,3,"0.07"
+"CA","Wet Tropics","Tongue Reef",2002,"2001.7150684931506849","COTS",57,1,"0.02"
+"CA","Wet Tropics","Tongue Reef",2005,"2005.0821917808219178","COTS",68,0,"0.00"
+"CA","Wet Tropics","Tongue Reef",2007,"2007.030136986301369864","COTS",62,0,"0.00"
+"CA","Wet Tropics","Tongue Reef",2026,"2025.7150684931506849","COTS",70,0,"0.00"

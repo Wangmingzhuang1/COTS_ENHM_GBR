@@ -26,17 +26,17 @@ COTS_ENHM_GBR/
 
 ## Data Availability
 
-This public repository does not include raw project datasets. Populate the `data/` directory locally before executing the pipeline. The repository is configured to ignore staged data files so that only code and documentation are tracked in git.
+This public repository retains the compact ecological CSV inputs needed for the core workflow, including reef survey series, juvenile support tables, the IPO index, and the site coordinate table. Larger external resources are intentionally excluded and must be staged locally before execution.
 
 ### Required data sources
 
 - **AIMS LTMP Data (Manta Tow):** Open-access data available from the [AIMS eAtlas or AIMS monitoring portal](https://apps.aims.gov.au/reef-monitoring/).
-- **Climate Indices (IPO and ENSO):** The Tripole Index (TPI) for the IPO should be downloaded from the [NOAA Physical Sciences Laboratory](https://psl.noaa.gov/data/timeseries/IPOTPI/).
-- **Hydrological Data (Rainfall and Runoff):** Rainfall inputs come from the Australian Bureau of Meteorology archives. River discharge gauge data comes from the Queensland Water Monitoring Information Portal.
+- **Climate Indices (IPO and ENSO):** The compact IPO CSV is retained here. Other climate inputs should be downloaded from the [NOAA Physical Sciences Laboratory](https://psl.noaa.gov/data/timeseries/IPOTPI/) and related sources if needed.
+- **Hydrological Data (Rainfall and Runoff):** Rainfall inputs come from the Australian Bureau of Meteorology archives. River discharge gauge data comes from the Queensland Water Monitoring Information Portal and is not bundled in this repository.
 - **Oceanographic Grids (Chlorophyll and Currents):** Obtain from the CSIRO [eReefs model products](https://ereefs.org.au/ereefs).
-- **Spatial Boundaries:** NRM and reef shapefiles should be downloaded from Great Barrier Reef Marine Park Authority spatial data sources.
+- **Spatial Boundaries:** The compact site coordinate CSV is retained here. Full NRM and reef shapefiles should be downloaded from Great Barrier Reef Marine Park Authority spatial data sources.
 
-Detailed local-path expectations are listed in [data/README.md](data/README.md). If your local filenames differ from the paths hard-coded in `scripts/config.py`, update the config before running the workflow.
+Detailed local-path expectations, including which files are retained versus externally downloaded, are listed in [data/README.md](data/README.md). If your local filenames differ from the paths hard-coded in `scripts/config.py`, update the config before running the workflow.
 
 ## Running the Pipeline
 
