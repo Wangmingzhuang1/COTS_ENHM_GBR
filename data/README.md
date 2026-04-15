@@ -9,13 +9,13 @@ This repository retains compact ecological CSV inputs needed for the core ENHM w
 | `data/reef_surveys/` | AIMS LTMP manta tow reef survey CSV files | Retained in repository |
 | `data/juvenile/` | Juvenile recruitment CSV files used for supporting checks | Retained in repository |
 | `data/climate/ipo_index.csv` | IPO Tripole Index time series | Retained in repository |
-| `data/climate/rainfall/` | Rainfall inputs used for climate-hydrology contrasts | Australian Bureau of Meteorology archives |
-| `data/climate/GBR_chlorophyll_monthly_1998_2025.nc` | Chlorophyll grid | https://ereefs.org.au/ereefs |
-| `data/climate/GBR_currents_monthly_1993_2025.nc` | Current field grid | https://ereefs.org.au/ereefs |
-| `data/hydrology/runoff/` | River discharge gauge CSV files | Queensland Water Monitoring Information Portal |
+| `data/climate/rainfall/` | Rainfall inputs used for climate-hydrology contrasts | [BOM Climate Data Archives](http://www.bom.gov.au/climate/data/) or [AGCD Grids](http://www.bom.gov.au/climate/maps/rainfall/) |
+| `data/climate/GBR_chlorophyll_monthly_1998_2025.nc` | Chlorophyll grid | [AIMS eReefs THREDDS / eReefs portal](https://ereefs.aims.gov.au/) |
+| `data/climate/GBR_currents_monthly_1993_2025.nc` | Current field grid | [AIMS eReefs THREDDS / eReefs portal](https://ereefs.aims.gov.au/) |
+| `data/hydrology/runoff/` | River discharge gauge CSV files | [Queensland Water Monitoring Information Portal](https://water-monitoring.information.qld.gov.au/) |
 | `data/spatial/site_lon_lat.csv` | Reef coordinate table | Retained in repository |
-| `data/spatial/GBR_Features/` | GBR feature shapefile components | GBRMPA spatial data hub |
-| `data/spatial/NRM_Regions/` | NRM region shapefile components | GBRMPA spatial data hub |
+| `data/spatial/GBR_Features/` | GBR feature shapefile components | [GBRMPA Geoportal](https://geoportal.gbrmpa.gov.au/) |
+| `data/spatial/NRM_Regions/` | NRM region shapefile components | [GBRMPA Geoportal](https://geoportal.gbrmpa.gov.au/) |
 
 ## Expected layout
 
