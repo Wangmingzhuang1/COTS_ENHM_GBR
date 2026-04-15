@@ -1,0 +1,9 @@
+a_sector,nrm_region,domain_name,year,survey_date,variable,tows,cots,cotsptow
+"CL","Cape York","Eye Reef",1986,"1985.8821917808219178","COTS",14,0,"0.00"
+"CL","Cape York","Eye Reef",1987,"1986.7753424657534247","COTS",21,0,"0.00"
+"CL","Cape York","Eye Reef",1988,"1987.7698630136986301","COTS",10,1,"0.10"
+"CL","Cape York","Eye Reef",1989,"1988.7643835616438356","COTS",15,0,"0.00"
+"CL","Cape York","Eye Reef",2009,"2008.8547945205479452","COTS",18,0,"0.00"
+"CL","Cape York","Eye Reef",2010,"2009.873972602739726","COTS",21,0,"0.00"
+"CL","Cape York","Eye Reef",2015,"2014.9424657534246575","COTS",22,40,"1.82"
+"CL","Cape York","Eye Reef",2025,"2024.7506849315068493","COTS",21,3,"0.14"

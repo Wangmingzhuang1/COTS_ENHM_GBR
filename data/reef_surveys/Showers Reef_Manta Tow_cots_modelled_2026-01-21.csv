@@ -1,0 +1,10 @@
+a_sector,nrm_region,domain_name,year,survey_date,variable,tows,cots,cotsptow
+"CU","Burdekin","Showers Reef",1990,"1989.4849315068493151","COTS",42,20,"0.48"
+"CU","Burdekin","Showers Reef",1991,"1990.4849315068493151","COTS",45,0,"0.00"
+"CU","Burdekin","Showers Reef",1992,"1991.5452054794520548","COTS",48,0,"0.00"
+"CU","Burdekin","Showers Reef",1997,"1997.4","COTS",52,0,"0.00"
+"CU","Burdekin","Showers Reef",2000,"2000.2356164383561644","COTS",45,0,"0.00"
+"CU","Burdekin","Showers Reef",2003,"2002.9315068493150684","COTS",40,0,"0.00"
+"CU","Burdekin","Showers Reef",2005,"2005.23013698630136986","COTS",48,0,"0.00"
+"CU","Burdekin","Showers Reef",2007,"2007.20273972602739726","COTS",43,34,"0.79"
+"CU","Burdekin","Showers Reef",2022,"2022.15616438356164383","COTS",54,0,"0.00"
