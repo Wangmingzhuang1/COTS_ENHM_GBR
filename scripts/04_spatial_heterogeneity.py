@@ -1,11 +1,11 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Figure 4: Spatial Heterogeneity of COTS Drivers
+Figure S3: Spatial Heterogeneity of COTS Drivers
 
 This is the formalized extraction of the old archived study-area script
 function `update_figure5_with_basemap()`, which was the correct historical source
-for manuscript Figure 4 despite its misleading function name.
+for manuscript Figure S3.
 
 Panel (a): spatial distribution of ENHM model explanatory power (R^2)
 Panel (b): spatial distribution of significant dominant environmental periods
@@ -118,9 +118,9 @@ def add_basemap(ax):
 
 
 def main():
-    print("Generating Figure 4: Spatial Heterogeneity...")
+    print("Generating Figure S3: Spatial Heterogeneity...")
     df = load_results()
-    print(f"  Loaded {len(df)} reefs with coordinates and enhm outputs.")
+    print(f"  Loaded {len(df)} reefs with coordinates and BSRA outputs.")
 
     fig = plt.figure(figsize=(14, 10))
 
@@ -188,9 +188,9 @@ def main():
     fig.suptitle("Spatial Heterogeneity of COTS Drivers", fontsize=14, fontweight="bold", y=0.95)
 
     plt.tight_layout()
-    png = OUTPUT_DIR / "Figure4_Spatial_Heterogeneity.png"
-    pdf = OUTPUT_DIR / "Figure4_Spatial_Heterogeneity.pdf"
-    svg = OUTPUT_DIR / "Figure4_Spatial_Heterogeneity.svg"
+    png = OUTPUT_DIR / "FigureS3_Spatial_Heterogeneity.png"
+    pdf = OUTPUT_DIR / "FigureS3_Spatial_Heterogeneity.pdf"
+    svg = OUTPUT_DIR / "FigureS3_Spatial_Heterogeneity.svg"
     plt.savefig(png, dpi=300, bbox_inches="tight")
     plt.savefig(pdf, bbox_inches="tight")
     plt.savefig(svg, bbox_inches="tight")

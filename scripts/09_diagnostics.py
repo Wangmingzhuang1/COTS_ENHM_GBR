@@ -1,7 +1,9 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
-Generate enhm Diagnostic Figures (Optimized for A4 Illustrator)
-鐩存帴浣跨敤棰勫厛璁＄畻濂界殑 CSV 鏁版嵁蹇€熺粯鍥撅紝浼樺寲鐢诲竷澶у皬涓?A4 閫傜敤锛?璁惧畾瀛椾綋涓烘柊缃楅┈锛岄噰鐢ㄧ函 SVG 鐭㈤噺瑕佺礌渚夸簬鍚庢湡 Illustrator 杞荤粯銆?"""
+Generate BSRA Diagnostic Figures (Optimized for A4 Illustrator)
+直接使用预先计算好的 CSV 数据快速绘图，优化画布大小为 A4 适用，
+设定字体为新罗马，采用纯 SVG 矢量要素便于后期 Illustrator 轻绘。
+"""
 
 import os
 import pandas as pd
@@ -10,10 +12,11 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from astropy.timeseries import LombScargle
 
-# 寮哄埗浣跨敤鍚庣
+# 强制使用后端
 plt.switch_backend('Agg')
 
-# 璁剧疆閰嶈壊鍜?A4 鐭㈤噺鍥惧睘鎬?COLORS = {
+# 设置配色和 A4 矢量图属性
+COLORS = {
     'primary': '#1f77b4',
     'secondary': '#d62728',
     'accent': '#ff7f0e',
@@ -32,15 +35,17 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 RESULTS_DIR = PROJECT_ROOT / "results" / "tables"
 OUTPUT_DIR = PROJECT_ROOT / "results" / "diagnostics"
 
-# 鍒涘缓涓撻棬鏀炬柊璇婃柇鍥剧殑鏂囦欢澶?os.makedirs(OUTPUT_DIR, exist_ok=True)
+# 创建专门放新诊断图的文件夹
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# 鍖哄煙椤哄簭锛屽拰涓诲浘琛ㄤ繚鎸佷竴鑷?REGION_ORDER = [
+# 区域顺序，和主图表保持一致
+REGION_ORDER = [
     'Cape York', 'Wet Tropics', 'Burdekin', 
     'Mackay Whitsunday', 'Fitzroy', 'Burnett Mary'
 ]
 
 def load_data():
-    """璇诲彇宸叉湁鐨?enhm 璁＄畻缁撴灉"""
+    """读取已有的 BSRA 计算结果"""
     res_df = pd.read_csv(RESULTS_DIR / 'all_residuals.csv')
     model_df = pd.read_csv(RESULTS_DIR / 'model_results.csv')
     period_df = pd.read_csv(RESULTS_DIR / 'period_results.csv')
@@ -53,10 +58,11 @@ def load_data():
 
 def plot_figure1(res_df, model_df):
     """Figure 1: Coral-COTS Regression Examples"""
-    # 鎵捐娴嬬偣鏈€澶氱殑鍓?4 涓鍖?    counts = res_df.groupby('reef_name').size().sort_values(ascending=False)
+    # 找观测点最多的前 4 个礁区
+    counts = res_df.groupby('reef_name').size().sort_values(ascending=False)
     best_reefs = counts.head(4).index.tolist()
     
-    # 璁剧疆涓?A4 椤甸潰鐨勪竴鍗婇珮 (瀹?8.27, 楂?5.8)
+    # 设置为 A4 页面的一半高 (宽 8.27, 高 5.8)
     fig, axes = plt.subplots(2, 2, figsize=(8.27, 6.5))
     axes = axes.flatten()
     
@@ -65,7 +71,7 @@ def plot_figure1(res_df, model_df):
         df = res_df[res_df['reef_name'] == reef].copy()
         model = model_df[model_df['reef_name'] == reef].iloc[0]
         
-        # 鎹㈢畻鍥?coral_lagged: 涔嬪墠妯″瀷鏄?y=beta*x, 鎵€浠?x=y/beta (濡傛灉beta!=0)
+        # 换算回 coral_lagged: 之前模型是 y=beta*x, 所以 x=y/beta (如果beta!=0)
         beta = model['beta_coefficient']
         if beta > 0:
             coral_lag = df['predicted'] / beta
@@ -74,7 +80,8 @@ def plot_figure1(res_df, model_df):
             
         ax.scatter(coral_lag, df['log_cots'], c=COLORS['primary'], s=40, alpha=0.7, edgecolors='white', lw=0.5)
         
-        # 鎷熷悎绾?        x_line = np.linspace(coral_lag.min(), coral_lag.max(), 100) if beta>0 else np.linspace(0, 10, 100)
+        # 拟合线
+        x_line = np.linspace(coral_lag.min(), coral_lag.max(), 100) if beta>0 else np.linspace(0, 10, 100)
         y_line = beta * x_line
         ax.plot(x_line, y_line, 'r-', lw=2, label=f"$\\beta$={beta:.4f}, $R^2$={model['r_squared']:.3f}")
         
@@ -92,7 +99,8 @@ def plot_figure1(res_df, model_df):
 
 def plot_figure2(res_df, period_df):
     """Figure 2: DLS Periodogram Examples"""
-    # 閫夊彇鏄捐憲涓斾富鑳介噺鏈€楂樼殑鍓?4 涓?    sig_reefs = period_df[period_df['primary_significant'] == True].sort_values('primary_power', ascending=False)
+    # 选取显著且主能量最高的前 4 个
+    sig_reefs = period_df[period_df['primary_significant'] == True].sort_values('primary_power', ascending=False)
     example_reefs = sig_reefs.head(4)['reef_name'].tolist()
     
     fig, axes = plt.subplots(2, 2, figsize=(8.27, 6.5))
@@ -106,7 +114,7 @@ def plot_figure2(res_df, period_df):
         
         res_info = sig_reefs[sig_reefs['reef_name'] == reef].iloc[0]
         
-        # 閲嶆柊璁＄畻涓€涓?DLS 浠ヨ幏寰楃函鐭㈤噺鏇茬嚎
+        # 重新计算一下 DLS 以获得纯矢量曲线
         frequency = np.linspace(1/30.0, 1/3.0, 1000)
         ls = LombScargle(t, y)
         power = ls.power(frequency)
@@ -140,8 +148,7 @@ def plot_figure3(sig_df):
     periods = sig_df['primary_period'].values
     ax.hist(periods, bins=np.arange(3, 31, 2), color=COLORS['primary'], edgecolor='white', alpha=0.8)
     
-    # 鏇存敼涓?2-7 骞?ENSO
-    ax.axvspan(2, 7, alpha=0.2, color=COLORS['accent'], label='ENSO Range (2-7 yr)')
+    ax.axvspan(3, 7, alpha=0.2, color=COLORS['accent'], label='ENSO-scale Range (3-7 yr)')
     ax.axvspan(15, 30, alpha=0.2, color=COLORS['success'], label='IPO Range (15-30 yr)')
     
     ax.set_xlabel('Primary Period (years)', fontweight='bold')
@@ -174,14 +181,15 @@ def plot_figure4(sig_df):
         patch.set_alpha(0.7)
         
     ax.set_xticks(positions)
-    # 鐢ㄥ洖杞︽浛浠ｆ棆杞紝閬垮厤X杞撮噸鍙?    ax.set_xticklabels([r.replace(' ', '\n') for r in valid_regions], rotation=0, ha='center', fontweight='bold')
+    # 用回车替代旋转，避免X轴重叠
+    ax.set_xticklabels([r.replace(' ', '\n') for r in valid_regions], rotation=0, ha='center', fontweight='bold')
     ax.set_xlabel('Region', fontweight='bold')
     ax.set_ylabel('Primary Period (years)', fontweight='bold')
     ax.set_title('Period Distribution by GBR Region', fontsize=12, fontweight='bold')
     ax.grid(True, alpha=0.3, axis='y')
     
     ax.axhspan(15, 30, color=COLORS['success'], alpha=0.1, label='IPO ~15-30 yr')
-    ax.axhspan(2, 7, color=COLORS['accent'], alpha=0.1, label='ENSO ~2-7 yr')
+    ax.axhspan(3, 7, color=COLORS['accent'], alpha=0.1, label='ENSO-scale ~3-7 yr')
     ax.legend(loc='upper right', fontsize=9)
     ax.spines[['top', 'right']].set_visible(False)
     
@@ -211,7 +219,7 @@ def plot_figure5(model_df):
     plt.close(fig)
 
 def main():
-    print("Loading pre-calculated enhm data and charting A4 versions...")
+    print("Loading pre-calculated BSRA data and charting A4 versions...")
     res_df, model_df, period_df, sig_df = load_data()
     
     plot_figure1(res_df, model_df)

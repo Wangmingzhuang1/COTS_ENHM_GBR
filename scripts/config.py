@@ -1,6 +1,6 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
-Unified Path Configuration for COTS enhm Project
+Unified Path Configuration for COTS BSRA Project
 All scripts import paths from this module to ensure consistency.
 """
 from pathlib import Path

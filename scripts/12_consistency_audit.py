@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Generate a traceable manuscript-code consistency audit.
@@ -16,7 +16,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 TABLES_DIR = PROJECT_ROOT / "results" / "tables"
 FIGURES_DIR = PROJECT_ROOT / "results" / "figures"
 DATA_DIR = PROJECT_ROOT / "data"
-MANUSCRIPT_PATH = PROJECT_ROOT.parent / "manuscript" / "manuscript.txt"
+MANUSCRIPT_PATH = PROJECT_ROOT.parent / "manuscript" / "PNAS" / "manuscript_en.md"
+SI_PATH = PROJECT_ROOT.parent / "manuscript" / "PNAS" / "si_appendix_en.md"
 
 
 def parse_dms(dms_str):
@@ -66,21 +67,7 @@ def formal_figure5_metrics(period_df):
             coord_rows.append({"reef_name": row["site"], "lat": lat, "lon": lon})
     coords = pd.DataFrame(coord_rows)
 
-    cots_rows = []
-    for path in sorted((DATA_DIR / "reef_surveys").glob("*_cots_modelled_*.csv")):
-        df = pd.read_csv(path)
-        reef_name = path.name.split("_Manta Tow_cots_modelled_")[0]
-        year_col = "year" if "year" in df.columns else ("Year" if "Year" in df.columns else None)
-        val_col = "cotsptow" if "cotsptow" in df.columns else ("cots" if "cots" in df.columns else None)
-        if not year_col or not val_col:
-            continue
-        for _, row in df.iterrows():
-            year = pd.to_numeric(row[year_col], errors="coerce")
-            val = pd.to_numeric(row[val_col], errors="coerce")
-            if pd.isna(year) or pd.isna(val):
-                continue
-            cots_rows.append({"reef_name": reef_name, "year": int(year), "cots_density": float(val)})
-    cots_df = pd.DataFrame(cots_rows)
+    residual_df = pd.read_csv(TABLES_DIR / "all_residuals.csv")
 
     target_reefs = period_df[
         (period_df["primary_significant"] == True) & (period_df["primary_period"].between(15, 30))
@@ -89,11 +76,13 @@ def formal_figure5_metrics(period_df):
     phases = []
     lats = []
     for _, row in target_reefs.iterrows():
-        ts = cots_df[cots_df["reef_name"] == row["reef_name"]].groupby("year")["cots_density"].mean()
+        ts = residual_df[residual_df["reef_name"] == row["reef_name"]].sort_values("year")
         if len(ts) < 5:
             continue
-        t = ts.index.values
-        y = signal.detrend(np.log1p(ts.values))
+        t = ts["year"].to_numpy(dtype=float)
+        y = ts["residual"].to_numpy(dtype=float)
+        if np.std(y) <= 1e-12:
+            continue
         omega = 2 * np.pi / row["primary_period"]
 
         def sine_model(t_values, amplitude, phase):
@@ -125,11 +114,12 @@ def formal_figure5_metrics(period_df):
 
 
 def status(ok):
-    return "涓€鑷? if ok else "缂哄け/鍐茬獊"
+    return "一致" if ok else "缺失/冲突"
 
 
 def main():
     manuscript_text = MANUSCRIPT_PATH.read_text(encoding="utf-8", errors="ignore")
+    si_text = SI_PATH.read_text(encoding="utf-8", errors="ignore")
     model_df = pd.read_csv(TABLES_DIR / "model_results.csv")
     period_df = pd.read_csv(TABLES_DIR / "period_results.csv")
     lag_df = pd.read_csv(TABLES_DIR / "lag_analysis.csv")
@@ -144,136 +134,166 @@ def main():
     best_lag = int(lag_df.loc[lag_df["mean"].idxmax(), "lag_years"])
     fig5 = formal_figure5_metrics(period_df)
 
+    # Values explicitly claimed by the current manuscript text. Update here when
+    # the manuscript is revised; the audit then flags manuscript-result drift.
+    MANUSCRIPT_CLAIMS = {
+        "fitted_reefs": 83,
+        "period_analyses": 57,
+        "significant_reefs": 16,
+        "ipo_band_reefs": 13,
+        "trophic_lag_years": 3,
+        "phase_front_speed_km_per_year": 33.75,
+    }
+
     rows = [
         {
             "item_type": "Figure",
             "manuscript_ref": "Figure 1",
-            "script": "03_study_area_map.py",
-            "output_files": "Figure1_Study_Area.png;Figure1_Study_Area.svg",
+            "script": "04_cots_overview.py",
+            "output_files": "Figure1_Combined_COTS_Overview.png;Figure1_Combined_COTS_Overview.svg",
             "evidence": "results/figures",
             "status": status(
                 "Figure 1" in manuscript_text
-                and (FIGURES_DIR / "Figure1_Study_Area.png").exists()
-                and (FIGURES_DIR / "Figure1_Study_Area.svg").exists()
+                and
+                (FIGURES_DIR / "Figure1_Combined_COTS_Overview.png").exists()
+                and (FIGURES_DIR / "Figure1_Combined_COTS_Overview.svg").exists()
             ),
-            "notes": "鐮旂┒鍖轰富鍥?,
-        },
-        {
-            "item_type": "Figure",
-            "manuscript_ref": "Figure 2",
-            "script": "02_paper_figures.py",
-            "output_files": "Figure2_Mechanism.png;Figure2_Mechanism.svg",
-            "evidence": "results/figures",
-            "status": status("Figure 2" in manuscript_text and (FIGURES_DIR / "Figure2_Mechanism.png").exists()),
-            "notes": "婊炲悗涓庨鐗╅檺鍒舵満鍒?,
-        },
-        {
-            "item_type": "Figure",
-            "manuscript_ref": "Figure 3",
-            "script": "02_paper_figures.py",
-            "output_files": "Figure3_Periodicity.png;Figure3_Periodicity.svg",
-            "evidence": "results/figures",
-            "status": status("Figure 3" in manuscript_text and (FIGURES_DIR / "Figure3_Periodicity.png").exists()),
-            "notes": "娈嬪樊鍛ㄦ湡鍒嗘瀽",
-        },
-        {
-            "item_type": "Figure",
-            "manuscript_ref": "Figure 4",
-            "script": "04_spatial_heterogeneity.py",
-            "output_files": "Figure4_Spatial_Heterogeneity.png;Figure4_Spatial_Heterogeneity.svg",
-            "evidence": "results/figures",
-            "status": status("Figure 4" in manuscript_text and (FIGURES_DIR / "Figure4_Spatial_Heterogeneity.png").exists()),
-            "notes": "绌洪棿寮傝川鎬?,
-        },
-        {
-            "item_type": "Figure",
-            "manuscript_ref": "Figure 5",
-            "script": "05_propagation.py",
-            "output_files": "Figure5_Propagation_Dynamics.png;Figure5_Propagation_Dynamics.svg",
-            "evidence": "results/figures;results/tables/figure5_summary.csv",
-            "status": status("Figure 5" in manuscript_text and (FIGURES_DIR / "Figure5_Propagation_Dynamics.png").exists()),
-            "notes": f"姝ｅ紡娴佺▼閫熷害={fig5['speed_km_per_year']:.2f} km/yr; n={fig5['n']}; R2={fig5['r2']:.3f}; p={fig5['p_value']:.4f}",
-        },
-        {
-            "item_type": "Figure",
-            "manuscript_ref": "Figure 6",
-            "script": "06_mechanism_fig6.py",
-            "output_files": "Figure6_Ultimate_Mechanism.png;Figure6_Ultimate_Mechanism.svg",
-            "evidence": "results/figures",
-            "status": status("Figure 6" in manuscript_text and (FIGURES_DIR / "Figure6_Ultimate_Mechanism.png").exists()),
-            "notes": "IPO-姘存枃-鐢熺墿绾ц仈鏈哄埗",
-        },
-        {
-            "item_type": "Supplementary",
-            "manuscript_ref": "Figure S1",
-            "script": "08_model_comparison.py",
-            "output_files": "SuppFig_Model_Comparison.png;SuppFig_Model_Comparison.svg;SuppFig_Model_Comparison.pdf",
-            "evidence": "results/figures;results/tables/model_validation_summary.csv",
-            "status": status("Figure S1" in manuscript_text and (FIGURES_DIR / "SuppFig_Model_Comparison.png").exists()),
-            "notes": "ENHM vs GAM/XGBoost",
+            "notes": "研究区与长期暴发概况（论文 Figure 1）",
         },
         {
             "item_type": "Supplementary",
             "manuscript_ref": "Figure S2",
             "script": "02_paper_figures.py",
-            "output_files": "SuppFig_Spectral_Decomposition.png;SuppFig_Spectral_Decomposition.svg",
+            "output_files": "FigureS2_Trophic_Lag_Baseline.png;FigureS2_Trophic_Lag_Baseline.svg;FigureS2_Trophic_Lag_Baseline.pdf",
             "evidence": "results/figures",
-            "status": status("Figure S2" in manuscript_text and (FIGURES_DIR / "SuppFig_Spectral_Decomposition.png").exists()),
-            "notes": "棰戣氨鍒嗚В琛ュ浘",
+            "status": status("Figure S2" in si_text and (FIGURES_DIR / "FigureS2_Trophic_Lag_Baseline.png").exists()),
+            "notes": "滞后与食物限制基线（论文 Figure S2）",
+        },
+        {
+            "item_type": "Figure",
+            "manuscript_ref": "Figure 2",
+            "script": "02_paper_figures.py",
+            "output_files": "Figure2_Residual_Periodicity.png;Figure2_Residual_Periodicity.svg;Figure2_Residual_Periodicity.pdf",
+            "evidence": "results/figures",
+            "status": status("Figure 2" in manuscript_text and (FIGURES_DIR / "Figure2_Residual_Periodicity.png").exists()),
+            "notes": "残差周期分析（论文Figure 2）",
+        },
+        {
+            "item_type": "Figure",
+            "manuscript_ref": "Figure S3",
+            "script": "04_spatial_heterogeneity.py",
+            "output_files": "FigureS3_Spatial_Heterogeneity.png;FigureS3_Spatial_Heterogeneity.svg;FigureS3_Spatial_Heterogeneity.pdf",
+            "evidence": "results/figures",
+            "status": status("Figure S3" in si_text and (FIGURES_DIR / "FigureS3_Spatial_Heterogeneity.png").exists()),
+            "notes": "空间异质性（论文Figure S3）",
+        },
+        {
+            "item_type": "Figure",
+            "manuscript_ref": "Figure 3",
+            "script": "05_propagation.py",
+            "output_files": "Figure3_Propagation_Dynamics.png;Figure3_Propagation_Dynamics.svg",
+            "evidence": "results/figures;results/tables/figure5_summary.csv",
+            "status": status("Figure 3" in manuscript_text and (FIGURES_DIR / "Figure3_Propagation_Dynamics.png").exists()),
+            "notes": f"正式流程速度={fig5['speed_km_per_year']:.2f} km/yr; n={fig5['n']}; R2={fig5['r2']:.3f}; p={fig5['p_value']:.4f}",
+        },
+        {
+            "item_type": "Figure",
+            "manuscript_ref": "Figure 4",
+            "script": "06_mechanism_fig6.py",
+            "output_files": "Figure4_Hydroclimatic_Coupling.png;Figure4_Hydroclimatic_Coupling.svg",
+            "evidence": "results/figures",
+            "status": status("Figure 4" in manuscript_text and (FIGURES_DIR / "Figure4_Hydroclimatic_Coupling.png").exists()),
+            "notes": "IPO-水文-生物级联机制",
+        },
+        {
+            "item_type": "Supplementary",
+            "manuscript_ref": "Figure S4",
+            "script": "08_model_comparison.py",
+            "output_files": "FigureS4_Model_Comparison.png;FigureS4_Model_Comparison.svg;FigureS4_Model_Comparison.pdf",
+            "evidence": "results/figures;results/tables/model_validation_summary.csv",
+            "status": status("Figure S4" in si_text and (FIGURES_DIR / "FigureS4_Model_Comparison.png").exists()),
+            "notes": "ENHM vs GAM/XGBoost",
+        },
+        {
+            "item_type": "Supplementary",
+            "manuscript_ref": "Figure S5",
+            "script": "02_paper_figures.py",
+            "output_files": "FigureS5_Spectral_Decomposition.png;FigureS5_Spectral_Decomposition.svg;FigureS5_Spectral_Decomposition.pdf",
+            "evidence": "results/figures",
+            "status": status("Figure S5" in si_text and (FIGURES_DIR / "FigureS5_Spectral_Decomposition.png").exists()),
+            "notes": "频谱分解补图",
         },
         {
             "item_type": "Statistic",
-            "manuscript_ref": "104 reefs",
+            "manuscript_ref": f"{MANUSCRIPT_CLAIMS['fitted_reefs']} fitted reefs",
             "script": "01_enhm_analysis.py",
             "output_files": "model_results.csv",
             "evidence": "results/tables/model_results.csv",
-            "status": status(len(model_df) == 104 and "104" in manuscript_text and "104" in summary_text),
-            "notes": f"褰撳墠鍊?{len(model_df)}",
+            "status": status(
+                len(model_df) == MANUSCRIPT_CLAIMS["fitted_reefs"]
+                and f"{MANUSCRIPT_CLAIMS['fitted_reefs']} fitted" in manuscript_text
+            ),
+            "notes": f"当前值={len(model_df)}",
         },
         {
             "item_type": "Statistic",
-            "manuscript_ref": "98 period analyses",
+            "manuscript_ref": f"{MANUSCRIPT_CLAIMS['period_analyses']} period analyses",
             "script": "01_enhm_analysis.py",
             "output_files": "period_results.csv",
             "evidence": "results/tables/period_results.csv",
-            "status": status(len(period_df) == 98 and "98" in manuscript_text and "98" in summary_text),
-            "notes": f"褰撳墠鍊?{len(period_df)}",
+            "status": status(
+                len(period_df) == MANUSCRIPT_CLAIMS["period_analyses"]
+                and f"{MANUSCRIPT_CLAIMS['period_analyses']} analyzable" in manuscript_text
+            ),
+            "notes": f"当前值={len(period_df)}",
         },
         {
             "item_type": "Statistic",
-            "manuscript_ref": "24 significant reefs",
+            "manuscript_ref": f"{MANUSCRIPT_CLAIMS['significant_reefs']} significant reefs",
             "script": "01_enhm_analysis.py",
             "output_files": "significant_reefs.csv",
             "evidence": "results/tables/significant_reefs.csv",
-            "status": status(len(sig_df) == 24 and "24" in manuscript_text and "24" in summary_text),
-            "notes": f"褰撳墠鍊?{len(sig_df)}",
+            "status": status(
+                len(sig_df) == MANUSCRIPT_CLAIMS["significant_reefs"]
+                and f"{MANUSCRIPT_CLAIMS['significant_reefs']} reefs showed significant" in manuscript_text
+            ),
+            "notes": f"当前值={len(sig_df)}",
         },
         {
             "item_type": "Statistic",
-            "manuscript_ref": "18 IPO-band reefs",
+            "manuscript_ref": f"{MANUSCRIPT_CLAIMS['ipo_band_reefs']} IPO-band reefs",
             "script": "01_enhm_analysis.py",
             "output_files": "period_results.csv",
             "evidence": "results/tables/period_results.csv",
-            "status": status(ipo_sig == 18 and "18" in manuscript_text and "18" in summary_text),
-            "notes": f"褰撳墠鍊?{ipo_sig}",
+            "status": status(
+                ipo_sig == MANUSCRIPT_CLAIMS["ipo_band_reefs"]
+                and f"including {MANUSCRIPT_CLAIMS['ipo_band_reefs']} with IPO-band" in manuscript_text
+            ),
+            "notes": f"当前值={ipo_sig}",
         },
         {
             "item_type": "Statistic",
-            "manuscript_ref": "2-year lag",
+            "manuscript_ref": f"{MANUSCRIPT_CLAIMS['trophic_lag_years']}-year lag",
             "script": "01_enhm_analysis.py",
             "output_files": "lag_analysis.csv;reef_lags.csv",
             "evidence": "results/tables/lag_analysis.csv",
-            "status": status(best_lag == 2 and "2 骞? in manuscript_text),
-            "notes": f"褰撳墠鍊?{best_lag}",
+            "status": status(
+                best_lag == MANUSCRIPT_CLAIMS["trophic_lag_years"]
+                and f"{MANUSCRIPT_CLAIMS['trophic_lag_years']}-year default" in manuscript_text
+            ),
+            "notes": f"当前值={best_lag}",
         },
         {
             "item_type": "Statistic",
-            "manuscript_ref": "242 km/yr",
+            "manuscript_ref": f"{MANUSCRIPT_CLAIMS['phase_front_speed_km_per_year']:.2f} km/yr",
             "script": "05_propagation.py",
             "output_files": "figure5_summary.csv",
             "evidence": "results/tables/figure5_summary.csv;results/audit_242/velocity_audit_summary.csv",
-            "status": status(abs(fig5["speed_km_per_year"] - 242.0) < 2.0 and "242 km/骞? in manuscript_text),
-            "notes": f"姝ｅ紡Figure5={fig5['speed_km_per_year']:.2f} km/yr; audit浠呬綔鍘嗗彶瀹¤",
+            "status": status(
+                abs(fig5["speed_km_per_year"] - MANUSCRIPT_CLAIMS["phase_front_speed_km_per_year"]) < 0.5
+                and f"{MANUSCRIPT_CLAIMS['phase_front_speed_km_per_year']:.2f} km/year" in manuscript_text
+            ),
+            "notes": f"正式Figure5={fig5['speed_km_per_year']:.2f} km/yr; audit仅作历史审计",
         },
     ]
 
@@ -281,39 +301,39 @@ def main():
     traceability_path = TABLES_DIR / "manuscript_traceability.csv"
     traceability_df.to_csv(traceability_path, index=False, encoding="utf-8-sig")
 
-    consistent = int((traceability_df["status"] == "涓€鑷?).sum())
+    consistent = int((traceability_df["status"] == "一致").sum())
     total = int(len(traceability_df))
 
     report_lines = [
-        "璁烘枃-浠ｇ爜涓€鑷存€ф牳鏌ユ姤鍛?,
+        "论文-代码一致性核查报告",
         "=" * 60,
-        f"璁烘枃鏂囦欢: {MANUSCRIPT_PATH}",
-        f"鏍告煡鏃堕棿鍩轰簬褰撳墠缁撴灉鐩綍: {TABLES_DIR}",
+        f"论文文件: {MANUSCRIPT_PATH}",
+        f"核查时间基于当前结果目录: {TABLES_DIR}",
         "",
-        "楂橀闄╃粨璁哄鏍?",
-        f"- 104涓鍖? {len(model_df)}",
-        f"- 98涓畬鎴愬懆鏈熷垎鏋? {len(period_df)}",
-        f"- 24涓樉钁楀懆鏈熺鍖? {len(sig_df)}",
-        f"- 18涓狪PO棰戞鏄捐憲绀佸尯: {ipo_sig}",
-        f"- 鏈€浼樻粸鍚? {best_lag} 骞?,
-        f"- 姝ｅ紡Figure 5浼犳挱閫熷害: {fig5['speed_km_per_year']:.2f} km/yr",
-        f"- 姝ｅ紡Figure 5鍥炲綊: n={fig5['n']}, R2={fig5['r2']:.3f}, p={fig5['p_value']:.4f}",
+        "高风险结论复核:",
+        f"- 拟合礁区: {len(model_df)}",
+        f"- 完成周期分析: {len(period_df)}",
+        f"- 显著周期礁区: {len(sig_df)}",
+        f"- IPO频段显著礁区: {ipo_sig}",
+        f"- 最优滞后: {best_lag} 年",
+        f"- 正式Figure 5传播速度: {fig5['speed_km_per_year']:.2f} km/yr",
+        f"- 正式Figure 5回归: n={fig5['n']}, R2={fig5['r2']:.3f}, p={fig5['p_value']:.4f}",
         "",
-        f"鎬婚」鏁? {total}",
-        f"涓€鑷撮」: {consistent}",
-        f"寮傚父椤? {total - consistent}",
+        f"总项数: {total}",
+        f"一致项: {consistent}",
+        f"异常项: {total - consistent}",
         "",
-        "閫愰」鐘舵€佽 manuscript_traceability.csv",
+        "逐项状态见 manuscript_traceability.csv",
     ]
 
     report_path = TABLES_DIR / "manuscript_consistency_report.txt"
     report_path.write_text("\n".join(report_lines), encoding="utf-8")
 
     print("=" * 60)
-    print("璁烘枃-浠ｇ爜涓€鑷存€ф牳鏌ュ畬鎴?)
-    print(f"  淇濆瓨: {traceability_path.name}")
-    print(f"  淇濆瓨: {report_path.name}")
-    print(f"  涓€鑷撮」: {consistent}/{total}")
+    print("论文-代码一致性核查完成")
+    print(f"  保存: {traceability_path.name}")
+    print(f"  保存: {report_path.name}")
+    print(f"  一致项: {consistent}/{total}")
     print("=" * 60)
 
 

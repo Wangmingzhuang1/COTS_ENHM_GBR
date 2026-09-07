@@ -1,6 +1,6 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
-鐢熸垚琛ュ厖鍥? 妯″瀷姣旇緝楠岃瘉
+生成补充图: 模型比较验证
 Supplementary Figure: Model Comparison Validation
 """
 
@@ -31,7 +31,7 @@ def ensure_model_validation_summary():
 
     raise FileNotFoundError(
         "model_validation_summary.csv is missing from the formal results directory: "
-        f"{SUMMARY_PATH}. Run the formal enhm/model-validation workflow first."
+        f"{SUMMARY_PATH}. Run the formal BSRA/model-validation workflow first."
     )
 
 
@@ -166,9 +166,9 @@ plt.tight_layout()
 
 # Save figure
 FIGURES_DIR = PROJECT_ROOT / 'results' / 'figures'
-output_path_png = FIGURES_DIR / 'SuppFig_Model_Comparison.png'
-output_path_pdf = FIGURES_DIR / 'SuppFig_Model_Comparison.pdf'
-output_path_svg = FIGURES_DIR / 'SuppFig_Model_Comparison.svg'
+output_path_png = FIGURES_DIR / 'FigureS4_Model_Comparison.png'
+output_path_pdf = FIGURES_DIR / 'FigureS4_Model_Comparison.pdf'
+output_path_svg = FIGURES_DIR / 'FigureS4_Model_Comparison.svg'
 
 plt.savefig(output_path_png, dpi=300, bbox_inches='tight')
 plt.savefig(output_path_pdf, dpi=300, bbox_inches='tight')

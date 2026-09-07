@@ -1,46 +1,43 @@
-# Data Staging Guide
+# Data staging guide
 
-This repository retains compact ecological CSV inputs needed for the core ENHM workflow, but excludes larger external resources. Populate the missing assets locally before running the pipeline.
+The compact inputs already tracked in this repository are sufficient for the core ENHM analysis. The optional figure and environmental-context stages require larger external files that must be downloaded from their official providers.
 
-## Required sources
+## Source-to-file mapping
 
-| Local path | Contents | Download source |
+| Local path | Role in the workflow | Availability and official source |
 | --- | --- | --- |
-| `data/reef_surveys/` | AIMS LTMP manta tow reef survey CSV files | Retained in repository |
-| `data/juvenile/` | Juvenile recruitment CSV files used for supporting checks | Retained in repository |
-| `data/climate/ipo_index.csv` | IPO Tripole Index time series | Retained in repository |
-| `data/climate/rainfall/` | Rainfall inputs used for climate-hydrology contrasts | [BOM Climate Data Archives](http://www.bom.gov.au/climate/data/) or [AGCD Grids](http://www.bom.gov.au/climate/maps/rainfall/) |
-| `data/climate/GBR_chlorophyll_monthly_1998_2025.nc` | Chlorophyll grid | [AIMS eReefs THREDDS / eReefs portal](https://ereefs.aims.gov.au/) |
-| `data/climate/GBR_currents_monthly_1993_2025.nc` | Current field grid | [AIMS eReefs THREDDS / eReefs portal](https://ereefs.aims.gov.au/) |
-| `data/hydrology/runoff/` | River discharge gauge CSV files | [Queensland Water Monitoring Information Portal](https://water-monitoring.information.qld.gov.au/) |
-| `data/spatial/site_lon_lat.csv` | Reef coordinate table | Retained in repository |
-| `data/spatial/GBR_Features/` | GBR feature shapefile components | [GBRMPA Geoportal](https://geoportal.gbrmpa.gov.au/) |
-| `data/spatial/NRM_Regions/` | NRM region shapefile components | [GBRMPA Geoportal](https://geoportal.gbrmpa.gov.au/) |
+| `data/reef_surveys/*.csv` | Reef-level AIMS manta-tow COTS and hard-coral-cover series | Retained here; source: [AIMS Reef Monitoring Dashboard](https://apps.aims.gov.au/reef-monitoring/) |
+| `data/juvenile/*.csv` | Juvenile-coral supporting series | Retained here; source: [AIMS Reef Monitoring Dashboard](https://apps.aims.gov.au/reef-monitoring/) |
+| `data/climate/ipo_index.csv` | Processed annual IPO index used in the workflow | Retained here; source: [NOAA PSL TPI (IPO)](https://psl.noaa.gov/data/timeseries/IPOTPI/), unfiltered NOAA ERSST v5 monthly series |
+| `data/climate/rainfall/` | Monthly gridded rainfall used for IPO-phase contrasts | Download from [Bureau of Meteorology AGCD](https://www.bom.gov.au/climate/austmaps/about-agcd-maps.shtml) and [rainfall grid downloads](https://www.bom.gov.au/climate/maps/rainfall/) |
+| `data/hydrology/runoff/` | River discharge for the Pascoe, Burdekin, and Fitzroy gauges | Download from the Queensland Government [Water Monitoring Information Portal](https://water-monitoring.information.qld.gov.au/) |
+| `data/climate/GBR_chlorophyll_monthly_1998_2025.nc` | Monthly surface chlorophyll-a grid | Obtain through the [eReefs Data Explorer](https://portal.ereefs.org.au/) or [Data Extraction Tool](https://extraction.ereefs.aims.gov.au/) |
+| `data/climate/GBR_currents_monthly_1993_2025.nc` | Monthly surface-current grid | Obtain through the [eReefs Data Explorer](https://portal.ereefs.org.au/) or [Data Extraction Tool](https://extraction.ereefs.aims.gov.au/) |
+| `data/spatial/site_lon_lat.csv` | Reef coordinates | Retained here; derived from the monitoring-site records used in the analysis |
+| `data/spatial/GBR_Features/` | Reef-feature boundaries | Download through GBRMPA [Spatial Data Information Services](https://www.gbrmpa.gov.au/about-us/spatial-data-information-services) |
+| `data/spatial/NRM_Regions/` | Natural Resource Management region boundaries | Download through GBRMPA [Spatial Data Information Services](https://www.gbrmpa.gov.au/about-us/spatial-data-information-services) |
 
 ## Expected layout
 
 ```text
 data/
 |-- climate/
-|   |-- .gitkeep
 |   |-- ipo_index.csv
-|   `-- rainfall/
+|   |-- rainfall/
+|   |-- GBR_chlorophyll_monthly_1998_2025.nc
+|   `-- GBR_currents_monthly_1993_2025.nc
 |-- hydrology/
-|   |-- .gitkeep
 |   `-- runoff/
 |-- juvenile/
-|   |-- .gitkeep
 |   `-- *.csv
 |-- reef_surveys/
-|   |-- .gitkeep
 |   `-- *.csv
 `-- spatial/
-    |-- .gitkeep
+    |-- site_lon_lat.csv
     |-- GBR_Features/
     `-- NRM_Regions/
 ```
 
-## Notes
+Do not rename the retained compact files. If an official provider changes an external filename, update the corresponding path in `scripts/config.py` rather than creating a second copy with a suffix such as `(1)`.
 
-- The repository intentionally tracks only compact ecological CSV inputs and ignores heavier runoff downloads, shapefiles, and large grid products.
-- If your local filenames differ from the paths hard-coded in `scripts/config.py`, update the config before running `python run_all.py`.
+The MIT licence at the repository root applies to software only. Data users must retain provider attribution and comply with the licence attached to each source dataset or downloaded layer.

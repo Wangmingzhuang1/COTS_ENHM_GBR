@@ -1,10 +1,7 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Paper Figures Generator
-鐢熸垚鐢ㄤ簬璁烘枃鐨勪笁濂楃粍鍚堝浘锛?
-Figure 1: Mechanism (Lag + Regression)
-Figure 2: Periodicity (Residual Analysis)
-Figure 3: Spatiotemporal Dynamics (Hovmoller + Regional)
+生成论文 Figure 2、Figure S2 和 Figure S5。
 """
 
 import pandas as pd
@@ -15,8 +12,9 @@ from scipy import signal
 from scipy.stats import pearsonr
 from pathlib import Path
 import matplotlib.colors as mcolors
+import textwrap
 
-# 璁剧疆缁樺浘椋庢牸
+# 设置绘图风格
 plt.rcParams['font.family'] = 'Times New Roman'
 plt.rcParams['font.size'] = 11
 plt.rcParams['axes.labelsize'] = 12
@@ -25,18 +23,18 @@ plt.rcParams['figure.dpi'] = 300
 plt.rcParams['savefig.dpi'] = 300
 plt.rcParams['svg.fonttype'] = 'none'
 
-# 閰嶈壊鏂规
+# 配色方案
 COLORS = {
-    'primary': '#1f77b4',       # 钃濊壊
-    'secondary': '#d62728',     # 绾㈣壊
-    'accent': '#ff7f0e',        # 姗欒壊
-    'success': '#2ca02c',       # 缁胯壊
-    'purple': '#9467bd',        # 绱壊
-    'gray': '#7f7f7f',          # 鐏拌壊
-    'ci_band': '#a6cee3'        # 娴呰摑
+    'primary': '#1f77b4',       # 蓝色
+    'secondary': '#d62728',     # 红色
+    'accent': '#ff7f0e',        # 橙色
+    'success': '#2ca02c',       # 绿色
+    'purple': '#9467bd',        # 紫色
+    'gray': '#7f7f7f',          # 灰色
+    'ci_band': '#a6cee3'        # 浅蓝
 }
 
-# 鍖哄煙椤哄簭 (鍖?-> 鍗?
+# 区域顺序 (北 -> 南)
 REGION_ORDER = [
     'Cape York', 
     'Wet Tropics', 
@@ -56,7 +54,7 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 # -----------------------------------------------------------------------------
 
 def load_all_reef_data_from_files():
-    """浠庡師濮婥SV鏂囦欢鍔犺浇鏁版嵁"""
+    """从原始CSV文件加载数据"""
     print("Listing files...")
     csv_files = list(DATA_DIR.glob('*.csv'))
     
@@ -156,7 +154,7 @@ def load_all_reef_data_from_files():
     return cots_df_final, coral_df_final
 
 def load_data():
-    """鍔犺浇鍒嗘瀽缁撴灉鏁版嵁"""
+    """加载分析结果数据"""
     cots_df, coral_df = load_all_reef_data_from_files()
     
     model_results = pd.read_csv(PROJECT_ROOT / "results" / "tables" / "model_results.csv")
@@ -183,7 +181,7 @@ def load_reef_lags():
         return None
 
 # -----------------------------------------------------------------------------
-# Figure 1: Mechanism (Lag + Regression)
+# Figure S2: Trophic lag and baseline calibration
 # -----------------------------------------------------------------------------
 
 def get_representative_reefs(model_results):
@@ -202,32 +200,38 @@ def get_representative_reefs(model_results):
             
     return selected_reefs
 
-def create_figure1_mechanism(cots_df, coral_df, lag_analysis, model_results, rep_reefs):
-    """鐢熸垚鍥?锛氭満鍒堕獙璇侊紙婊炲悗 + 鍥炲綊 + R虏鍒嗗竷锛? 3+6闈㈡澘甯冨眬"""
-    print("Generating Figure 2: Mechanism (3 Top Panels + 6 Regression Panels)...")
-    fig = plt.figure(figsize=(16, 14))
-    # Use unified 3x3 GridSpec for perfect column alignment
-    gs = GridSpec(3, 3, figure=fig, height_ratios=[1, 1, 1], hspace=0.4, wspace=0.25)
+def create_figure_s2_baseline(lag_analysis, model_results):
+    """生成补充图 S2：滞后校准与基线解释力。"""
+    print("Generating Figure S2: Trophic Lag and Baseline Calibration...")
+    fig = plt.figure(figsize=(13, 4.6))
+    gs = GridSpec(1, 3, figure=fig, wspace=0.34)
     
     # --- Panel A: Lag Profile ---
     ax_lag = fig.add_subplot(gs[0, 0])
     lags = lag_analysis['lag_years'].values
     correlations = lag_analysis['mean'].values
-    std_errs = lag_analysis['std'].values
+    standard_deviations = lag_analysis['std'].values
     
-    ax_lag.errorbar(lags, correlations, yerr=std_errs, fmt='o-', capsize=4, 
+    ax_lag.axvspan(2, 4, color=COLORS['accent'], alpha=0.12,
+                  label='Plausible range (2-4 yr)')
+    ax_lag.errorbar(lags, correlations, yerr=standard_deviations, fmt='o-', capsize=4,
                     color=COLORS['primary'], markersize=6, lw=1.5)
     
     optimal_idx = np.argmax(correlations)
     optimal_lag = lags[optimal_idx]
     ax_lag.axvline(optimal_lag, color=COLORS['secondary'], linestyle='--', lw=2)
-    ax_lag.text(optimal_lag + 0.5, np.max(correlations), f'Optimal: {optimal_lag} yr', 
-             color=COLORS['secondary'], fontweight='bold')
+    ax_lag.text(optimal_lag + 0.35, np.max(correlations),
+                f'Default: {optimal_lag} yr',
+                color=COLORS['secondary'], fontweight='bold')
+    common_n = int(lag_analysis['n'].min())
+    ax_lag.text(0.98, 0.04, f'Common reef set: n = {common_n}',
+                transform=ax_lag.transAxes, ha='right', va='bottom', fontsize=9)
     ax_lag.axhline(0, color='gray', linestyle='-', lw=0.8)
     
     ax_lag.set_xlabel('Time Lag (years)', fontsize=12, fontweight='bold')
-    ax_lag.set_ylabel('Cross-Correlation (Coral 鈫?COTS)', fontsize=12, fontweight='bold')
-    ax_lag.set_title('(a) Temporal Lag Identification', fontsize=14, fontweight='bold', loc='left')
+    ax_lag.set_ylabel('Mean Cross-Correlation', fontsize=12, fontweight='bold')
+    ax_lag.set_title('(a) System-Wide Lag Profile', fontsize=14, fontweight='bold', loc='left')
+    ax_lag.legend(loc='upper right', fontsize=8, frameon=False)
     ax_lag.spines[['top', 'right']].set_visible(False)
 
     # --- Panel B: Lag Distribution ---
@@ -250,87 +254,43 @@ def create_figure1_mechanism(cots_df, coral_df, lag_analysis, model_results, rep
     ax_dist.set_xlabel('Optimal Lag (years)', fontsize=12, fontweight='bold')
     ax_dist.set_ylabel('Number of Reefs', fontsize=12, fontweight='bold')
     ax_dist.set_title('(b) Reef-Level Lag Distribution', fontsize=14, fontweight='bold', loc='left')
+    if reef_lags is not None:
+        ax_dist.text(0.98, 0.96, f'n = {len(reef_lags)} lag-screened reefs',
+                     transform=ax_dist.transAxes, ha='right', va='top', fontsize=9)
     ax_dist.spines[['top', 'right']].set_visible(False)
 
-    # --- Panel C: Model R虏 Distribution (Moved from Figure 3) ---
+    # --- Panel C: Model R² Distribution (Moved from Figure 3) ---
     ax_r2 = fig.add_subplot(gs[0, 2])
     r2_values = model_results['r_squared'].dropna().values
     
     ax_r2.hist(r2_values, bins=20, color=COLORS['gray'], edgecolor='white', alpha=0.7)
     mean_r2 = np.mean(r2_values)
-    ax_r2.axvline(mean_r2, color='k', linestyle='--', lw=2, label=f'Mean: {mean_r2:.2f}')
-    ax_r2.legend(loc='upper right')
+    mean_r2_uncentered = model_results['r_squared_uncentered'].dropna().mean()
+    ax_r2.axvline(mean_r2, color='k', linestyle='--', lw=2,
+                  label=f'Centered mean: {mean_r2:.3f}')
+    ax_r2.text(
+        0.98, 0.96,
+        f'n = {len(r2_values)} reefs with defined $R^2$\n'
+        f'Non-centered mean: {mean_r2_uncentered:.3f}\n(RTO convention)',
+        transform=ax_r2.transAxes, ha='right', va='top', fontsize=9,
+    )
+    ax_r2.legend(loc='upper right', bbox_to_anchor=(1.0, 0.78),
+                 fontsize=8, frameon=False)
     
-    ax_r2.set_xlabel('Food Model $R^2$', fontsize=12, fontweight='bold')
+    ax_r2.set_xlabel('Centered $R^2$', fontsize=12, fontweight='bold')
     ax_r2.set_ylabel('Count', fontsize=12, fontweight='bold')
-    ax_r2.set_title('(c) Model Explanatory Power', fontsize=14, fontweight='bold', loc='left')
+    ax_r2.set_title('(c) Baseline Explanatory Power', fontsize=14, fontweight='bold', loc='left')
     ax_r2.spines[['top', 'right']].set_visible(False)
-
-    # --- Panel D-I: Regression Examples (2x3 Grid for 6 Regions) ---
-    # Replaced subgridspec with direct indexing into the unified 3x3 grid
     
-    for i, reef in enumerate(rep_reefs):
-        if i >= 6: break # Safety
-        
-        row = (i // 3) + 1 # Rows 1 and 2
-        col = i % 3
-        ax = fig.add_subplot(gs[row, col])
-        
-        reef_cots = cots_df[cots_df['reef_name'] == reef].copy()
-        reef_coral = coral_df[coral_df['reef_name'] == reef].copy()
-        
-        # Simple processing
-        cots_annual = reef_cots.groupby('year')['cots_density'].mean()
-        coral_annual = reef_coral.groupby('year')['coral_cover'].mean()
-        
-        lagged_coral = coral_annual.shift(optimal_lag)
-        common = cots_annual.index.intersection(lagged_coral.dropna().index)
-        
-        if len(common) > 0:
-            x = lagged_coral[common].values
-            y = np.log1p(cots_annual[common].values)
-            
-            # Remove NaNs
-            mask = ~np.isnan(x) & ~np.isnan(y)
-            x, y = x[mask], y[mask]
-
-            ax.scatter(x, y, alpha=0.6, c=COLORS['primary'], edgecolors='white', s=50)
-            
-            # Retrieve HBRS model parameters (Through-Origin Regression)
-            # Find matching model result for this reef
-            reef_model = model_results[model_results['reef_name'] == reef]
-            if not reef_model.empty:
-                beta = reef_model['beta_coefficient'].iloc[0] if 'beta_coefficient' in reef_model.columns else reef_model['beta'].iloc[0]
-                r2 = reef_model['r_squared'].iloc[0]
-                
-                # Plot HBRS Model Line (y = beta * x)
-                x_line = np.linspace(min(x), max(x), 100)
-                ax.plot(x_line, beta * x_line, color=COLORS['secondary'], lw=2)
-                ax.text(0.05, 0.9, f'$R^2$={r2:.2f}\n$\\beta$={beta:.2f}', transform=ax.transAxes, 
-                        color=COLORS['secondary'], fontsize=10)
-            else:
-                # Fallback if model not found (rare)
-                m, c = np.polyfit(x, y, 1)
-                ax.plot(x_line, m*x_line + c, 'k--', alpha=0.5)
-
-        # Title and cleaning
-        short_name = reef.split(' (')[0]
-        region = model_results[model_results['reef_name']==reef]['region'].values[0]
-        # User requested to REMOVE region/reef titles
-        # ax.set_title(f"{region}", fontsize=11, fontweight='bold') 
-        ax.set_box_aspect(1) # Force square aspect ratio
-        ax.set_xlabel('Coral (%)', fontsize=11)
-        if col == 0:
-            ax.set_ylabel('log(COTS + 1)', fontsize=11)
-        else:
-            ax.set_yticklabels([])
-        ax.spines[['top', 'right']].set_visible(False)
+    fig.suptitle('Trophic Lag and Baseline Calibration',
+                 fontsize=14, fontweight='bold', y=1.01)
     
-    fig.suptitle('Mechanism: Food Limitation Sets the Population Baseline', 
-                 fontsize=14, fontweight='bold', y=0.95)
-    
-    plt.savefig(OUTPUT_DIR / 'Figure2_Mechanism.png', bbox_inches='tight', dpi=300)
-    plt.savefig(OUTPUT_DIR / 'Figure2_Mechanism.svg', bbox_inches='tight')
+    plt.savefig(OUTPUT_DIR / 'FigureS2_Trophic_Lag_Baseline.png',
+                bbox_inches='tight', dpi=300)
+    plt.savefig(OUTPUT_DIR / 'FigureS2_Trophic_Lag_Baseline.pdf',
+                bbox_inches='tight')
+    plt.savefig(OUTPUT_DIR / 'FigureS2_Trophic_Lag_Baseline.svg',
+                bbox_inches='tight')
     plt.close()
 
 # ... (Figure 2 and 3 functions remain unchanged)
@@ -341,8 +301,8 @@ def create_figure1_mechanism(cots_df, coral_df, lag_analysis, model_results, rep
 # -----------------------------------------------------------------------------
 
 def create_figure2_periodicity(cots_df, top4_reefs, period_results, model_results, residuals_df):
-    """鐢熸垚鍥?锛氬懆鏈熸€у垎鏋愶紙鐜椹卞姩锛? 4涓懆鏈熷浘 + 1涓垎甯冪洿鏂瑰浘"""
-    print("Generating Figure 3: Periodicity (4 Periodograms + 1 Histogram)...")
+    """生成图3：周期性分析（环境驱动）- 4个周期图 + 1个分布直方图"""
+    print("Generating Figure 2: Periodicity (4 Periodograms + 1 Histogram)...")
     # Increased height to 8.0 to fix the "flat" look and achieve better proportions
     fig = plt.figure(figsize=(8.27, 8.0))
     gs = GridSpec(2, 1, figure=fig, height_ratios=[1, 1], hspace=0.4)
@@ -389,8 +349,14 @@ def create_figure2_periodicity(cots_df, top4_reefs, period_results, model_result
             prim_per = reef_period_row['primary_period'].iloc[0]
             ax.axvline(prim_per, color='k', linestyle='--', lw=1, alpha=0.5)
             y_max = pgram.max()
-            ax.text(prim_per + 0.5, y_max, f'{prim_per:.1f}y', 
-                   fontsize=8, color='k', va='bottom')
+            # Keep peaks at the 30-year search boundary legible inside the axes.
+            if prim_per >= 28:
+                label_x, label_ha = prim_per - 0.4, 'right'
+            else:
+                label_x, label_ha = prim_per + 0.5, 'left'
+            ax.text(label_x, y_max, f'{prim_per:.1f}y',
+                   fontsize=8, color='k', va='bottom', ha=label_ha,
+                   clip_on=True)
         
         # Shade regions
         ax.axvspan(2, 7, color=COLORS['accent'], alpha=0.1)  # ENSO
@@ -422,7 +388,7 @@ def create_figure2_periodicity(cots_df, top4_reefs, period_results, model_result
     ax_hist.hist(periods_data, bins=np.arange(3, 31, 1.5), color=COLORS['success'], 
                  edgecolor='white', alpha=0.7)
     
-    ax_hist.axvspan(2, 7, color=COLORS['accent'], alpha=0.15, label='ENSO (2-7yr)')
+    ax_hist.axvspan(3, 7, color=COLORS['accent'], alpha=0.15, label='ENSO-scale (3-7yr)')
     ax_hist.axvspan(15, 30, color=COLORS['success'], alpha=0.15, label='IPO (15-30yr)')
     ax_hist.legend(loc='upper right', frameon=True, fontsize=10)
     
@@ -436,9 +402,9 @@ def create_figure2_periodicity(cots_df, top4_reefs, period_results, model_result
         spine.set_linewidth(1)
     
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / 'Figure3_Periodicity.png', bbox_inches='tight', dpi=300)
-    plt.savefig(OUTPUT_DIR / 'Figure3_Periodicity.pdf', format='pdf', bbox_inches='tight')
-    plt.savefig(OUTPUT_DIR / 'Figure3_Periodicity.svg', bbox_inches='tight')
+    plt.savefig(OUTPUT_DIR / 'Figure2_Residual_Periodicity.png', bbox_inches='tight', dpi=300)
+    plt.savefig(OUTPUT_DIR / 'Figure2_Residual_Periodicity.pdf', format='pdf', bbox_inches='tight')
+    plt.savefig(OUTPUT_DIR / 'Figure2_Residual_Periodicity.svg', bbox_inches='tight')
     plt.close()
 
 # -----------------------------------------------------------------------------
@@ -446,7 +412,7 @@ def create_figure2_periodicity(cots_df, top4_reefs, period_results, model_result
 # -----------------------------------------------------------------------------
 
 def load_coordinates_for_hovmoller():
-    """浠巗ite_lon_lat.csv鍔犺浇鍧愭爣"""
+    """从site_lon_lat.csv加载坐标"""
     import re
     coord_file = PROJECT_ROOT / "data" / "spatial" / "site_lon_lat.csv"
     df = pd.read_csv(coord_file, encoding='gbk')
@@ -495,7 +461,7 @@ def load_coordinates_for_hovmoller():
     return pd.DataFrame(coords_parsed).dropna()
 
 def create_figure3_dynamics(cots_df, period_results):
-    """鐢熸垚鍥?锛氭椂绌哄姩鍔涘锛圚ovmoller鍥?鎸夌簿纭含搴︽帓搴忥級"""
+    """生成图3：时空动力学（Hovmoller图 按精确纬度排序）"""
     print("Generating Figure 3: Spatiotemporal Dynamics (Latitude-sorted)...")
     
     # Load coordinates
@@ -552,7 +518,7 @@ def create_figure3_dynamics(cots_df, period_results):
             current_reg = reg
     
     # Y-axis as latitude (positive values, North at top)
-    ax_hov.set_ylabel('Latitude (掳S)', fontweight='bold')
+    ax_hov.set_ylabel('Latitude (°S)', fontweight='bold')
     ax_hov.invert_yaxis()  # Keep North at top
     
     # Add colorbar
@@ -629,7 +595,7 @@ def get_top_periodic_reefs(period_results):
 
 
 def create_figure4_spectral(cots_df, model_results, period_results, residuals_df):
-    """鐢熸垚琛ュ厖鍥? 棰戣氨鍒嗚В瀵规瘮 - 灞曠ず鐢熺墿鍓ョ濡備綍鎻ず鐜鍛ㄦ湡淇″彿"""
+    """生成补充图: 频谱分解对比 - 展示生物剥离如何揭示环境周期信号"""
     print("\n  Creating SuppFig: Spectral Decomposition...")
     
     from scipy import signal as scipy_signal
@@ -637,9 +603,9 @@ def create_figure4_spectral(cots_df, model_results, period_results, residuals_df
     fig, axes = plt.subplots(3, 2, figsize=(16, 14))
     axes = axes.flatten()
     
-    # 姣忎釜鍖哄煙閫変竴涓唬琛ㄧ锛堜紭鍏堥€夋嫨鏈夊畬鏁存畫宸暟鎹殑锛?
+    # 每个区域选一个代表礁（优先选择有完整残差数据的）
     region_representatives = {}
-    region_stats = {}  # 璁板綍姣忎釜鍖哄煙鐨勭粺璁′俊鎭?
+    region_stats = {}  # 记录每个区域的统计信息
     
     for region in REGION_ORDER:
         region_reefs = model_results[model_results['region'] == region]
@@ -648,14 +614,14 @@ def create_figure4_spectral(cots_df, model_results, period_results, residuals_df
             
         candidates = None # Reset candidates for this region
             
-        # 閫夋嫨鏈夋樉钁楀懆鏈熶笖鏈夋畫宸暟鎹殑绀?
+        # 选择有显著周期且有残差数据的礁
         reef_periods = period_results[
             (period_results['reef_name'].isin(region_reefs['reef_name'])) &
             (period_results['primary_significant'] == True)
         ]
         
         if len(reef_periods) > 0:
-            # 浼樺厛閫夋嫨鏈夋畫宸暟鎹殑绀?
+            # 优先选择有残差数据的礁
             candidates = []
             for _, row in reef_periods.iterrows():
                 reef_name = row['reef_name']
@@ -667,13 +633,13 @@ def create_figure4_spectral(cots_df, model_results, period_results, residuals_df
                     'has_residual': has_residual
                 })
             
-            # 鎸?has_residual, power 鎺掑簭
+            # 按 has_residual, power 排序
             candidates_df = pd.DataFrame(candidates)
             best_reef = candidates_df.sort_values(['has_residual', 'power'], ascending=[False, False]).iloc[0]['reef_name']
         
-        # 鈿狅笍 FALLBACK: 濡傛灉娌℃湁鏄捐憲鍛ㄦ湡鐨勶紝灏濊瘯鎵句换鎰忔湁娈嬪樊鐨?
+        # ⚠️ FALLBACK: 如果没有显著周期的，尝试找任意有残差的
         if candidates is None or (isinstance(candidates, list) and len(candidates) > 0 and not candidates[0]['has_residual']):
-             # 灏濊瘯鍦ㄦ暣涓尯鍩熸壘鏈夋畫宸殑
+             # 尝试在整个区域找有残差的
              fallback_reefs = region_reefs['reef_name'].unique()
              for r in fallback_reefs:
                  r_res = residuals_df[residuals_df['reef_name'] == r] if residuals_df is not None else None
@@ -696,20 +662,20 @@ def create_figure4_spectral(cots_df, model_results, period_results, residuals_df
         ax = axes[idx]
         reef_name = region_representatives[region]
         
-        # 鑾峰彇鍘熷COTS鏁版嵁
+        # 获取原始COTS数据
         reef_cots = cots_df[cots_df['reef_name'] == reef_name].groupby('year')['cots_density'].mean()
         if len(reef_cots) < 10:
             ax.text(0.5, 0.5, 'Insufficient Data', ha='center', transform=ax.transAxes)
             continue
         
-        # 鑾峰彇娈嬪樊鏁版嵁
+        # 获取残差数据
         reef_res = residuals_df[residuals_df['reef_name'] == reef_name] if residuals_df is not None else None
         if reef_res is not None and len(reef_res) > 0:
             res_annual = reef_res.groupby('year')['residual'].mean()
         else:
             res_annual = None
         
-        # 璁＄畻棰戣氨 - 鍘熷鏁版嵁
+        # 计算频谱 - 原始数据
         years = reef_cots.index.values
         vals = np.log1p(reef_cots.values)
         vals_detrend = scipy_signal.detrend(vals)
@@ -719,7 +685,7 @@ def create_figure4_spectral(cots_df, model_results, period_results, residuals_df
         freqs = 1.0 / periods
         power_raw = scipy_signal.lombscargle(years, vals_detrend, 2*np.pi*freqs, normalize=True)
         
-        # 娈嬪樊棰戣氨
+        # 残差频谱
         power_res = None
         n_res = 0
         if res_annual is not None and len(res_annual) > 5:
@@ -730,21 +696,21 @@ def create_figure4_spectral(cots_df, model_results, period_results, residuals_df
                 power_res = scipy_signal.lombscargle(common_years, res_detrend, 2*np.pi*freqs, normalize=True)
                 n_res = len(common_years)
         
-        # 缁樺浘 - 鍘熷鏁版嵁锛堢伆鑹茶櫄绾匡級
+        # 绘图 - 原始数据（灰色虚线）
         ax.plot(periods, power_raw / power_raw.max(), color='gray', linestyle='--', lw=2, 
                 alpha=0.6, label=f'Raw COTS (n={len(years)})')
         
-        # 缁樺浘 - 鐜娈嬪樊锛堣摑鑹插疄绾匡級
+        # 绘图 - 环境残差（蓝色实线）
         if power_res is not None:
             ax.plot(periods, power_res / power_res.max(), color=COLORS['primary'], 
                     lw=2.5, label=f'Env. Residual (n={n_res})')
         else:
-            # 鍗充娇娌℃湁娈嬪樊鏁版嵁锛屼篃鏄剧ず璇存槑鏂囨湰
+            # 即使没有残差数据，也显示说明文本
             ax.text(0.98, 0.95, 'No residual data', 
                    transform=ax.transAxes, ha='right', va='top',
                    fontsize=9, style='italic', color='gray')
         
-        # IPO 棰戞楂樹寒
+        # IPO 频段高亮
         ax.axvspan(15, 30, color=COLORS['success'], alpha=0.12, zorder=0)
         ax.text(22.5, 0.95, 'IPO\n(15-30y)', ha='center', va='top',
                fontsize=9, color=COLORS['success'], fontweight='bold',
@@ -757,27 +723,27 @@ def create_figure4_spectral(cots_df, model_results, period_results, residuals_df
         ax.set_ylabel('Normalized Power', fontsize=11)
         
         short_name = reef_name.split(' (')[0]
-        if len(short_name) > 18:
-            short_name = short_name[:18] + '...'
+        short_name = textwrap.fill(short_name, width=24, break_long_words=False)
         ax.set_title(f'({panel_labels[idx]}) {region}\n{short_name}', 
                     fontweight='bold', fontsize=11, loc='left')
         
-        # 娣诲姞鍥句緥锛堜粎绗竴涓潰鏉匡級
+        # 添加图例（仅第一个面板）
         if idx == 0:
             ax.legend(loc='upper right', fontsize=9, frameon=True, fancybox=True)
         
-        # 娣诲姞缃戞牸
+        # 添加网格
         ax.grid(True, alpha=0.2, linestyle=':', linewidth=0.5)
     
     fig.suptitle('Spectral Decomposition: Biological Stripping Unmasks Environmental Periodicity', 
                 fontsize=15, fontweight='bold', y=0.995)
     
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / 'SuppFig_Spectral_Decomposition.png', dpi=300, bbox_inches='tight')
-    plt.savefig(OUTPUT_DIR / 'SuppFig_Spectral_Decomposition.svg', bbox_inches='tight')
+    plt.savefig(OUTPUT_DIR / 'FigureS5_Spectral_Decomposition.png', dpi=300, bbox_inches='tight')
+    plt.savefig(OUTPUT_DIR / 'FigureS5_Spectral_Decomposition.pdf', bbox_inches='tight')
+    plt.savefig(OUTPUT_DIR / 'FigureS5_Spectral_Decomposition.svg', bbox_inches='tight')
     plt.close()
     
-    print(f"    Saved: SuppFig_Spectral_Decomposition.png and .pdf")
+    print("    Saved: FigureS5_Spectral_Decomposition.png, .pdf and .svg")
     print(f"    Regions analyzed: {len(region_representatives)}")
 
 if __name__ == "__main__":
@@ -791,7 +757,7 @@ if __name__ == "__main__":
     # 2. Top Periodic Reefs (Strongest Signal)
     top_periodic_reefs = get_top_periodic_reefs(period_results)
     
-    create_figure1_mechanism(cots_df, coral_df, lag_analysis, model_results, rep_reefs)
+    create_figure_s2_baseline(lag_analysis, model_results)
     create_figure2_periodicity(cots_df, top_periodic_reefs, period_results, model_results, residuals_df)
     create_figure4_spectral(cots_df, model_results, period_results, residuals_df)
     

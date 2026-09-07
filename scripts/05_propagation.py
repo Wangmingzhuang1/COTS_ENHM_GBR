@@ -1,9 +1,9 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
-New Figure 5: Propagation Dynamics - Optimized Layout
-- 淇涓?A4 澶у皬 (8.27 x 11.69)
-- Colorbar 浣跨敤绾潗鏍囪酱鎻掑叆鏂瑰紡闃叉 SVG 涓㈠け/閿欎綅
-- 浼樺寲 SVG Illustrator 鍏煎鎬?
+Figure 3: Propagation Dynamics - Optimized Layout
+- 修正为 A4 大小 (8.27 x 11.69)
+- Colorbar 使用纯坐标轴插入方式防止 SVG 丢失/错位
+- 优化 SVG Illustrator 兼容性
 """
 
 import pandas as pd
@@ -21,10 +21,10 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-# 鐢?Agg 鍚庣
+# 用 Agg 后端
 plt.switch_backend('Agg')
 
-# 閰嶈壊鏂规
+# 配色方案
 COLORS = {
     'primary': '#1f77b4',
     'secondary': '#d62728',
@@ -35,7 +35,7 @@ COLORS = {
     'ci_band': '#a6cee3'
 }
 
-# 瀛椾綋涓轰簡A4缂╁皬涓€鍙?
+# 字体为了A4缩小一号
 plt.rcParams['font.family'] = 'Times New Roman'
 plt.rcParams['font.size'] = 9
 plt.rcParams['axes.labelsize'] = 10
@@ -182,14 +182,15 @@ def calc_speed_diff(da_annual, neg_years, pos_years):
 # Main Figure Generation
 # =============================================================================
 
-def create_figure6():
+def create_figure3():
     print("\n" + "="*60)
-    print("GENERATING NEW FIGURE 5: PROPAGATION DYNAMICS (A4 OPTIMIZED)")
+    print("GENERATING FIGURE 3: PROPAGATION DYNAMICS (A4 OPTIMIZED)")
     print("="*60)
     
     coords = load_coordinates()
     cots_df = load_cots_data()
     period_results = load_period_results()
+    residual_df = pd.read_csv(TABLES_DIR / "all_residuals.csv")
     cots_with_coords = cots_df.merge(coords, on='reef_name', how='inner')
     
     if len(cots_with_coords) == 0: return
@@ -200,17 +201,17 @@ def create_figure6():
     if ds_cur is not None:
         diff_cur, _ = calc_speed_diff(ds_cur, neg, pos)
     
-    # 淇敼涓?A4 绾靛悜澶у皬 (8.27 x 11.69 inches)
-    # 澧炲姞 wspace 浣垮緱鍥続鍜屽浘C鐨勫彸渚ф湁鍏呰鐨勪綅缃粰 colorbar
+    # 修改为 A4 纵向大小 (8.27 x 11.69 inches)
+    # 增加 wspace 使得图A和图C的右侧有充裕的位置给 colorbar
     fig = plt.figure(figsize=(8.27, 11.69))
     gs = GridSpec(2, 2, figure=fig, width_ratios=[1, 1], height_ratios=[1, 1], 
                   hspace=0.25, wspace=0.45)
     
-    # 璋冩暣鏁翠釜鐢诲竷鐨勫杈硅窛缁?colorbar 鎻愪緵浣嶇疆
+    # 调整整个画布的外边距给 colorbar 提供位置
     plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
     
     # =========================================================================
-    # Panel A: Hovm枚ller Diagram
+    # Panel A: Hovmöller Diagram
     # =========================================================================
     ax_hov = fig.add_subplot(gs[0, 0])
     
@@ -227,9 +228,9 @@ def create_figure6():
                        interpolation='nearest', origin='upper',
                        extent=[years.min(), years.max(), latitudes.max(), latitudes.min()])
     
-    ax_hov.set_ylabel('Latitude (掳S)', fontsize=10, fontweight='bold')
+    ax_hov.set_ylabel('Latitude (°S)', fontsize=10, fontweight='bold')
     ax_hov.set_xlabel('Year', fontsize=10, fontweight='bold')
-    # 绉婚櫎 matplotlib 鍘熺敓鐨?colorbar 浠ラ伩鍏嶅湪鏀瑰彉杞村昂瀵告椂鍑洪敊锛屾垜浠湪鏈€鍚庣敤缁濆浣嶇疆缁樺埗
+    # 移除 matplotlib 原生的 colorbar 以避免在改变轴尺寸时出错，我们在最后用绝对位置绘制
     
     if len(latitudes) > 20:
         start_year, start_lat = 1995, latitudes[5]
@@ -250,11 +251,11 @@ def create_figure6():
         reef = row['reef_name']
         period = row['primary_period']
         lat = np.abs(row['lat'])
-        ts = cots_df[cots_df['reef_name'] == reef].groupby('year')['cots_density'].mean()
-        if len(ts) < 5: continue
-        t = ts.index.values
-        y = np.log1p(ts.values)
-        y = signal.detrend(y)
+        rs = residual_df[residual_df['reef_name'] == reef].sort_values('year')
+        if len(rs) < 5: continue
+        t = rs['year'].to_numpy(dtype=float)
+        y = rs['residual'].to_numpy(dtype=float)
+        if np.std(y) <= 1e-12: continue
         omega = 2 * np.pi / period
         def sine_model(t, A, phi): return A * np.sin(omega * t + phi)
         try:
@@ -301,11 +302,11 @@ def create_figure6():
         ci_band = t_crit * s_err * np.sqrt(1/n_obs + (fit_x - x_mean)**2 / S_xx)
         ax_phase.fill_between(fit_x, fit_y - ci_band, fit_y + ci_band, color="#a6cee3", alpha=0.3, zorder=3)
         
-        ax_phase.set_xlabel('Latitude (掳S)', fontsize=10, fontweight='bold')
+        ax_phase.set_xlabel('Latitude (°S)', fontsize=10, fontweight='bold')
         ax_phase.set_ylabel('Phase (radians)', fontsize=10, fontweight='bold')
         
         ci_text = f"[{speed_ci_min:.0f}, {speed_ci_max:.0f}]" if not np.isinf(speed_ci_max) else "> 0"
-        textstr = f'Speed: ~{speed_km_per_year:.0f} km/yr\n95% CI: {ci_text}\nn = {len(phases)}'
+        textstr = f'Speed: {speed_km_per_year:.2f} km/yr\n95% CI: {ci_text}\nn = {len(phases)}'
         props = dict(boxstyle='round', facecolor='white', alpha=0.9)
         ax_phase.text(0.05, 0.95, textstr, transform=ax_phase.transAxes, fontsize=8, verticalalignment='top', bbox=props)
         ax_phase.legend(loc='lower right', fontsize=8)
@@ -335,7 +336,7 @@ def create_figure6():
     im_c = None
     if diff_cur is not None:
         val_max = np.nanpercentile(np.abs(diff_cur.values), 98)
-        # 绉婚櫎 xarray 鍘熺敓鐨?add_colorbar=True锛岄伩鍏嶄骇鐢熼毦浠ュ垎绂荤殑 SVG Colorbar
+        # 移除 xarray 原生的 add_colorbar=True，避免产生难以分离的 SVG Colorbar
         im_c = diff_cur.plot(ax=ax_cur, cmap='RdBu_r', vmin=-val_max, vmax=val_max, transform=ccrs.PlateCarree(), add_colorbar=False)
         ax_cur.set_xlabel('')
         ax_cur.set_ylabel('')
@@ -386,7 +387,7 @@ def create_figure6():
         ax_box.axhspan(15, 30, color=COLORS['secondary'], alpha=0.1, label='IPO (15-30y)')
         ax_box.axhline(20, color=COLORS['secondary'], linestyle='--', lw=1, alpha=0.5)
         ax_box.legend(loc='upper right', fontsize=8)
-        # 鐢ㄥ洖杞︿唬鏇挎枩浣撴洿閫傞厤A4鎷ユ尋鐨勫搴?
+        # 用回车代替斜体更适配A4拥挤的宽度
         plt.setp(ax_box.xaxis.get_majorticklabels(), rotation=0, ha='center')
     
     # =========================================================================
@@ -398,32 +399,32 @@ def create_figure6():
     pos_a = ax_hov.get_position()
     pos_b = ax_phase.get_position()
     
-    # A4涓?y 杞存洿闀匡紝鎴戜滑鐩存帴鎶?A, B 鏀惧湪 C, D 姝ｄ笂鏂?0.08 澶?
+    # A4下 y 轴更长，我们直接把 A, B 放在 C, D 正上方 0.08 处
     y_new = pos_c.y0 + pos_c.height + 0.08
     
     ax_box.set_position([pos_d.x0, pos_c.y0, pos_c.width, pos_c.height])
     ax_hov.set_position([pos_c.x0, y_new, pos_c.width, pos_c.height])
     ax_phase.set_position([pos_d.x0, y_new, pos_c.width, pos_c.height])
     
-    # 鎵嬪姩寤虹珛鐙珛鐨?Colorbar 浠ユ潨缁?SVG 鏂囦欢鈥滀涪涓滆タ鈥濈殑閿欒
+    # 手动建立独立的 Colorbar 以杜绝 SVG 文件“丢东西”的错误
     cb_w = 0.015
     
-    # 涓?Hovm枚ller 澧炲姞鍥句緥
+    # 为 Hovmöller 增加图例
     cax_a = fig.add_axes([pos_c.x1 + 0.015, y_new + 0.1*pos_c.height, cb_w, 0.8*pos_c.height])
     cbar_a = plt.colorbar(img, cax=cax_a)
     cbar_a.set_label('log(COTS + 1)', rotation=270, labelpad=12, fontsize=8)
     
-    # 涓烘捣娴侀€熷害鍥惧鍔犲浘渚?
+    # 为海流速度图增加图例
     if im_c is not None:
         cax_c = fig.add_axes([pos_c.x1 + 0.015, pos_c.y0 + 0.1*pos_c.height, cb_w, 0.8*pos_c.height])
         cbar_c = plt.colorbar(im_c, cax=cax_c)
         cbar_c.set_label('Speed Anomaly ($m\\ s^{-1}$)', fontsize=8)
     
-    output_png = OUTPUT_DIR / 'Figure5_Propagation_Dynamics.png'
-    output_svg = OUTPUT_DIR / 'Figure5_Propagation_Dynamics.svg'
+    output_png = OUTPUT_DIR / 'Figure3_Propagation_Dynamics.png'
+    output_svg = OUTPUT_DIR / 'Figure3_Propagation_Dynamics.svg'
     plt.savefig(output_png, bbox_inches='tight', dpi=300)
     plt.savefig(output_svg, bbox_inches='tight')
     plt.close()
     
 if __name__ == "__main__":
-    create_figure6()
+    create_figure3()

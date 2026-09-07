@@ -1,6 +1,6 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
-Ultimate Figure 6: Driving Mechanisms of COTS Outbreaks
+Figure 4: Hydroclimatic Contrasts and Low-Frequency Climate Coupling
 SVG Optimized Export:
 - Replaced inset_axes with explicit absolute coord axes (`fig.add_axes`) for colorbars.
 - This creates standalone <g> groups in SVG, making them robust in Adobe Illustrator.
@@ -303,16 +303,27 @@ def create_ultimate_figure():
     m_wc = np.array([np.mean(Rsq[si, period[si]<coi]) if np.any(period[si]<coi) else np.nan for si in range(len(period))])
     ax_glob.plot(period, m_wc, color=COLORS['primary'], lw=2.5, label='WTC Mean')
     ax_glob.plot(period, sig_95, color=COLORS['secondary'], lw=1.5, ls='--', label='95% Signif.')
-    ax_glob.axvspan(2, 7, color=COLORS['accent'], alpha=0.1, label='ENSO (2-7y)'); ax_glob.axvspan(15, 30, color=COLORS['success'], alpha=0.15, label='IPO (15-30y)')
+    ax_glob.axvspan(3, 7, color=COLORS['accent'], alpha=0.1, label='ENSO-scale (3-7y)'); ax_glob.axvspan(15, 30, color=COLORS['success'], alpha=0.15, label='IPO (15-30y)')
     pk = np.nanargmax(m_wc)
     ax_glob.scatter(period[pk], m_wc[pk], color='black', s=60, marker='*', zorder=5)
     ax_glob.annotate(f'Peak: {period[pk]:.1f}y', xy=(period[pk], m_wc[pk]), xytext=(period[pk]+3, m_wc[pk]+0.05), arrowprops=dict(arrowstyle='->', color='black', lw=1), fontsize=10, fontweight='bold')
+    wtc_summary = pd.DataFrame(
+        [
+            {"metric": "wtc_global_mean_peak_period_years", "value": float(period[pk])},
+            {"metric": "wtc_global_mean_coherence_at_peak", "value": float(m_wc[pk])},
+            {"metric": "wtc_series_years", "value": f"{int(yrs_w.min())}-{int(yrs_w.max())}"},
+        ]
+    )
+    wtc_summary.to_csv(
+        Path(__file__).resolve().parent.parent / "results" / "tables" / "wtc_summary.csv",
+        index=False,
+    )
     ax_glob.set_title('(f) Global Coherence', loc='left', fontweight='bold'); ax_glob.set_ylim(0, 1.1)
     ax_glob.set_xlabel('Period (yr)', fontweight='bold'); ax_glob.set_ylabel('Mean Coherence', fontweight='bold')
     ax_glob.spines[['top', 'right']].set_visible(False)
 
-    plt.savefig(OUTPUT_DIR / 'Figure6_Ultimate_Mechanism.png', dpi=300, bbox_inches='tight', pad_inches=0.1)
-    plt.savefig(OUTPUT_DIR / 'Figure6_Ultimate_Mechanism.svg', bbox_inches='tight', pad_inches=0.1)
+    plt.savefig(OUTPUT_DIR / 'Figure4_Hydroclimatic_Coupling.png', dpi=300, bbox_inches='tight', pad_inches=0.1)
+    plt.savefig(OUTPUT_DIR / 'Figure4_Hydroclimatic_Coupling.svg', bbox_inches='tight', pad_inches=0.1)
     plt.close()
     print("SVG Colorbars Optimized: Removed inset_axes, using absolute bounding boxes.")
 

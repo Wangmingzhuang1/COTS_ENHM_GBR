@@ -1,61 +1,65 @@
-# Ecological Null Hypothesis Model (ENHM) for Crown-of-Thorns Starfish Outbreaks
+# Ecological Null Hypothesis Model for Crown-of-Thorns Starfish Outbreaks
 
-This repository contains the core analytical pipeline for separating coral-limited trophic baselines from environmentally forced ecological anomalies on the Great Barrier Reef (GBR). The framework uses the Ecological Null Hypothesis Model (ENHM), biological stripping, and residual spectral analysis as presented in the associated manuscript.
+This repository contains the public analysis workflow supporting the associated Great Barrier Reef (GBR) crown-of-thorns starfish (COTS) manuscript. The Ecological Null Hypothesis Model (ENHM) separates a coral-linked baseline from the remaining abundance variation and then evaluates whether the residual field contains interdecadal periodicity and spatial phase organization consistent with an IPO-conditioned susceptibility window.
 
-## Overview
+The analysis does not treat the Interdecadal Pacific Oscillation (IPO) as a direct trigger of individual outbreaks. Rainfall, runoff, chlorophyll-a, and circulation products provide hydroclimatic context for the susceptibility-window interpretation.
 
-A central challenge in ecological forecasting is distinguishing slowly varying climatic background conditions from immediate outbreak triggers. Because crown-of-thorns starfish (COTS) are obligate corallivores, raw abundance series often mix climatic forcing with prey depletion and recovery cycles.
+## Analysis outline
 
-This pipeline implements **ENHM** to address that confound explicitly:
+1. Pair COTS abundance in year `t` with coral cover observed in the exact calendar year `t - lag`.
+2. Use a 3-year default lag, selected within a 2–4 year biologically plausible range.
+3. Fit the coral-linked regression-through-the-origin baseline and retain residual anomalies.
+4. Estimate dominant residual periods with Lomb–Scargle analysis and compare white-noise, 3-calendar-year block, and AR(1) null models.
+5. Evaluate spatial phase organization and place the result in its hydroclimatic context.
 
-1. **Biological Stripping:** Evaluates the empirical delay between coral resources and COTS abundance, establishing a 2-year lag as the optimal trophic baseline.
-2. **Residual Separation:** Removes density-dependent constraints by fitting a regression-through-the-origin baseline model.
-3. **Frequency and Propagation Extraction:** Evaluates residual periodicity using iteratively applied Double Lomb-Scargle (DLS) analysis to identify low-frequency interdecadal structure, then tracks phase anomalies spatially.
-4. **Climate Coupling:** Tests Wavelet Coherence Analysis (WCA) against teleconnection indices such as the Interdecadal Pacific Oscillation (IPO) and El Nino-Southern Oscillation (ENSO).
-
-## Project Structure
+## Repository contents
 
 ```text
 COTS_ENHM_GBR/
-|-- data/                 # Empty staging tree plus download instructions
-|-- scripts/              # Core analytic Python scripts
-|-- run_all.py            # Pipeline entry point
+|-- data/                 # Compact analysis inputs and source-mapping guide
+|-- scripts/              # Analysis, robustness, and figure scripts
+|-- run_all.py            # Public workflow entry point
 |-- requirements.txt      # Python dependencies
+|-- LICENSE               # MIT licence for repository software
 `-- README.md
 ```
 
-## Data Availability
+The compact data files in this repository match the corresponding files used by the formal analysis. A duplicate Lizard Isles juvenile file carrying the suffix `(1)` was removed; the identically hashed, unsuffixed file is the retained source.
 
-This public repository retains the compact ecological CSV inputs needed for the core workflow, including reef survey series, juvenile support tables, the IPO index, and the site coordinate table. Larger external resources are intentionally excluded and must be staged locally before execution.
+## Data sources and availability
 
-### Required data sources
+The repository includes the compact reef-survey CSV files, juvenile support tables, the processed annual IPO index, and the reef-coordinate table used by the workflow. These files remain subject to the licences and attribution requirements of their source providers; the repository software licence does not replace those terms.
 
-- **AIMS LTMP Data (Manta Tow):** Open-access data available from the [AIMS Reef Monitoring Portal](https://apps.aims.gov.au/reef-monitoring/).
-- **Climate Indices (IPO):** The compact IPO CSV is retained here. Other climate inputs were sourced from the [NOAA Physical Sciences Laboratory](https://psl.noaa.gov/data/timeseries/IPOTPI/).
-- **Hydrological Data (Rainfall and Runoff):** Rainfall inputs come from the [Australian Bureau of Meteorology Gridded Data (AGCD)](http://www.bom.gov.au/climate/maps/rainfall/). River discharge gauge data comes from the [Queensland Water Monitoring Information Portal (WMIP)](https://water-monitoring.information.qld.gov.au/) and is not bundled in this repository.
-- **Oceanographic Grids (Chlorophyll and Currents):** Distributed via the CSIRO/AIMS [eReefs THREDDS catalog](https://ereefs.aims.gov.au/).
-- **Spatial Boundaries:** The compact site coordinate CSV is retained here. Full NRM and GBR feature shapefiles should be downloaded from the [GBRMPA Geoportal](https://geoportal.gbrmpa.gov.au/).
+Larger gridded and spatial resources are not redistributed here. Obtain them from the following official sources and stage them according to [`data/README.md`](data/README.md):
 
-Detailed local-path expectations, including which files are retained versus externally downloaded, are listed in [data/README.md](data/README.md). If your local filenames differ from the paths hard-coded in `scripts/config.py`, update the config before running the workflow.
+- **COTS abundance, hard-coral cover, and juvenile-coral observations:** Australian Institute of Marine Science (AIMS) Long-Term Monitoring Program, [Reef Monitoring Dashboard](https://apps.aims.gov.au/reef-monitoring/). AIMS states that the monitoring data are open access; users should follow the licence and attribution shown with the relevant data record.
+- **IPO Tripole Index:** NOAA Physical Sciences Laboratory, [TPI (IPO) climate time series](https://psl.noaa.gov/data/timeseries/IPOTPI/). The workflow uses the annual mean derived from the unfiltered NOAA ERSST v5 monthly series.
+- **Gridded rainfall:** Australian Bureau of Meteorology, [Australian Gridded Climate Data (AGCD)](https://www.bom.gov.au/climate/austmaps/about-agcd-maps.shtml) and [rainfall maps and grid downloads](https://www.bom.gov.au/climate/maps/rainfall/).
+- **River discharge:** Queensland Government, [Water Monitoring Information Portal](https://water-monitoring.information.qld.gov.au/).
+- **Chlorophyll-a and surface currents:** CSIRO/AIMS eReefs, [eReefs Data Explorer](https://portal.ereefs.org.au/) and [Data Extraction Tool](https://extraction.ereefs.aims.gov.au/).
+- **GBR reef and management-region boundaries:** Great Barrier Reef Marine Park Authority, [Spatial Data Information Services](https://www.gbrmpa.gov.au/about-us/spatial-data-information-services) and its linked Reef GeoHub. Observe the licence attached to each downloaded layer.
 
-## Running the Pipeline
+## Reproducing the workflow
 
-1. Install Python 3.9 or later.
-2. Install dependencies:
+Use Python 3.9 or later:
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+python -m venv .venv
+.venv/Scripts/python -m pip install -r requirements.txt
+.venv/Scripts/python run_all.py
+```
 
-3. Populate `data/` with the required local inputs described in [data/README.md](data/README.md).
-4. Execute the full pipeline:
+The default command runs the compact-data ENHM analysis. Optional stages are:
 
-   ```bash
-   python run_all.py
-   ```
+```bash
+.venv/Scripts/python run_all.py --robustness
+.venv/Scripts/python run_all.py --figures
+```
 
-This orchestrates the ENHM analysis modules and writes statistical outputs and SVG figures into the `results/` directory.
+`--robustness` adds the hierarchical null-model comparison. `--figures` requires the external rainfall, runoff, eReefs, and spatial files listed in [`data/README.md`](data/README.md). Outputs are written to `results/`, which is intentionally excluded from version control because it is regenerated by the workflow.
 
-## License and Citation
+## Licence and citation
 
-If you use this code or analytical framework, cite the associated manuscript. For methodological details, equations, and scope limitations, refer to the manuscript and supplementary information.
+The software in this repository is released under the [MIT License](LICENSE). Source and derived data retain the terms specified by AIMS, NOAA, the Australian Bureau of Meteorology, the Queensland Government, eReefs, and the Great Barrier Reef Marine Park Authority.
+
+Please cite the associated manuscript when using the analytical framework. A versioned archival DOI should be added here after the repository is archived with a DOI-issuing service such as Zenodo.

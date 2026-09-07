@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Combined COTS Spatial and Temporal Overview (Top Journal Quality)
 Panel (a): Study Area Map with NRM Regions and Reference Cities
@@ -34,14 +34,15 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 # Shared Colors and Levels
 COTS_UNIT = r'($COTS\ tow^{-1}$)'
 COTS_LEVEL_INFO = [
-    ('Severe Outbreak', '#b30000', 'Severe (鈮?.0)'),
+    ('Severe Outbreak', '#b30000', 'Severe (≥1.0)'),
     ('Established Outbreak', '#e34a33', 'Established (0.2-1.0)'),
     ('Potential/Incident', '#fdbb84', 'Potential (0.1-0.2)'),
     ('Non-outbreak', '#fee8c8', 'Non-outbreak (0.01-0.1)'),
     ('No COTS', '#238b45', 'No COTS (<0.01)')
 ]
 
-# 鍙傝€冨煄甯傚潗鏍?REFERENCE_CITIES = [
+# 参考城市坐标
+REFERENCE_CITIES = [
     {'name': 'Cairns', 'lat': -16.9186, 'lon': 145.7781},
     {'name': 'Townsville', 'lat': -19.2588, 'lon': 146.8169},
     {'name': 'Mackay', 'lat': -21.1412, 'lon': 149.1861},
@@ -153,7 +154,7 @@ def plot_combined():
         if nrm_gdf.crs != "EPSG:4326": nrm_gdf = nrm_gdf.to_crs("EPSG:4326")
         nrm_gdf.boundary.plot(ax=ax1, color='#555555', linestyle=(0, (5, 5)), linewidth=0.8, zorder=3, alpha=0.6)
         
-        # 鏍囨敞鍖哄煙鍚嶇О (鎻愬崌鑷虫渶椤跺眰 zorder=25)
+        # 标注区域名称 (提升至最顶层 zorder=25)
         from matplotlib.patheffects import withStroke
         for _, row in nrm_gdf.iterrows():
             centroid = row.geometry.centroid
@@ -166,7 +167,7 @@ def plot_combined():
                     ha='right', va='center', zorder=25, transform=ccrs.PlateCarree(), color='black',
                     path_effects=[withStroke(linewidth=2, foreground='white', alpha=0.6)])
 
-    # 缁樺埗鍙傝€冨煄甯?(鎻愬崌鑷?zorder=26)
+    # 绘制参考城市 (提升至 zorder=26)
     for city in REFERENCE_CITIES:
         ax1.plot(city['lon'], city['lat'], 'ks', markersize=4, zorder=26, transform=ccrs.PlateCarree())
         ax1.text(city['lon'] - 0.2, city['lat'], city['name'], fontsize=8.5, fontweight='bold',
@@ -184,19 +185,21 @@ def plot_combined():
     ax1.xaxis.set_major_formatter(LongitudeFormatter())
     ax1.yaxis.set_major_formatter(LatitudeFormatter())
     
-    # 鏍囩 a
+    # 标签 a
     ax1.text(0.02, 0.98, 'a', transform=ax1.transAxes, fontsize=16, fontweight='bold', va='top', ha='left')
     
-    # 鎸囧寳閽?    ax1.text(143.2, -11, 'N', fontsize=12, fontweight='bold', ha='center', transform=ccrs.PlateCarree())
+    # 指北针
+    ax1.text(143.2, -11, 'N', fontsize=12, fontweight='bold', ha='center', transform=ccrs.PlateCarree())
     ax1.annotate('', xy=(143.2, -11), xytext=(143.2, -12), arrowprops=dict(arrowstyle='->', lw=1.5), transform=ccrs.PlateCarree())
 
-    # 姣斾緥灏?    scale_lon_start, scale_lon_end = 142.8, 144.6
+    # 比例尺
+    scale_lon_start, scale_lon_end = 142.8, 144.6
     scale_lat = -24.0
     ax1.plot([scale_lon_start, scale_lon_end], [scale_lat, scale_lat], color='black', linewidth=2, transform=ccrs.PlateCarree(), zorder=15)
     ax1.text((scale_lon_start + scale_lon_end)/2, scale_lat + 0.3, '200 km', transform=ccrs.PlateCarree(), 
              ha='center', va='bottom', fontsize=9, fontweight='bold', zorder=16)
 
-    # 鍥句緥
+    # 图例
     legend_elements = [plt.Line2D([0], [0], marker='o', color='w', label=info[2], markerfacecolor=info[1], markersize=8, markeredgecolor='k') for info in COTS_LEVEL_INFO]
     ax1.legend(handles=legend_elements, loc='upper right', title=f'Max COTS Density\n{COTS_UNIT}', fontsize=9, title_fontsize=10, frameon=True, framealpha=0.9)
 
@@ -231,16 +234,12 @@ def plot_combined():
             
         ax2.text(0.02, 0.92, 'b', transform=ax2.transAxes, fontsize=16, fontweight='bold', va='top', ha='left')
 
-    # 淇濆瓨
+    # 保存
     primary_png = OUTPUT_DIR / 'Figure1_Combined_COTS_Overview.png'
     primary_svg = OUTPUT_DIR / 'Figure1_Combined_COTS_Overview.svg'
-    compat_png = OUTPUT_DIR / 'combined_cots_overview_v2.png'
-    compat_svg = OUTPUT_DIR / 'combined_cots_overview_v2.svg'
 
     plt.savefig(primary_png, dpi=400, bbox_inches='tight')
     plt.savefig(primary_svg, bbox_inches='tight')
-    plt.savefig(compat_png, dpi=400, bbox_inches='tight')
-    plt.savefig(compat_svg, bbox_inches='tight')
     plt.close()
     print(f"Final maps with labels saved to {primary_png}")
 
