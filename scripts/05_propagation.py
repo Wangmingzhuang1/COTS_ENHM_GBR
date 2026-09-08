@@ -168,15 +168,19 @@ def load_currents():
         return ds_annual
     except Exception as e: return None
 
-def calc_speed_diff(da_annual, neg_years, pos_years):
-    da_speed = np.abs(da_annual)
-    data_years = da_speed.time.dt.year
+def calc_meridional_velocity_diff(da_annual, neg_years, pos_years):
+    """Return signed northward-velocity contrast and domain phase means."""
+    data_years = da_annual.time.dt.year
     valid_neg = [y for y in neg_years if y in data_years]
     valid_pos = [y for y in pos_years if y in data_years]
     if not valid_neg or not valid_pos: return None, None
-    mean_neg = da_speed.sel(time=da_speed.time.dt.year.isin(valid_neg)).mean(dim='time')
-    mean_pos = da_speed.sel(time=da_speed.time.dt.year.isin(valid_pos)).mean(dim='time')
-    return mean_neg - mean_pos, (valid_neg, valid_pos)
+    mean_neg = da_annual.sel(time=da_annual.time.dt.year.isin(valid_neg)).mean(dim='time')
+    mean_pos = da_annual.sel(time=da_annual.time.dt.year.isin(valid_pos)).mean(dim='time')
+    phase_means = {
+        'negative_ipo': float(mean_neg.mean(skipna=True)),
+        'positive_ipo': float(mean_pos.mean(skipna=True)),
+    }
+    return mean_neg - mean_pos, phase_means
 
 # =============================================================================
 # Main Figure Generation
@@ -198,8 +202,9 @@ def create_figure3():
     ipo_annual, neg, pos = load_ipo_annual()
     ds_cur = load_currents()
     diff_cur = None
+    current_phase_means = None
     if ds_cur is not None:
-        diff_cur, _ = calc_speed_diff(ds_cur, neg, pos)
+        diff_cur, current_phase_means = calc_meridional_velocity_diff(ds_cur, neg, pos)
     
     # 修改为 A4 纵向大小 (8.27 x 11.69 inches)
     # 增加 wspace 使得图A和图C的右侧有充裕的位置给 colorbar
@@ -324,7 +329,7 @@ def create_figure3():
         ]).to_csv(TABLES_DIR / 'figure5_summary.csv', index=False)
     
     # =========================================================================
-    # Panel C: Current Speed Anomaly (Map)
+    # Panel C: Signed northward-velocity anomaly (Map)
     # =========================================================================
     ax_cur = fig.add_subplot(gs[1, 0], projection=ccrs.PlateCarree())
     ax_cur.set_extent([142, 154, -25, -10], crs=ccrs.PlateCarree())
@@ -347,8 +352,12 @@ def create_figure3():
         ax_cur.yaxis.set_major_formatter(LatitudeFormatter())
         ax_cur.tick_params(axis='both', which='major', direction='out', length=4, width=1, labelsize=9)
         
-        ax_cur.text(0.95, 0.05, 'Blue = Retention\nRed = Transport', transform=ax_cur.transAxes, ha='right', fontsize=8, fontweight='bold', bbox=dict(facecolor='white', alpha=0.8, edgecolor='none'))
-        ax_cur.text(0.05, 0.95, "Mean Flow:\nNeg IPO: 0.112 m/s\nPos IPO: 0.126 m/s\n(11% slower)", transform=ax_cur.transAxes, ha='left', va='top', fontsize=8, bbox=dict(facecolor='white', alpha=0.8, edgecolor='black', boxstyle='round,pad=0.5'))
+        ax_cur.text(
+            0.95, 0.05,
+            'Coastal/shelf: often more northward\nOffshore: often more southward',
+            transform=ax_cur.transAxes, ha='right', fontsize=7.2, fontweight='bold',
+            bbox=dict(facecolor='white', alpha=0.82, edgecolor='none')
+        )
     
     # =========================================================================
     # Panel D: Regional Period Boxplot
@@ -405,6 +414,16 @@ def create_figure3():
     ax_box.set_position([pos_d.x0, pos_c.y0, pos_c.width, pos_c.height])
     ax_hov.set_position([pos_c.x0, y_new, pos_c.width, pos_c.height])
     ax_phase.set_position([pos_d.x0, y_new, pos_c.width, pos_c.height])
+
+    for label, axis in zip(('A', 'B', 'C', 'D'), (ax_hov, ax_phase, ax_cur, ax_box)):
+        axis.text(
+            -0.12, 1.04, label,
+            transform=axis.transAxes,
+            fontsize=12,
+            fontweight='bold',
+            va='top',
+            ha='left',
+        )
     
     # 手动建立独立的 Colorbar 以杜绝 SVG 文件“丢东西”的错误
     cb_w = 0.015
@@ -414,11 +433,17 @@ def create_figure3():
     cbar_a = plt.colorbar(img, cax=cax_a)
     cbar_a.set_label('log(COTS + 1)', rotation=270, labelpad=12, fontsize=8)
     
-    # 为海流速度图增加图例
+    # 为有符号经向流速差增加图例
     if im_c is not None:
         cax_c = fig.add_axes([pos_c.x1 + 0.015, pos_c.y0 + 0.1*pos_c.height, cb_w, 0.8*pos_c.height])
         cbar_c = plt.colorbar(im_c, cax=cax_c)
-        cbar_c.set_label('Speed Anomaly ($m\\ s^{-1}$)', fontsize=8)
+        cbar_c.set_label(
+            'Northward velocity difference ($m\\ s^{-1}$)',
+            rotation=90,
+            labelpad=10,
+            fontsize=8,
+        )
+        cbar_c.ax.yaxis.set_label_position('left')
     
     output_png = OUTPUT_DIR / 'Figure3_Propagation_Dynamics.png'
     output_svg = OUTPUT_DIR / 'Figure3_Propagation_Dynamics.svg'
@@ -428,3 +453,4 @@ def create_figure3():
     
 if __name__ == "__main__":
     create_figure3()
+
