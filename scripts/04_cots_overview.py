@@ -13,6 +13,7 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 from pathlib import Path
+from analysis_inputs import ecological_observations, reef_coordinates
 import re
 import warnings
 import geopandas as gpd
@@ -32,7 +33,7 @@ OUTPUT_DIR = PROJECT_ROOT / "results" / "figures"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Shared Colors and Levels
-COTS_UNIT = r'($COTS\ tow^{-1}$)'
+COTS_UNIT = r'(COTS tow$^{-1}$)'
 COTS_LEVEL_INFO = [
     ('Severe Outbreak', '#b30000', 'Severe (≥1.0)'),
     ('Established Outbreak', '#e34a33', 'Established (0.2-1.0)'),
@@ -59,75 +60,23 @@ def get_status(val):
         return 'No COTS'
     except: return 'No COTS'
 
-def parse_dms(dms_str):
-    if pd.isna(dms_str) or not dms_str: return None, None
-    def parse_part(part_str):
-        nums = re.findall(r"(\d+(?:\.\d+)?)", part_str)
-        direction = re.search(r"([NSEW])", part_str)
-        if not direction: return None
-        direction = direction.group(1)
-        vals = [0.0, 0.0, 0.0]
-        if len(nums) >= 1: vals[0] = float(nums[0])
-        if len(nums) >= 2: vals[1] = float(nums[1])
-        if len(nums) >= 3: vals[2] = float(nums[2])
-        deg = vals[0] + vals[1]/60 + vals[2]/3600
-        if direction in ['S', 'W']: deg = -deg
-        return deg
-    match = re.match(r"(.*[SN])\s*(.*[EW])", dms_str.upper())
-    if match: return parse_part(match.group(1)), parse_part(match.group(2))
-    return None, None
 
 def load_spatial_data():
-    coord_file = PROJECT_ROOT / "data" / "spatial" / "site_lon_lat.csv"
-    coord_df = pd.read_csv(coord_file, encoding='gbk')
-    coord_df.columns = ['site', 'coords'] + list(coord_df.columns[2:])
-    coords_dict = {}
-    for _, row in coord_df.iterrows():
-        lat, lon = parse_dms(row['coords'])
-        if lat is not None: coords_dict[row['site']] = (lat, lon)
-    csv_files = list(DATA_DIR.glob('*cots*.csv'))  # DATA_DIR is reef_surveys
-    aggregated = []
-    for f in csv_files:
-        try:
-            df = pd.read_csv(f)
-            cots_col = 'cotsptow' if 'cotsptow' in df.columns else 'cots_density'
-            if cots_col not in df.columns: continue
-            reef_name = f.name.split('_Manta Tow_')[0]
-            if reef_name not in coords_dict: continue
-            max_cots = df[cots_col].max()
-            aggregated.append({'lat': coords_dict[reef_name][0], 'lon': coords_dict[reef_name][1], 'max_cots': max_cots})
-        except: continue
-    return pd.DataFrame(aggregated)
+    cots, _ = ecological_observations()
+    peaks = cots.groupby('reef_name', as_index=False).agg(max_cots=('cots_density', 'max'))
+    return peaks.merge(reef_coordinates(), on='reef_name', validate='one_to_one')
+
 
 def load_temporal_data():
-    csv_files = list(DATA_DIR.glob('*cots*.csv'))  # DATA_DIR is reef_surveys
-    all_data = []
-    for f in csv_files:
-        try:
-            try: df = pd.read_csv(f, encoding='utf-8')
-            except: df = pd.read_csv(f, encoding='gbk')
-            cols = {c.lower(): c for c in df.columns}
-            year_col = next((cols[c] for c in ['year', 'survey_year', 'decimalyear'] if c in cols), None)
-            cots_col = next((cols[c] for c in ['cotsptow', 'cots_density', 'density'] if c in cols), None)
-            if year_col is None or cots_col is None: continue
-            df_slice = df[[year_col, cots_col]].dropna()
-            if 'decimalyear' in year_col.lower():
-                df_slice['yr'] = df_slice[year_col].astype(float).apply(np.floor).astype(int)
-            else:
-                df_slice['yr'] = df_slice[year_col].astype(float).astype(int)
-            yearly_max = df_slice.groupby('yr')[cots_col].max().reset_index()
-            yearly_max['status'] = yearly_max[cots_col].apply(get_status)
-            all_data.append(yearly_max[['yr', 'status']])
-        except: continue
-    if not all_data: return None
-    master_df = pd.concat(all_data)
-    stats = master_df.groupby(['yr', 'status']).size().unstack(fill_value=0)
-    order = [info[0] for info in reversed(COTS_LEVEL_INFO)]
-    for col in order:
-        if col not in stats.columns: stats[col] = 0
-    return stats[order]
+    cots, _ = ecological_observations()
+    annual = cots.groupby(['reef_name', 'year'])['cots_density'].max().reset_index()
+    annual['status'] = annual['cots_density'].map(get_status)
+    categories = [info[0] for info in reversed(COTS_LEVEL_INFO)]
+    return annual.groupby(['year', 'status']).size().unstack(fill_value=0).reindex(columns=categories, fill_value=0)
+
 
 def plot_combined():
+    from publication_style import save_publication
     fig = plt.figure(figsize=(10, 14))
     from matplotlib.gridspec import GridSpec
     gs = GridSpec(2, 1, height_ratios=[3.5, 1], hspace=0.15)
@@ -169,39 +118,41 @@ def plot_combined():
 
     # 绘制参考城市 (提升至 zorder=26)
     for city in REFERENCE_CITIES:
-        ax1.plot(city['lon'], city['lat'], 'ks', markersize=4, zorder=26, transform=ccrs.PlateCarree())
-        ax1.text(city['lon'] - 0.2, city['lat'], city['name'], fontsize=8.5, fontweight='bold',
+        ax1.plot(city['lon'], city['lat'], 'ks', markersize=4.5, zorder=26, transform=ccrs.PlateCarree())
+        ax1.text(city['lon'] - 0.2, city['lat'], city['name'], fontsize=9.5, fontweight='bold',
                 ha='right', va='center', zorder=26, transform=ccrs.PlateCarree(), color='black',
-                path_effects=[withStroke(linewidth=1.5, foreground='white', alpha=0.7)])
+                path_effects=[withStroke(linewidth=2.0, foreground='white', alpha=0.8)])
 
     df_spa = load_spatial_data()
     status_map = {info[0]: info[1] for info in COTS_LEVEL_INFO}
     for _, row in df_spa.iterrows():
         st = get_status(row['max_cots'])
-        ax1.scatter(row['lon'], row['lat'], c=status_map[st], s=35, edgecolors='k', linewidths=0.4, zorder=10)
+        ax1.scatter(row['lon'], row['lat'], c=status_map[st], s=40, edgecolors='k', linewidths=0.45, zorder=10)
 
     ax1.set_xticks(np.arange(142, 156, 4), crs=ccrs.PlateCarree())
     ax1.set_yticks(np.arange(-25, -9, 5), crs=ccrs.PlateCarree())
     ax1.xaxis.set_major_formatter(LongitudeFormatter())
     ax1.yaxis.set_major_formatter(LatitudeFormatter())
     
-    # 标签 a
-    ax1.text(0.02, 0.98, 'a', transform=ax1.transAxes, fontsize=16, fontweight='bold', va='top', ha='left')
+    # 标签 A
+    ax1.text(0.02, 0.985, 'A', transform=ax1.transAxes, fontsize=13, fontweight='bold', va='top', ha='left', zorder=30,
+             path_effects=[withStroke(linewidth=2.5, foreground='white', alpha=0.85)])
     
-    # 指北针
-    ax1.text(143.2, -11, 'N', fontsize=12, fontweight='bold', ha='center', transform=ccrs.PlateCarree())
-    ax1.annotate('', xy=(143.2, -11), xytext=(143.2, -12), arrowprops=dict(arrowstyle='->', lw=1.5), transform=ccrs.PlateCarree())
+    # 指北针 (置于左下空白陆地区域，位于比例尺上方，避免遮挡标签 A 与礁点)
+    ax1.text(143.7, -21.85, 'N', fontsize=11, fontweight='bold', ha='center', va='bottom', transform=ccrs.PlateCarree(), zorder=30)
+    ax1.annotate('', xy=(143.7, -21.95), xytext=(143.7, -23.05), arrowprops=dict(arrowstyle='->', lw=1.6, color='black'), transform=ccrs.PlateCarree(), zorder=30)
 
     # 比例尺
     scale_lon_start, scale_lon_end = 142.8, 144.6
     scale_lat = -24.0
-    ax1.plot([scale_lon_start, scale_lon_end], [scale_lat, scale_lat], color='black', linewidth=2, transform=ccrs.PlateCarree(), zorder=15)
+    ax1.plot([scale_lon_start, scale_lon_end], [scale_lat, scale_lat], color='black', linewidth=2.2, transform=ccrs.PlateCarree(), zorder=15)
     ax1.text((scale_lon_start + scale_lon_end)/2, scale_lat + 0.3, '200 km', transform=ccrs.PlateCarree(), 
-             ha='center', va='bottom', fontsize=9, fontweight='bold', zorder=16)
+             ha='center', va='bottom', fontsize=9.5, fontweight='bold', zorder=16)
 
-    # 图例
+    # 图例 (提升 zorder 高于海岸线，防止巴布亚新几内亚海岸线压在图例文字上)
     legend_elements = [plt.Line2D([0], [0], marker='o', color='w', label=info[2], markerfacecolor=info[1], markersize=8, markeredgecolor='k') for info in COTS_LEVEL_INFO]
-    ax1.legend(handles=legend_elements, loc='upper right', title=f'Max COTS Density\n{COTS_UNIT}', fontsize=9, title_fontsize=10, frameon=True, framealpha=0.9)
+    leg = ax1.legend(handles=legend_elements, loc='upper right', title=f'Max COTS Density\n{COTS_UNIT}', fontsize=9, title_fontsize=9.5, frameon=True, facecolor='white', edgecolor='#cccccc', framealpha=0.95)
+    leg.set_zorder(30)
 
     # --- Panel (b): Temporal Plot ---
     fig.canvas.draw()
@@ -210,7 +161,7 @@ def plot_combined():
     
     stats = load_temporal_data()
     if stats is not None:
-        all_years = np.arange(1983, 2026)
+        all_years = np.arange(stats.index.min(), stats.index.max() + 1)
         stats = stats.reindex(all_years, fill_value=0)
         cum_stats = stats.cumsum(axis=1)
         colors = [info[1] for info in reversed(COTS_LEVEL_INFO)]
@@ -222,24 +173,23 @@ def plot_combined():
         total_surveyed = stats.sum(axis=1)
         ax2.step(stats.index, total_surveyed, where='mid', color='black', alpha=0.9, linewidth=1.2)
         
-        ax2.set_xlabel('Year', fontsize=10, fontweight='bold')
-        ax2.set_ylabel('Surveyed Reefs', fontsize=10, fontweight='bold')
-        ax2.set_ylim(0, total_surveyed.max() * 1.05)
-        ax2.set_xlim(1982.5, 2025.5)
+        ax2.set_xlabel('Year', fontsize=10.5, fontweight='bold')
+        ax2.set_ylabel('Surveyed Reefs', fontsize=10.5, fontweight='bold')
+        ax2.set_ylim(0, total_surveyed.max() * 1.08)
+        ax2.set_xlim(all_years.min() - 0.5, all_years.max() + 0.5)
         ax2.set_xticks(np.arange(1985, 2026, 5))
         
         for spine in ax2.spines.values():
             spine.set_visible(True)
             spine.set_linewidth(0.8)
             
-        ax2.text(0.02, 0.92, 'b', transform=ax2.transAxes, fontsize=16, fontweight='bold', va='top', ha='left')
+        ax2.text(0.015, 0.92, 'B', transform=ax2.transAxes, fontsize=13, fontweight='bold', va='top', ha='left')
 
     # 保存
     primary_png = OUTPUT_DIR / 'Figure1_Combined_COTS_Overview.png'
     primary_svg = OUTPUT_DIR / 'Figure1_Combined_COTS_Overview.svg'
 
-    plt.savefig(primary_png, dpi=400, bbox_inches='tight')
-    plt.savefig(primary_svg, bbox_inches='tight')
+    save_publication(fig, primary_png)
     plt.close()
     print(f"Final maps with labels saved to {primary_png}")
 

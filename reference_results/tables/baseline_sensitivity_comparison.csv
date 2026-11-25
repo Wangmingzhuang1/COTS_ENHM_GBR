@@ -1,0 +1,4 @@
+baseline_model,tested_reefs,significant_reefs,ipo_band_reefs,ipo_fraction,enso_band_reefs
+raw_log_cots,58,17,15,0.8823529411764706,2
+enhm_rto,58,16,13,0.8125,1
+ols_intercept_nonneg,58,13,9,0.6923076923076923,0

@@ -1,0 +1,320 @@
+{
+  "version": "2026.11.25",
+  "files": [
+    {
+      "path": ".gitignore",
+      "bytes": 235,
+      "sha256": "39c98fa321697e64087562158283b51f512ca5abdc277d371dafc988d96647e0"
+    },
+    {
+      "path": "CITATION.cff",
+      "bytes": 368,
+      "sha256": "add1b6df6d6af0edc0d5b0f766f5abb98d465da3180a56e3fb6f0def8d455120"
+    },
+    {
+      "path": "data/aims_local_stock/ecology_snapshot_20261120.zip",
+      "bytes": 697358,
+      "sha256": "6834cdd3e62db725ea052645e622021618c9c54cb51149e99ca81979142e22f1"
+    },
+    {
+      "path": "data/aims_local_stock/manifest.json",
+      "bytes": 72757,
+      "sha256": "eca29c6bcbce030d78ee7b26e834a01d93e2f0292ca3821a005e8e28da9e8936"
+    },
+    {
+      "path": "data/climate/enso_nino34_monthly.csv",
+      "bytes": 5977,
+      "sha256": "1f1ba3458baae554a26058d36d8fdb8d71088c7c68426fbefb486eac3c8ec25e"
+    },
+    {
+      "path": "data/climate/ipo_index.csv",
+      "bytes": 14516,
+      "sha256": "f086b19343014b60daa1816a7dc82445ffeac578815e7b9b064538c436f50485"
+    },
+    {
+      "path": "data/README.md",
+      "bytes": 6251,
+      "sha256": "5bbf760e80d74e0c010ac7ee76f7898b157f8da92ac32ffcfbf5145c9ff7557c"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 1072,
+      "sha256": "449fcebfe0fa05a8e0254ff5954825375c343f0a4a9a352d41a27e96bb18299e"
+    },
+    {
+      "path": "pnas_aug/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pnas_aug/config.py",
+      "bytes": 454,
+      "sha256": "4b2342b0050ac5515a4be4c088fbc44289367abd4fbefbd9f8bc5fa4d49f1ecc"
+    },
+    {
+      "path": "pnas_aug/scripts/05_reef_level_exclusivity.py",
+      "bytes": 7217,
+      "sha256": "d8837bc1fa22c4d60edf815881a6f6faf2dbc6115061ff3826b77d48f95ff90e"
+    },
+    {
+      "path": "pnas_aug/scripts/06_ipo_outbreak_transitions.py",
+      "bytes": 5787,
+      "sha256": "cbf1431764f58da3b5463995ed8d8efedcfc74dd41622bdb42cd0e6ae579dcea"
+    },
+    {
+      "path": "pnas_aug/scripts/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pnas_aug/scripts/_common.py",
+      "bytes": 3629,
+      "sha256": "3e37eb19c1763ebad04fa823227246644b57fd3678587c54ed8b075811e880b3"
+    },
+    {
+      "path": "README.md",
+      "bytes": 6464,
+      "sha256": "d8fcf886c67ac89456782bedb82639bafceae9c1781d470264cd51d0d633e504"
+    },
+    {
+      "path": "reference_results/tables/all_residuals.csv",
+      "bytes": 376090,
+      "sha256": "177ecf5661aed3cd43bb5a7dcb0b9bb622367886a40e0eac7ce17b4a29ad2194"
+    },
+    {
+      "path": "reference_results/tables/analysis_summary.txt",
+      "bytes": 1016,
+      "sha256": "46cb58fde5962ac1afdbcb350cd3cbe43851def7357cce2e3887d8c86552da5f"
+    },
+    {
+      "path": "reference_results/tables/baseline_sensitivity_comparison.csv",
+      "bytes": 214,
+      "sha256": "ede6bcc84e7fb4942156f998defb39142079c6a16f7102c358acecbcc5ee0486"
+    },
+    {
+      "path": "reference_results/tables/chl_ipo_correlation.csv",
+      "bytes": 187,
+      "sha256": "e8ba614716268ceaa7be15701727343f09d23d44756fed56d9c558756bc10461"
+    },
+    {
+      "path": "reference_results/tables/figure5_summary.csv",
+      "bytes": 274,
+      "sha256": "4c63ae3a52a8bc582d9c7c99c0e1bdce58e8ac2d05278d841551a5ca1b0384e0"
+    },
+    {
+      "path": "reference_results/tables/ipo_outbreak_transition_effects.csv",
+      "bytes": 1433,
+      "sha256": "503864da3d245da89bec33e8515b4f1523e2763fccd7e1db5e98b17ac27e08bd"
+    },
+    {
+      "path": "reference_results/tables/ipo_outbreak_transition_input.csv",
+      "bytes": 616592,
+      "sha256": "1b8531ac34f97eb41e21a946db152ad010f2f59b3176a69dc37ceaff59f63a9f"
+    },
+    {
+      "path": "reference_results/tables/lag_analysis.csv",
+      "bytes": 232,
+      "sha256": "76621aa5a5b6a95f81424bcc125c43bd7ef76dcc2fa9120e2dd2a75146fa89fd"
+    },
+    {
+      "path": "reference_results/tables/lag_sensitivity_dated.csv",
+      "bytes": 365,
+      "sha256": "e40dfda7fab93217cabf3a56f3fbf5eba47ac5176f341454433a4c8bc7e394c3"
+    },
+    {
+      "path": "reference_results/tables/manuscript_consistency_report.txt",
+      "bytes": 260,
+      "sha256": "d083c20794ede8a2376c52dfd855102b77ce35c3cc0bddd0d06aa67cb0cb0691"
+    },
+    {
+      "path": "reference_results/tables/model_results.csv",
+      "bytes": 7839,
+      "sha256": "52e83059025dd995634d0675e22744b6afff75913df9f36761947b11ef507e3a"
+    },
+    {
+      "path": "reference_results/tables/period_results.csv",
+      "bytes": 11163,
+      "sha256": "63f7ddb914228600fde8c56a7e0e549740fb65ab8b578221555d7393bcd5f220"
+    },
+    {
+      "path": "reference_results/tables/phase_sensitivity_diagnostics.csv",
+      "bytes": 931,
+      "sha256": "e31cb6a2f34f862e1c641309d3472ee867ee123642c2e127d1c00bad2b978440"
+    },
+    {
+      "path": "reference_results/tables/phase_slope_null.csv",
+      "bytes": 500,
+      "sha256": "4832611f2f3ebda5330eb337cabc4f3c59f383e4a381f6b289c8c5ecaf6395f2"
+    },
+    {
+      "path": "reference_results/tables/reef_lags.csv",
+      "bytes": 1120,
+      "sha256": "3365e7c2fb907357c06bc3c665d3c920428d4180d93f92a227b826d05f9972ca"
+    },
+    {
+      "path": "reference_results/tables/river_phase_contrasts.csv",
+      "bytes": 397,
+      "sha256": "9e9659cb736f44d1bb476bb3940167139d3f877a54f02252b43fcaf9ae6cf358"
+    },
+    {
+      "path": "reference_results/tables/robustness_null_comparison.csv",
+      "bytes": 196,
+      "sha256": "6c3fbd7ced189f206abf9827b8a398ea2065bdd7d9ce43f32ec954719ab8b346"
+    },
+    {
+      "path": "reference_results/tables/robustness_null_comparison.txt",
+      "bytes": 3073,
+      "sha256": "6033f7a03731747ad5e4b7a00bbca5e702636826d2e8af029ab3519955e9b615"
+    },
+    {
+      "path": "reference_results/tables/significant_reefs.csv",
+      "bytes": 1376,
+      "sha256": "819ccfa0401ad4a23a64148f20a3f0baaf47fe7af922cc41c109685f86152683"
+    },
+    {
+      "path": "reference_results/tables/table_s1_screened_reefs.csv",
+      "bytes": 10028,
+      "sha256": "71d81c274d74c7fbfd337724685e20aa7115ea74f485cd8283ba20eea7c84f07"
+    },
+    {
+      "path": "reference_results/tables/wtc_summary.csv",
+      "bytes": 273,
+      "sha256": "99352c55c0286fc2ac0ced3132fd1e069caa164bb7f04fe1ff9456c317e85e54"
+    },
+    {
+      "path": "REPRODUCTION.json",
+      "bytes": 785,
+      "sha256": "9e9ba3e3e71234a9e3bfc6962ed7a74baef9f4a026222ae739b5db86f68c2244"
+    },
+    {
+      "path": "requirements-tested.txt",
+      "bytes": 278,
+      "sha256": "0ccea9dd7759c49b13fd176ad02630bf8664fb9bd8dacf0e32897545705bbe51"
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 256,
+      "sha256": "35c1188b00aa1f6c43249d61c5bed9db2134a48c4bb98f0539af7f59c7c63fe5"
+    },
+    {
+      "path": "run_all.py",
+      "bytes": 1966,
+      "sha256": "a392b9a487407b496e6fdf1677e1f8c689bcbd0a97484652db0ade066d354690"
+    },
+    {
+      "path": "scripts/01_bsra_analysis.py",
+      "bytes": 20444,
+      "sha256": "7a9df2654786d54a72697c4445929d6f3792d4720fd75269c5f284b622322477"
+    },
+    {
+      "path": "scripts/02_paper_figures.py",
+      "bytes": 17411,
+      "sha256": "be770754fc4be19ed7b09f8f7e7668ecece734a6d8d81ec8c8d184430a169f13"
+    },
+    {
+      "path": "scripts/04_cots_overview.py",
+      "bytes": 9266,
+      "sha256": "4b7540345d43abf2b687f44eb29670368c7f7ad6c3f26b26b3cb197ce87a09bb"
+    },
+    {
+      "path": "scripts/04_spatial_heterogeneity.py",
+      "bytes": 5367,
+      "sha256": "f65ecf0ff6fc99206bbc80db9abac26ad5ef12109272b38f4ebc057fa169b11f"
+    },
+    {
+      "path": "scripts/05_propagation.py",
+      "bytes": 17680,
+      "sha256": "fc274363f3677e16114a2d1f020294532fa9928437e3c49f76b762cd9bee7ace"
+    },
+    {
+      "path": "scripts/06_mechanism_fig6.py",
+      "bytes": 16711,
+      "sha256": "83e2209f2c35d788630cbbec26118b01e7d2e97275182687eb9796cc2a9d1ba6"
+    },
+    {
+      "path": "scripts/12_consistency_audit.py",
+      "bytes": 5204,
+      "sha256": "72d8dccc90ae467536ce16e81f8d4ac452351febdd3b5c71802bcc59d92b0013"
+    },
+    {
+      "path": "scripts/13_robustness_null_comparison.py",
+      "bytes": 26478,
+      "sha256": "5ac8f6f661f26f75fc5ee66550cc449cc58c48d27e572093762074d09b48471a"
+    },
+    {
+      "path": "scripts/16_conceptual_susceptibility_schematic.py",
+      "bytes": 12173,
+      "sha256": "d67f323dd2c15ff5dce6e78ada2fe14a662bfb05e84353090961574f274cfb29"
+    },
+    {
+      "path": "scripts/17_environment_source_data.py",
+      "bytes": 4258,
+      "sha256": "fa65f585b332d5f5bb82d8fc454f28a687b15633e81cc8fb6a066fdd3cde7532"
+    },
+    {
+      "path": "scripts/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "scripts/analysis_inputs.py",
+      "bytes": 7896,
+      "sha256": "102b3b71b717ea3d657f387c8e111826fe10c94f82b12acdb87cffc1df625c39"
+    },
+    {
+      "path": "scripts/config.py",
+      "bytes": 1483,
+      "sha256": "a7b65c4b515f8daf432a0e14ceee53b9ca07cc9f529fdcaf5878749c2aa43648"
+    },
+    {
+      "path": "scripts/prepare_ecology.py",
+      "bytes": 1358,
+      "sha256": "bc122ca46d899c720572d0082171fe607e208cb3cb2b02ec10dbe0c601c50f1b"
+    },
+    {
+      "path": "scripts/publication_style.py",
+      "bytes": 8929,
+      "sha256": "db67e33a0ab582082de98ab0a49a74a1d338982746d2ab5055a7915bb5516fd6"
+    },
+    {
+      "path": "scripts/spectral_inference.py",
+      "bytes": 4976,
+      "sha256": "fd78d1d4965ada9ec85305d873c1a8152b6576ffee99f9083874175da5de6ac8"
+    },
+    {
+      "path": "source_data/environment/chlorophyll_tpi_annual.csv",
+      "bytes": 1052,
+      "sha256": "fc366e4bdf58b9adf51f8e7ec0f23e6a3f7a38ec8d9ac424736d9089afd45cc8"
+    },
+    {
+      "path": "source_data/environment/environment_maps.npz",
+      "bytes": 641329,
+      "sha256": "77012df8710742cae0767689aa092d5438695ea5324686cb5beae955f56d8c6c"
+    },
+    {
+      "path": "source_data/environment/environment_metadata.json",
+      "bytes": 1013,
+      "sha256": "a3895486431f1b3332b69a1f51acded8bb77a01bf7ea65d76debb762682ce6ae"
+    },
+    {
+      "path": "source_data/environment/reef_current_phase_composites.csv",
+      "bytes": 13813,
+      "sha256": "7e5e069314db0607532d482e2f207fb16ac6e2a94c4b1afd237a2d6bb43ffdf3"
+    },
+    {
+      "path": "source_data/environment/regional_current_phase_composites.csv",
+      "bytes": 474,
+      "sha256": "dc03725bec71cfbb0ff652958bfe61aed638938b6952f7195e74d45a5cbb2db7"
+    },
+    {
+      "path": "source_data/environment/river_discharge_annual_m3_s.csv",
+      "bytes": 2451,
+      "sha256": "48cb93128f264bec1b1f823971263c082ffb9904f4ef6289e1ed86dc4809706e"
+    },
+    {
+      "path": "VERSION",
+      "bytes": 11,
+      "sha256": "33e3ae16e641d8e41526a2fb450cf1159209fafc34add49a98a1f547e9324493"
+    }
+  ]
+}

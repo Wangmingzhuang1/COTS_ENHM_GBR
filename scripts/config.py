@@ -3,6 +3,7 @@
 Unified Path Configuration for COTS BSRA Project
 All scripts import paths from this module to ensure consistency.
 """
+from os import environ
 from pathlib import Path
 
 # Project root (parent of scripts/)
@@ -10,6 +11,9 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # Data directories
 DATA_DIR = PROJECT_ROOT / "data"
+ECOLOGY_DATA_DIR = Path(environ.get("STAR_DLS_ECOLOGY_DATA", DATA_DIR / "aims_local_stock"))
+ECOLOGY_OBSERVATIONS = ECOLOGY_DATA_DIR / "processed" / "source_observations.csv"
+ECOLOGY_REEF_SITES = ECOLOGY_DATA_DIR / "processed" / "reef_sites.csv"
 REEF_SURVEY_DIR = DATA_DIR / "reef_surveys"
 CLIMATE_DIR = DATA_DIR / "climate"
 RAINFALL_DIR = CLIMATE_DIR / "rainfall"

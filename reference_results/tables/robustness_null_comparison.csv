@@ -1,0 +1,5 @@
+null_and_decision,tested_reefs,detected_reefs,detections_15_30_years
+white_noise_nominal,58,15,12
+calendar_block_3yr,58,9,6
+continuous_time_ar1_nominal,58,1,0
+continuous_time_ar1_holm,58,0,0

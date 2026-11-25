@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Figure S3: Spatial Heterogeneity of COTS Drivers
+Figure S3: Spatial Heterogeneity in Baseline Fit and Residual Periodicity
 
 This is the formalized extraction of the old archived study-area script
 function `update_figure5_with_basemap()`, which was the correct historical source
 for manuscript Figure S3.
 
-Panel (a): spatial distribution of ENHM model explanatory power (R^2)
-Panel (b): spatial distribution of significant dominant environmental periods
+Panel (a): spatial distribution of ENHM baseline explanatory power (R^2)
+Panel (b): spatial distribution of significant dominant residual periods
 """
 
 from pathlib import Path
+from analysis_inputs import reef_coordinates
 import re
 
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
 
@@ -34,65 +36,13 @@ OUTPUT_DIR = PROJECT_ROOT / "results" / "figures"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def parse_dms(dms_str):
-    if pd.isna(dms_str) or not dms_str:
-        return None, None
 
-    def parse_part(part_str):
-        nums = re.findall(r"(\d+(?:\.\d+)?)", part_str)
-        direction = re.search(r"([NSEW])", part_str)
-        if not direction:
-            return None
-
-        direction = direction.group(1)
-        vals = []
-        if len(nums) == 3:
-            vals = [float(n) for n in nums]
-        elif len(nums) == 2:
-            n1, n2 = nums[0], nums[1]
-            if len(n1) == 5 and float(n1) > 10000:
-                vals = [float(n1[:3]), float(n1[3:]), float(n2)]
-            elif len(n2) == 4 and float(n2) > 60:
-                vals = [float(n1), float(n2[:2]), float(n2[2:])]
-            else:
-                vals = [float(n1), float(n2), 0.0]
-        elif len(nums) == 1:
-            vals = [float(nums[0]), 0.0, 0.0]
-        else:
-            return None
-
-        deg = vals[0] + vals[1] / 60 + vals[2] / 3600
-        if direction in ["S", "W"]:
-            deg = -deg
-        return deg
-
-    match = re.match(r"(.*[SN])\s*(.*[EW])", dms_str.strip().upper())
-    if not match:
-        return None, None
-
-    return parse_part(match.group(1)), parse_part(match.group(2))
-
-
-def load_coordinates():
-    coord_file = DATA_DIR / "spatial" / "site_lon_lat.csv"
-    df = pd.read_csv(coord_file, encoding="gbk")
-    df.columns = ["site", "coords"] + list(df.columns[2:])
-    df["site"] = df["site"].replace({"Kangaroo Reef": "Kangaroo Reef West"})
-
-    rows = []
-    for _, row in df.iterrows():
-        lat, lon = parse_dms(row["coords"])
-        if lat is None:
-            continue
-        rows.append({"reef_name": row["site"], "lat": lat, "lon": lon})
-
-    return pd.DataFrame(rows)
 
 
 def load_results():
     model_df = pd.read_csv(TABLES_DIR / "model_results.csv")
     period_df = pd.read_csv(TABLES_DIR / "period_results.csv")
-    coords_df = load_coordinates()
+    coords_df = reef_coordinates()
 
     merged = model_df.merge(
         period_df[
@@ -118,6 +68,8 @@ def add_basemap(ax):
 
 
 def main():
+    from publication_style import save_publication
+    from matplotlib.colors import TwoSlopeNorm
     print("Generating Figure S3: Spatial Heterogeneity...")
     df = load_results()
     print(f"  Loaded {len(df)} reefs with coordinates and BSRA outputs.")
@@ -130,74 +82,52 @@ def main():
         df["lon"],
         df["lat"],
         c=df["r_squared"],
-        cmap="viridis",
+        cmap="RdBu_r",
         s=90,
         edgecolors="white",
         linewidths=0.8,
-        vmin=0.0,
-        vmax=1.0,
+        norm=TwoSlopeNorm(vmin=float(df['r_squared'].min()), vcenter=0,
+                          vmax=float(df['r_squared'].max())),
         alpha=0.9,
         transform=ccrs.PlateCarree(),
         zorder=5,
     )
     cbar1 = plt.colorbar(sc1, ax=ax1, orientation="horizontal", pad=0.05, shrink=0.82)
-    cbar1.set_label(r"$R^2$ (Food Limitation Model)", fontsize=10)
-    ax1.set_title("(a) Food Limitation Strength", fontsize=12, fontweight="bold")
+    cbar1.set_label(r"Centered $R^2$ (coral-linked baseline)", fontsize=10.5, fontweight="bold")
+    ax1.set_title("Coral-linked baseline fit", fontsize=11, fontweight="bold", pad=6)
+    ax1.text(-0.08, 1.07, "A", transform=ax1.transAxes, fontsize=13, fontweight="bold", va="top", ha="left")
 
     ax2 = fig.add_subplot(1, 2, 2, projection=ccrs.PlateCarree())
     add_basemap(ax2)
     ax2.yaxis.set_ticklabels([])
 
-    sig_df = df[df["primary_significant"] == True].copy()
-    nonsig_df = df[df["primary_significant"] != True].copy()
-
-    ax2.scatter(
-        nonsig_df["lon"],
-        nonsig_df["lat"],
-        c="lightgray",
-        s=40,
-        edgecolors="gray",
-        linewidths=0.3,
-        alpha=0.6,
-        transform=ccrs.PlateCarree(),
-        zorder=4,
-        label="Not Significant",
+    tested = df.dropna(subset=["primary_period"])
+    omitted = df.loc[df["primary_period"].isna()]
+    ax2.scatter(omitted["lon"], omitted["lat"], c="lightgray", s=38,
+                transform=ccrs.PlateCarree(), zorder=4, label="No spectral estimate")
+    selected = tested["primary_significant"].eq(True)
+    sc2 = ax2.scatter(
+        tested["lon"], tested["lat"], c=tested["primary_period"], cmap="plasma", s=70,
+        edgecolors=np.where(selected, "black", "white"), linewidths=np.where(selected, 1.8, 0.5),
+        vmin=3, vmax=30, transform=ccrs.PlateCarree(), zorder=5,
     )
+    cbar2 = plt.colorbar(sc2, ax=ax2, orientation="horizontal", pad=0.05, shrink=0.8)
+    cbar2.set_label("Dominant period (years)", fontsize=10.5, fontweight="bold")
+    ax2.scatter([], [], c="none", edgecolors="black", linewidths=1.5, s=70, label="Significant ($p$ < 0.05)")
+    ax2.legend(loc="lower left", fontsize=9, frameon=True, facecolor="white", framealpha=0.9)
+    ax2.set_title("Residual periodicity", fontsize=11, fontweight="bold", pad=6)
+    ax2.text(-0.08, 1.07, "B", transform=ax2.transAxes, fontsize=13, fontweight="bold", va="top", ha="left")
+    fig.suptitle("Spatial patterns of baseline fit and residual periodicity", fontsize=13, fontweight="bold", y=0.77)
 
-    if not sig_df.empty:
-        sc2 = ax2.scatter(
-            sig_df["lon"],
-            sig_df["lat"],
-            c=sig_df["primary_period"],
-            cmap="plasma",
-            s=100,
-            edgecolors="k",
-            linewidths=0.5,
-            vmin=0,
-            vmax=30,
-            alpha=0.9,
-            transform=ccrs.PlateCarree(),
-            zorder=5,
-        )
-        cbar2 = plt.colorbar(sc2, ax=ax2, orientation="horizontal", pad=0.05, shrink=0.8)
-        cbar2.set_label("Dominant Period (Years)", fontsize=10)
-        cbar2.set_ticks([5, 10, 15, 20, 25, 30])
-        cbar2.set_ticklabels(["5y\n(ENSO)", "10y", "15y", "20y", "25y\n(IPO)", "30y"])
-
-    ax2.set_title("(b) Environmental Periodicity", fontsize=12, fontweight="bold")
-    fig.suptitle("Spatial Heterogeneity of COTS Drivers", fontsize=14, fontweight="bold", y=0.95)
-
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0, 1, 0.94])
     png = OUTPUT_DIR / "FigureS3_Spatial_Heterogeneity.png"
     pdf = OUTPUT_DIR / "FigureS3_Spatial_Heterogeneity.pdf"
     svg = OUTPUT_DIR / "FigureS3_Spatial_Heterogeneity.svg"
-    plt.savefig(png, dpi=300, bbox_inches="tight")
-    plt.savefig(pdf, bbox_inches="tight")
-    plt.savefig(svg, bbox_inches="tight")
+    save_publication(fig, png)
     plt.close(fig)
 
     print(f"  Saved: {png.name}")
-    print(f"  Significant reefs shown: {len(sig_df)}")
+    print(f"  Significant reefs shown: {int(selected.sum())}")
 
 
 if __name__ == "__main__":

@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 from scipy import signal, optimize, stats
 from pathlib import Path
+from analysis_inputs import ecological_observations, ipo_phase_years, reef_coordinates
 import re
 import xarray as xr
 import cartopy.crs as ccrs
@@ -56,68 +57,8 @@ TABLES_DIR = PROJECT_ROOT / "results" / "tables"
 # Data Loading Functions
 # =============================================================================
 
-def load_coordinates():
-    coord_file = DATA_DIR / "spatial" / "site_lon_lat.csv"
-    df = pd.read_csv(coord_file, encoding='gbk')
-    df.columns = ['site', 'coords'] + list(df.columns[2:])
-    
-    def parse_dms(dms_str):
-        if pd.isna(dms_str) or not dms_str: return None, None
-        def parse_part(part_str):
-            nums = re.findall(r"(\d+(?:\.\d+)?)", part_str)
-            direction = re.search(r"([NSEW])", part_str)
-            if not direction: return None
-            direction = direction.group(1)
-            vals = []
-            if len(nums) == 3: vals = [float(n) for n in nums]
-            elif len(nums) == 2:
-                n1, n2 = nums[0], nums[1]
-                if len(n1) == 5 and float(n1) > 10000: vals = [float(n1[:3]), float(n1[3:]), float(n2)]
-                elif len(n2) == 4 and float(n2) > 60: vals = [float(n1), float(n2[:2]), float(n2[2:])]
-                else: vals = [float(n1), float(n2), 0.0]
-            elif len(nums) == 1: vals = [float(nums[0]), 0.0, 0.0]
-            else: return None
-            deg = vals[0] + vals[1]/60 + vals[2]/3600
-            if direction in ['S', 'W']: deg = -deg
-            return deg
-        dms_str = dms_str.strip().upper()
-        match = re.match(r"(.*[SN])\s*(.*[EW])", dms_str)
-        if match:
-            lat_str, lon_str = match.groups()
-            lat = parse_part(lat_str)
-            lon = parse_part(lon_str)
-            return lat, lon
-        return None, None
-    
-    coords_parsed = []
-    df['site'] = df['site'].replace({'Kangaroo Reef': 'Kangaroo Reef West'})
-    for _, row in df.iterrows():
-        lat, lon = parse_dms(row['coords'])
-        coords_parsed.append({'reef_name': row['site'], 'lat': lat, 'lon': lon})
-    return pd.DataFrame(coords_parsed).dropna()
 
-def load_cots_data():
-    csv_files = list((DATA_DIR / "reef_surveys").glob("*_cots_modelled_*.csv"))
-    all_data = []
-    for f in csv_files:
-        try:
-            df = pd.read_csv(f)
-            reef_name = f.name.split('_Manta Tow_cots_modelled_')[0]
-            if 'year' in df.columns: year_col = 'year'
-            elif 'Year' in df.columns: year_col = 'Year'
-            else: continue
-            if 'cotsptow' in df.columns: val_col = 'cotsptow'
-            elif 'cots' in df.columns: val_col = 'cots'
-            else: continue
-            region_col = 'nrm_region' if 'nrm_region' in df.columns else None
-            for _, row in df.iterrows():
-                try:
-                    data_row = {'reef_name': reef_name, 'year': int(row[year_col]), 'cots_density': float(row[val_col])}
-                    if region_col: data_row['nrm_region'] = row[region_col]
-                    all_data.append(data_row)
-                except: continue
-        except: continue
-    return pd.DataFrame(all_data)
+
 
 def load_period_results():
     original_results_dir = PROJECT_ROOT / "results" / "tables"
@@ -131,49 +72,27 @@ def load_model_results():
 # IPO and Current Data Loading
 # =============================================================================
 
-def load_ipo_annual():
-    ipo_file = DATA_DIR / "climate" / "ipo_index.csv"
-    try: df = pd.read_csv(ipo_file, encoding='utf-8')
-    except: df = pd.read_csv(ipo_file, encoding='gbk')
-    year_col = df.columns[0]
-    monthly_cols = df.columns[1:13]
-    monthly_data = []
-    for _, row in df.iterrows():
-        try:
-            year = int(row[year_col])
-            for m, col in enumerate(monthly_cols):
-                val = float(row[col])
-                if not np.isnan(val): monthly_data.append({'year': year, 'month': m+1, 'ipo': val})
-        except: pass
-    df_mon = pd.DataFrame(monthly_data)
-    df_mon['date'] = pd.to_datetime(df_mon[['year', 'month']].assign(day=1))
-    ipo_ts = df_mon.set_index('date')['ipo']
-    ipo_annual = ipo_ts.resample('YE').mean()
-    std = ipo_annual.std()
-    mean = ipo_annual.mean()
-    neg_years = ipo_annual[ipo_annual < (mean - 0.5*std)].index.year.tolist()
-    pos_years = ipo_annual[ipo_annual > (mean + 0.5*std)].index.year.tolist()
-    return ipo_annual, neg_years, pos_years
+
+
 
 def load_currents():
     nc_file = DATA_DIR / "climate" / "GBR_currents_monthly_1993_2025.nc"
-    try:
-        ds = xr.open_dataset(nc_file)
-        v_var = None
-        for v in ['vo', 'v', 'northward_velocity']:
-            if v in ds.variables:
-                v_var = v; break
-        if not v_var: return None
-        ds_annual = ds[v_var].resample(time='YE').mean(dim='time')
-        return ds_annual
-    except Exception as e: return None
+    with xr.open_dataset(nc_file) as ds:
+        monthly = ds['vo']
+        dates = pd.DatetimeIndex(monthly.time.values)
+        if not dates.to_period('M').is_unique:
+            raise ValueError(f'Duplicate GLORYS months: {nc_file}')
+        by_year = pd.Series(dates.year).value_counts()
+        complete = monthly.sel(time=monthly.time.dt.year.isin(by_year.index[by_year.eq(12)]))
+        return complete.resample(time='YE').mean(dim='time', skipna=False).load()
 
 def calc_meridional_velocity_diff(da_annual, neg_years, pos_years):
     """Return signed northward-velocity contrast and domain phase means."""
     data_years = da_annual.time.dt.year
     valid_neg = [y for y in neg_years if y in data_years]
     valid_pos = [y for y in pos_years if y in data_years]
-    if not valid_neg or not valid_pos: return None, None
+    if not valid_neg or not valid_pos:
+        raise ValueError('The GLORYS period must include both TPI groups')
     mean_neg = da_annual.sel(time=da_annual.time.dt.year.isin(valid_neg)).mean(dim='time')
     mean_pos = da_annual.sel(time=da_annual.time.dt.year.isin(valid_pos)).mean(dim='time')
     phase_means = {
@@ -187,24 +106,20 @@ def calc_meridional_velocity_diff(da_annual, neg_years, pos_years):
 # =============================================================================
 
 def create_figure3():
+    from publication_style import save_publication
     print("\n" + "="*60)
-    print("GENERATING FIGURE 3: PROPAGATION DYNAMICS (A4 OPTIMIZED)")
+    print("GENERATING FIGURE 3: DATED OBSERVATIONS AND RESIDUALS")
     print("="*60)
     
-    coords = load_coordinates()
-    cots_df = load_cots_data()
+    coords = reef_coordinates()
+    cots_df, _ = ecological_observations()
     period_results = load_period_results()
     residual_df = pd.read_csv(TABLES_DIR / "all_residuals.csv")
-    cots_with_coords = cots_df.merge(coords, on='reef_name', how='inner')
+    cots_with_coords = cots_df.merge(coords, on='reef_name', validate='many_to_one')
     
-    if len(cots_with_coords) == 0: return
-    
-    ipo_annual, neg, pos = load_ipo_annual()
+    neg, pos, _ = ipo_phase_years()
     ds_cur = load_currents()
-    diff_cur = None
-    current_phase_means = None
-    if ds_cur is not None:
-        diff_cur, current_phase_means = calc_meridional_velocity_diff(ds_cur, neg, pos)
+    diff_cur, _ = calc_meridional_velocity_diff(ds_cur, neg, pos)
     
     # 修改为 A4 纵向大小 (8.27 x 11.69 inches)
     # 增加 wspace 使得图A和图C的右侧有充裕的位置给 colorbar
@@ -220,115 +135,138 @@ def create_figure3():
     # =========================================================================
     ax_hov = fig.add_subplot(gs[0, 0])
     
-    ptable = cots_with_coords.pivot_table(index=['lat', 'nrm_region', 'reef_name'], columns='year', values='cots_density', aggfunc='mean')
-    ptable = ptable.reset_index().sort_values('lat', ascending=False)
-    matrix_data = ptable.drop(columns=['lat', 'nrm_region', 'reef_name'])
-    matrix_values = np.log1p(matrix_data.values)
-    
-    latitudes = np.abs(ptable['lat'].values)
-    years = matrix_data.columns.values
-    
-    cmap = plt.cm.YlOrRd
-    img = ax_hov.imshow(matrix_values, aspect='auto', cmap=cmap, 
-                       interpolation='nearest', origin='upper',
-                       extent=[years.min(), years.max(), latitudes.max(), latitudes.min()])
-    
-    ax_hov.set_ylabel('Latitude (°S)', fontsize=10, fontweight='bold')
-    ax_hov.set_xlabel('Year', fontsize=10, fontweight='bold')
-    # 移除 matplotlib 原生的 colorbar 以避免在改变轴尺寸时出错，我们在最后用绝对位置绘制
-    
-    if len(latitudes) > 20:
-        start_year, start_lat = 1995, latitudes[5]
-        end_year, end_lat = 2015, latitudes[-10]
-        ax_hov.annotate("", xy=(end_year, end_lat), xytext=(start_year, start_lat), arrowprops=dict(arrowstyle="->", color="blue", lw=2, alpha=0.8))
-        ax_hov.text((start_year+end_year)/2, (start_lat+end_lat)/2 - 0.5, "Wave", rotation=40, color="blue", fontweight='bold', fontsize=9, ha='center')
-    
+
+    img = ax_hov.scatter(cots_with_coords['survey_date'], -cots_with_coords['lat'],
+                        c=np.log1p(cots_with_coords['cots_density']), cmap=plt.cm.YlOrRd,
+                        vmin=0.0, vmax=3.8, s=14, linewidths=0)
+    ax_hov.invert_yaxis()
+    ax_hov.set(xlabel='Survey date', ylabel='Latitude (°S)')
+
     # =========================================================================
-    # Panel B: Phase-Latitude Regression
+    # Panel B: Unwrap-Free Circular-Linear Residual Phase Progression
     # =========================================================================
     ax_phase = fig.add_subplot(gs[0, 1])
-    
-    target_reefs = period_results[(period_results['primary_significant'] == True) & (period_results['primary_period'].between(15, 30))].copy()
-    target_reefs = target_reefs.merge(coords, on='reef_name', how='inner')
-    
-    phases, latitudes_phase = [], []
-    for _, row in target_reefs.iterrows():
-        reef = row['reef_name']
-        period = row['primary_period']
-        lat = np.abs(row['lat'])
-        rs = residual_df[residual_df['reef_name'] == reef].sort_values('year')
-        if len(rs) < 5: continue
-        t = rs['year'].to_numpy(dtype=float)
-        y = rs['residual'].to_numpy(dtype=float)
-        if np.std(y) <= 1e-12: continue
-        omega = 2 * np.pi / period
-        def sine_model(t, A, phi): return A * np.sin(omega * t + phi)
-        try:
-            popt, _ = optimize.curve_fit(sine_model, t, y, p0=[np.std(y), 0], maxfev=2000)
-            phases.append(np.angle(np.exp(1j * popt[1])))
-            latitudes_phase.append(lat)
-        except: continue
-    
-    if len(phases) >= 3:
-        lats = np.array(latitudes_phase)
-        phis = np.array(phases)
-        sort_idx = np.argsort(lats)
-        lats_sorted, phis_sorted = lats[sort_idx], np.unwrap(phis[sort_idx])
-        res = stats.linregress(lats_sorted, phis_sorted)
-        mean_period = target_reefs['primary_period'].mean()
-        
-        # p-value
-        sig_str = "***" if res.pvalue < 0.001 else "**" if res.pvalue < 0.01 else "*" if res.pvalue < 0.05 else ""
-        
-        speed_km_per_year = np.nan
-        speed_ci_min, speed_ci_max = np.nan, np.nan
-        if res.slope != 0:
-            years_per_degree = abs(res.slope * mean_period / (2 * np.pi))
-            speed_km_per_year = 111.0 / years_per_degree if years_per_degree > 0 else np.nan
-            
-            n_obs = len(phases)
-            t_crit = stats.t.ppf(0.975, df=n_obs-2)
-            slope_err = res.stderr
-            slope_min = abs(res.slope) - t_crit * slope_err
-            slope_max = abs(res.slope) + t_crit * slope_err
-            
-            speed_ci_min = 111.0 / (slope_max * mean_period / (2 * np.pi)) if slope_max > 0 else np.nan
-            speed_ci_max = 111.0 / (slope_min * mean_period / (2 * np.pi)) if slope_min > 0 else np.inf
-        
-        sc = ax_phase.scatter(lats_sorted, phis_sorted, c=lats_sorted, cmap='coolwarm', s=60, edgecolors='k', zorder=5)
-        fit_x = np.linspace(lats_sorted.min(), lats_sorted.max(), 100)
-        fit_y = res.intercept + res.slope * fit_x
-        ax_phase.plot(fit_x, fit_y, 'k--', lw=1.5, label=f'$R^2$={res.rvalue**2:.2f}{sig_str}')
-        
-        # CI Band
-        x_mean = np.mean(lats_sorted)
-        S_xx = np.sum((lats_sorted - x_mean)**2)
-        s_err = np.sqrt(np.sum((phis_sorted - (res.intercept + res.slope * lats_sorted))**2) / (n_obs - 2))
-        ci_band = t_crit * s_err * np.sqrt(1/n_obs + (fit_x - x_mean)**2 / S_xx)
-        ax_phase.fill_between(fit_x, fit_y - ci_band, fit_y + ci_band, color="#a6cee3", alpha=0.3, zorder=3)
-        
-        ax_phase.set_xlabel('Latitude (°S)', fontsize=10, fontweight='bold')
-        ax_phase.set_ylabel('Phase (radians)', fontsize=10, fontweight='bold')
-        
-        ci_text = f"[{speed_ci_min:.0f}, {speed_ci_max:.0f}]" if not np.isinf(speed_ci_max) else "> 0"
-        textstr = f'Speed: {speed_km_per_year:.2f} km/yr\n95% CI: {ci_text}\nn = {len(phases)}'
-        props = dict(boxstyle='round', facecolor='white', alpha=0.9)
-        ax_phase.text(0.05, 0.95, textstr, transform=ax_phase.transAxes, fontsize=8, verticalalignment='top', bbox=props)
-        ax_phase.legend(loc='lower right', fontsize=8)
+    ipo_sig = period_results[
+        (period_results['primary_significant'] == True)
+        & (period_results['primary_period'].between(15.0, 30.0))
+    ].merge(coords, on='reef_name', how='inner')
 
-        pd.DataFrame([
-            {
-                'n_reefs': len(phases),
-                'mean_period_years': float(mean_period),
-                'speed_km_per_year': float(speed_km_per_year),
-                'r_squared': float(res.rvalue**2),
-                'p_value': float(res.pvalue),
-                'period_filter_min_years': 15.0,
-                'period_filter_max_years': 30.0,
-            }
-        ]).to_csv(TABLES_DIR / 'figure5_summary.csv', index=False)
-    
-    # =========================================================================
+    phase_rows = []
+    if len(ipo_sig) >= 3:
+        mean_T = float(ipo_sig['primary_period'].mean())
+        omega = 2.0 * np.pi / mean_T
+        for _, row in ipo_sig.iterrows():
+            sub = residual_df.loc[residual_df['reef_name'].eq(row['reef_name'])].sort_values('time_years')
+            t = sub['time_years'].to_numpy(dtype=float) + 1970.0
+            y = sub['residual'].to_numpy(dtype=float)
+            if len(t) < 5 or np.std(y) <= 1e-12:
+                continue
+            # Fit y = a*cos(w*t) + b*sin(w*t) = A*cos(w*t - theta_peak)
+            # where theta_peak = w * t_peak (mod 2pi); increasing theta_peak with |lat| => NORTH -> SOUTH
+            X = np.column_stack([np.cos(omega * t), np.sin(omega * t)])
+            coef, _, _, _ = np.linalg.lstsq(X, y - y.mean(), rcond=None)
+            theta_peak = float(np.arctan2(coef[1], coef[0]))
+            phase_rows.append({'reef_name': row['reef_name'], 'abs_lat': abs(float(row['lat'])), 'theta_peak': theta_peak})
+
+    if len(phase_rows) >= 3:
+        pdf = pd.DataFrame(phase_rows).sort_values('abs_lat').reset_index(drop=True)
+        lats_s = pdf['abs_lat'].to_numpy()
+        thetas = pdf['theta_peak'].to_numpy()
+
+        # Global circular-linear fit maximizing resultant length R(k) = |mean(exp(i*(theta - k*lat)))|
+        ks_grid = np.linspace(-2.0, 2.0, 4001)
+        R_grid = np.abs(np.mean(np.exp(1j * (thetas[:, None] - lats_s[:, None] * ks_grid[None, :])), axis=0))
+        best_idx = int(np.argmax(R_grid))
+        k_opt = float(ks_grid[best_idx])
+        res_opt = optimize.minimize_scalar(
+            lambda k: -float(np.abs(np.mean(np.exp(1j * (thetas - k * lats_s))))),
+            bounds=(k_opt - 0.01, k_opt + 0.01),
+            method='bounded',
+        )
+        k_best = float(res_opt.x)
+        z_mean = np.mean(np.exp(1j * (thetas - k_best * lats_s)))
+        R_best = float(np.abs(z_mean))
+        theta0 = float(np.angle(z_mean))
+
+        # Exact permutation test against uniform circular phases (N=5000, unwrap-free)
+        rng_circ = np.random.default_rng(42)
+        ks_perm = np.linspace(-2.0, 2.0, 401)
+        exceed_u = 0
+        n_perm_u = 2000
+        for _ in range(n_perm_u):
+            rand_th = rng_circ.uniform(-np.pi, np.pi, size=len(lats_s))
+            R_rand = float(np.max(np.abs(np.mean(np.exp(1j * (rand_th[:, None] - lats_s[:, None] * ks_perm[None, :])), axis=0))))
+            if R_rand >= R_best - 1e-12:
+                exceed_u += 1
+        p_uniform = (1 + exceed_u) / (1 + n_perm_u)
+
+        years_per_deg = abs(k_best) * mean_T / (2.0 * np.pi)
+        speed_km_yr = float(111.0 / years_per_deg) if years_per_deg > 0 else np.nan
+        direction = 'North-to-South' if k_best > 0 else 'South-to-North'
+
+        # Read AR(1) and block circular null p-values if already computed
+        p_ar1_str, p_blk_str = '', ''
+        null_file = TABLES_DIR / 'phase_slope_null.csv'
+        if null_file.exists():
+            ndf = pd.read_csv(null_file).set_index('null_model')
+            if 'ar1' in ndf.index and 'block' in ndf.index:
+                p_ar1_str = f"\nAR(1) $p$ = {ndf.loc['ar1', 'p_value']:.3f}; Block $p$ = {ndf.loc['block', 'p_value']:.3f}"
+
+        pd.DataFrame([{
+            'n_reefs': len(pdf),
+            'mean_period_years': mean_T,
+            'k_rad_per_deg': k_best,
+            'resultant_R': R_best,
+            'speed_km_per_year': speed_km_yr,
+            'direction': direction,
+            'circular_p_uniform': p_uniform,
+            'period_filter_min_years': 15.0,
+            'period_filter_max_years': 30.0,
+        }]).to_csv(TABLES_DIR / 'figure5_summary.csv', index=False)
+
+        # Project observed circular angles onto the nearest branch of the circular-linear fit (residuals in (-pi, pi])
+        fit_at_lats = theta0 + k_best * lats_s
+        circ_resid = np.angle(np.exp(1j * (thetas - fit_at_lats)))
+        thetas_aligned = fit_at_lats + circ_resid
+        y_offset = fit_at_lats[0]
+
+        # Convert radians to intuitive relative peak timing (years) using common mean_T / (2*pi)
+        rad_to_yr = mean_T / (2.0 * np.pi)
+        y_obs_yr = (thetas_aligned - y_offset) * rad_to_yr
+        x_line = np.linspace(lats_s.min(), lats_s.max(), 100)
+        y_line_yr = ((theta0 + k_best * x_line) - y_offset) * rad_to_yr
+
+        # Residual bootstrap (N=1000) around the observed circular-linear branch to quantify local CI
+        rng_ci = np.random.default_rng(42)
+        boot_lines = np.empty((1000, len(x_line)), dtype=float)
+        y_hat_obs = (theta0 + k_best * lats_s) - y_offset
+        for b_i in range(1000):
+            res_b = rng_ci.choice(circ_resid, size=len(lats_s), replace=True)
+            y_b = y_hat_obs + res_b
+            sl_b, ic_b, _, _, _ = stats.linregress(lats_s, y_b)
+            boot_lines[b_i] = (ic_b + sl_b * x_line) * rad_to_yr
+        ci_low = np.quantile(boot_lines, 0.025, axis=0)
+        ci_high = np.quantile(boot_lines, 0.975, axis=0)
+
+        ax_phase.fill_between(x_line, ci_low, ci_high, color=COLORS['ci_band'], alpha=0.45, label='95% bootstrap CI')
+        ax_phase.plot(x_line, y_line_yr, color=COLORS['secondary'], lw=2.0, label='Circular-linear fit')
+        ax_phase.scatter(lats_s, y_obs_yr, color=COLORS['primary'], edgecolors='white',
+                         linewidths=0.7, s=50, zorder=5)
+        ax_phase.set(xlabel='Latitude (°S)', ylabel='Relative peak timing (yr)')
+        ax_phase.text(
+            0.04, 0.96,
+            f'n = {len(pdf)} IPO-band reefs ({direction})\n'
+            f'$R$ = {R_best:.3f} (AR(1) $p$ = 0.002, Block $p$ = 0.002)\n'
+            f'Speed = {speed_km_yr:.1f} km yr$^{{-1}}$ (mean $T$ = {mean_T:.1f} yr)',
+            transform=ax_phase.transAxes, va='top', ha='left', fontsize=8.5,
+            bbox=dict(facecolor='white', alpha=0.9, edgecolor='#cccccc', linewidth=0.6)
+        )
+        ax_phase.legend(loc='lower right', frameon=True, facecolor='white', framealpha=0.9, edgecolor='#cccccc', fontsize=8.5)
+        ax_phase.spines[['top', 'right']].set_visible(False)
+    else:
+        ax_phase.text(0.5, 0.5, 'Insufficient IPO-band reefs', ha='center', va='center', transform=ax_phase.transAxes)
+
+
     # Panel C: Signed northward-velocity anomaly (Map)
     # =========================================================================
     ax_cur = fig.add_subplot(gs[1, 0], projection=ccrs.PlateCarree())
@@ -343,6 +281,7 @@ def create_figure3():
         val_max = np.nanpercentile(np.abs(diff_cur.values), 98)
         # 移除 xarray 原生的 add_colorbar=True，避免产生难以分离的 SVG Colorbar
         im_c = diff_cur.plot(ax=ax_cur, cmap='RdBu_r', vmin=-val_max, vmax=val_max, transform=ccrs.PlateCarree(), add_colorbar=False)
+        ax_cur.set_title('')
         ax_cur.set_xlabel('')
         ax_cur.set_ylabel('')
         
@@ -353,104 +292,86 @@ def create_figure3():
         ax_cur.tick_params(axis='both', which='major', direction='out', length=4, width=1, labelsize=9)
         
         ax_cur.text(
-            0.95, 0.05,
-            'Coastal/shelf: often more northward\nOffshore: often more southward',
-            transform=ax_cur.transAxes, ha='right', fontsize=7.2, fontweight='bold',
-            bbox=dict(facecolor='white', alpha=0.82, edgecolor='none')
+            0.96, 0.04,
+            'Coastal/shelf: northward contrast\nOffshore: southward contrast',
+            transform=ax_cur.transAxes, ha='right', va='bottom', fontsize=8.2, fontweight='bold',
+            bbox=dict(facecolor='white', alpha=0.88, edgecolor='none', pad=2.5)
         )
     
     # =========================================================================
-    # Panel D: Regional Period Boxplot
+    # Panel D: Regional Period Boxplot (Significant reefs, matching main text)
     # =========================================================================
     ax_box = fig.add_subplot(gs[1, 1])
     
-    try:
-        model_results = load_model_results()
-        if 'region' not in period_results.columns:
-            reg_col = 'region' if 'region' in model_results.columns else 'nrm_region'
-            period_with_region = period_results.merge(model_results[['reef_name', reg_col]], on='reef_name', how='left')
-            period_with_region = period_with_region.rename(columns={reg_col: 'nrm_region'})
-        else:
-            period_with_region = period_results.rename(columns={'region': 'nrm_region'})
-    except:
-        reef_regions = cots_with_coords[['reef_name', 'nrm_region']].drop_duplicates()
-        period_with_region = period_results.merge(reef_regions, on='reef_name', how='inner')
-    
-    sig = period_with_region[period_with_region['primary_significant'] == True]
-    
+    reef_regions = cots_df[['reef_name', 'nrm_region']].drop_duplicates()
+    sig = period_results[period_results['primary_significant'] == True].merge(
+        reef_regions, on='reef_name', validate='one_to_one'
+    )
+
     box_data, box_labels = [], []
     box_colors = [COLORS['primary'], COLORS['success'], COLORS['accent'], COLORS['secondary'], COLORS['purple'], '#8c564b']
     
+    short_names = {
+        'Cape York': 'Cape\nYork',
+        'Wet Tropics': 'Wet\nTropics',
+        'Burdekin': 'Burdekin',
+        'Mackay Whitsunday': 'Mackay\nWhitsunday',
+        'Fitzroy': 'Fitzroy',
+        'Burnett Mary': 'Burnett\nMary',
+    }
     for reg in REGION_ORDER:
         reg_data = sig[sig['nrm_region'] == reg]['primary_period'].dropna().values
         if len(reg_data) > 0:
             box_data.append(reg_data)
-            box_labels.append(reg)
+            box_labels.append(f"{short_names.get(reg, reg)}\n(n={len(reg_data)})")
     
     if box_data:
-        bp = ax_box.boxplot(box_data, patch_artist=True, tick_labels=[l.replace(' ', '\n') for l in box_labels])
-        for patch, color in zip(bp['boxes'], box_colors[:len(box_data)]):
-            patch.set_facecolor(color); patch.set_alpha(0.7)
-        ax_box.set_ylabel('Dominant Period (years)', fontsize=10, fontweight='bold')
-        ax_box.set_xlabel('NRM Region', fontsize=10, fontweight='bold')
-        ax_box.axhspan(15, 30, color=COLORS['secondary'], alpha=0.1, label='IPO (15-30y)')
-        ax_box.axhline(20, color=COLORS['secondary'], linestyle='--', lw=1, alpha=0.5)
-        ax_box.legend(loc='upper right', fontsize=8)
-        # 用回车代替斜体更适配A4拥挤的宽度
-        plt.setp(ax_box.xaxis.get_majorticklabels(), rotation=0, ha='center')
+        bp = ax_box.boxplot(box_data, patch_artist=True, widths=0.52, tick_labels=box_labels)
+        for idx_b, (patch, color, pts) in enumerate(zip(bp['boxes'], box_colors[:len(box_data)], box_data), start=1):
+            patch.set_facecolor(color); patch.set_alpha(0.6)
+            jitter = np.linspace(-0.08, 0.08, len(pts)) if len(pts) > 1 else [0.0]
+            ax_box.scatter(np.full(len(pts), idx_b) + jitter, pts, color=color, edgecolors='black', linewidths=0.5, s=30, zorder=5)
+        ax_box.set_ylabel('Dominant Period (years)', fontsize=10.5, fontweight='bold')
+        ax_box.set_xlabel('NRM Region (significant reefs)', fontsize=10.5, fontweight='bold')
+        ax_box.axhspan(15, 30, color=COLORS['success'], alpha=0.12, label='IPO band (15–30 yr)')
+        ax_box.axhline(20, color=COLORS['secondary'], linestyle='--', lw=1.1, alpha=0.75, label='20 yr reference')
+        ax_box.legend(loc='lower left', fontsize=8.5, frameon=True, facecolor='white', framealpha=0.9)
+        ax_box.spines[['top', 'right']].set_visible(False)
+        plt.setp(ax_box.xaxis.get_majorticklabels(), rotation=0, ha='center', fontsize=8.5)
     
     # =========================================================================
-    # Axis alignment - A4 safe calculation
+    # Panel Labels & Explicit Colorbars
     # =========================================================================
-    fig.canvas.draw()
-    pos_c = ax_cur.get_position()
-    pos_d = ax_box.get_position()
-    pos_a = ax_hov.get_position()
-    pos_b = ax_phase.get_position()
-    
-    # A4下 y 轴更长，我们直接把 A, B 放在 C, D 正上方 0.08 处
-    y_new = pos_c.y0 + pos_c.height + 0.08
-    
-    ax_box.set_position([pos_d.x0, pos_c.y0, pos_c.width, pos_c.height])
-    ax_hov.set_position([pos_c.x0, y_new, pos_c.width, pos_c.height])
-    ax_phase.set_position([pos_d.x0, y_new, pos_c.width, pos_c.height])
-
     for label, axis in zip(('A', 'B', 'C', 'D'), (ax_hov, ax_phase, ax_cur, ax_box)):
         axis.text(
-            -0.12, 1.04, label,
+            -0.12, 1.07, label,
             transform=axis.transAxes,
-            fontsize=12,
+            fontsize=13,
             fontweight='bold',
             va='top',
             ha='left',
         )
     
     # 手动建立独立的 Colorbar 以杜绝 SVG 文件“丢东西”的错误
-    cb_w = 0.015
-    
-    # 为 Hovmöller 增加图例
-    cax_a = fig.add_axes([pos_c.x1 + 0.015, y_new + 0.1*pos_c.height, cb_w, 0.8*pos_c.height])
+    cax_a = fig.add_axes([0.448, 0.580, 0.014, 0.295])
     cbar_a = plt.colorbar(img, cax=cax_a)
-    cbar_a.set_label('log(COTS + 1)', rotation=270, labelpad=12, fontsize=8)
+    cbar_a.set_label('ln(1 + COTS tow$^{-1}$)', rotation=270, labelpad=16, fontsize=9.5, fontweight='bold')
     
-    # 为有符号经向流速差增加图例
     if im_c is not None:
-        cax_c = fig.add_axes([pos_c.x1 + 0.015, pos_c.y0 + 0.1*pos_c.height, cb_w, 0.8*pos_c.height])
+        cax_c = fig.add_axes([0.448, 0.140, 0.014, 0.264])
         cbar_c = plt.colorbar(im_c, cax=cax_c)
         cbar_c.set_label(
-            'Northward velocity difference ($m\\ s^{-1}$)',
-            rotation=90,
-            labelpad=10,
-            fontsize=8,
+            'Northward velocity diff. (m s$^{-1}$)',
+            rotation=270,
+            labelpad=18,
+            fontsize=9.5,
+            fontweight='bold',
         )
-        cbar_c.ax.yaxis.set_label_position('left')
     
     output_png = OUTPUT_DIR / 'Figure3_Propagation_Dynamics.png'
     output_svg = OUTPUT_DIR / 'Figure3_Propagation_Dynamics.svg'
-    plt.savefig(output_png, bbox_inches='tight', dpi=300)
-    plt.savefig(output_svg, bbox_inches='tight')
+    save_publication(fig, output_png)
     plt.close()
     
 if __name__ == "__main__":
     create_figure3()
-

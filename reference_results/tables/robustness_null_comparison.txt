@@ -1,0 +1,32 @@
+1. Spectral null hierarchy:
+          null_and_decision  tested_reefs  detected_reefs  detections_15_30_years
+        white_noise_nominal            58              15                      12
+         calendar_block_3yr            58               9                       6
+continuous_time_ar1_nominal            58               1                       0
+   continuous_time_ar1_holm            58               0                       0
+
+2. Unwrap-free circular-linear spatial phase null:
+      null_model  n_reefs  n_iter  k_obs_rad_per_deg  speed_km_per_year    R_obs  null_mean_R  null_q95_R  p_value
+             ar1       12     500           1.078567          31.210085 0.875712     0.477323    0.638983 0.001996
+           block       12     500           1.078567          31.210085 0.875712     0.477030    0.655232 0.001996
+uniform_circular       12    2000           1.078567          31.210085 0.875712     0.478080    0.676915 0.000500
+
+3. Baseline model sensitivity (identical 58 reefs, N=5000):
+      baseline_model  tested_reefs  significant_reefs  ipo_band_reefs  ipo_fraction  enso_band_reefs
+        raw_log_cots            58                 17              15      0.882353                2
+            enhm_rto            58                 16              13      0.812500                1
+ols_intercept_nonneg            58                 13               9      0.692308                0
+
+4. Dated lag sensitivity (full 113-reef dataset, N=5000):
+ lag_years  fitted_reefs  screened_reefs  significant_reefs  ipo_band_reefs  ipo_fraction  mean_ipo_period  k_rad_per_deg  resultant_R      direction  speed_km_per_year
+         2            93              81                 20              17        0.8500        19.521858         -0.742     0.759029 South-to-North          48.147949
+         3            92              58                 16              13        0.8125        21.297665          1.058     0.874068 North-to-South          30.951749
+
+5. All-58-reef (direction-constrained) & 2-yr lag spatial-alias diagnostics:
+               dataset  n_reefs  mean_period_years  k_north_to_south  R_north_to_south  speed_km_per_year_ns  p_uniform_ns  p_block_ns  p_ar1_ns  k_alias_neg  R_alias_neg  delta_k_alias
+       primary_12_lag3       12          20.718624             1.079          0.875712             31.197550      0.000500    0.001996  0.001996       -0.621     0.786463          1.700
+  all_58_weighted_lag3       58          20.718624             1.048          0.592707             32.120378      0.000500    0.001996  0.001996       -0.600     0.622634          1.648
+all_58_unweighted_lag3       58          20.718624             1.074          0.463076             31.342790      0.000500    0.001996  0.003992       -0.695     0.488452          1.769
+         lag2_17_reefs       17          19.521858             1.186          0.641879             30.122916      0.006497    0.003992  0.009980       -0.742     0.759029          1.928
+
+6. Table S1 exported: 58 spectrally screened reefs

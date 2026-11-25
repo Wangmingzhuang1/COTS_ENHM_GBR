@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "Please cite this version and acknowledge the original data providers."
+type: software
+title: "COTS ENHM GBR: dated-survey analysis and source data"
+version: "2026.11.25"
+date-released: "2026-11-25"
+authors:
+  - family-names: Wang
+    given-names: Mingzhuang
+repository-code: "https://github.com/Wangmingzhuang1/COTS_ENHM_GBR"
+license: MIT

@@ -1,9 +1,0 @@
-a_sector,nrm_region,domain_name,year,survey_date,variable,tows,cots,cotsptow
-"CA","Wet Tropics","Reef 16-017",1994,"1994.11506849315068493","COTS",13,2,"0.15"
-"CA","Wet Tropics","Reef 16-017",2000,"2000.07123287671232877","COTS",17,17,"1.00"
-"CA","Wet Tropics","Reef 16-017",2003,"2002.821917808219178","COTS",15,0,"0.00"
-"CA","Wet Tropics","Reef 16-017",2007,"2007.030136986301369864","COTS",15,0,"0.00"
-"CA","Wet Tropics","Reef 16-017",2010,"2009.8904109589041096","COTS",16,0,"0.00"
-"CA","Wet Tropics","Reef 16-017",2013,"2013.019178082191780823","COTS",17,15,"0.88"
-"CA","Wet Tropics","Reef 16-017",2019,"2019.136986301369863","COTS",15,0,"0.00"
-"CA","Wet Tropics","Reef 16-017",2026,"2025.7095890410958904","COTS",19,0,"0.00"

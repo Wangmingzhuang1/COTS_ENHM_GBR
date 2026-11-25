@@ -1,0 +1,8 @@
+AIMS source-to-result audit passed
+Source COTS records: 2030
+Source manta hard coral records: 2132
+Dated fitted observations: 1051
+Fitted reefs: 92
+Screened reefs: 58
+Significant reefs (white-noise p<0.05): 15
+IPO-band significant reefs (15-30 yr): 12

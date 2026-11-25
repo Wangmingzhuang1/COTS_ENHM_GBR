@@ -1,0 +1,1354 @@
+{
+  "snapshot": "20261120",
+  "description": "Exact source_observations and reef_sites used by the 2026-11-25 manuscript workflow; original AIMS CSVs referenced by every observation. Includes manta and photo-transect cover; core analysis explicitly selects LTMP manta hard coral.",
+  "files": {
+    "processed/source_observations.csv": {
+      "sha256": "e03ca446cf8e807447c4cd3816907f98a3d2875952a1f900b3e167120ff64c41",
+      "size_bytes": 1874206
+    },
+    "processed/reef_sites.csv": {
+      "sha256": "02c041e0fa3ba9d0cf42f23784ee1127fab465c8f17886ade56a5e15e47125e4",
+      "size_bytes": 14305
+    },
+    "raw_exports/cots/arlington_reef/4a24acf22ef1_Arlington Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "4a24acf22ef12dcfe1f80d0b3335ecaf4d4f572a5aa1d6f3882b9ad1d721362c",
+      "size_bytes": 1103
+    },
+    "raw_exports/cots/ashmore_banks_c/0029f5fbcd43_Ashmore Banks c_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "0029f5fbcd4316df241546288d81a60a59c4fde3c613beffe67248a08ea6a6bd",
+      "size_bytes": 1169
+    },
+    "raw_exports/cots/beaver_reef/23183c2ae20e_Beaver Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "23183c2ae20e3478f678b03b7a0687531cb30c896641a25a0aad4a6d51694e4f",
+      "size_bytes": 1069
+    },
+    "raw_exports/cots/boulder_reef/82d08e0e705b_Boulder Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "82d08e0e705b7c336b3f65eece1f630a58022d782ffb57c872f2202ed46009da",
+      "size_bytes": 2264
+    },
+    "raw_exports/cots/boult_reef/44dc1a7a4926_Boult Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "44dc1a7a492695cbdea9ea183923bcc15c67ef09b702197cac8022bc10a77204",
+      "size_bytes": 978
+    },
+    "raw_exports/cots/bowden_reef/860880eaf9e3_Bowden Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "860880eaf9e3d337bf128651b022a87df97fb5ac457605ba04f8690fcd43ed89",
+      "size_bytes": 2296
+    },
+    "raw_exports/cots/carter_reef/5f0d819df9f3_Carter Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "5f0d819df9f3372d8d7a63d9b475e8ba2d6a3d45f1e4cad7e637499972c12619",
+      "size_bytes": 2315
+    },
+    "raw_exports/cots/centipede_reef/d6d5f28c5613_Centipede Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "d6d5f28c5613bfc26b561ced46a1492335da12b320f74ba9dd57eced6a6a0b87",
+      "size_bytes": 1301
+    },
+    "raw_exports/cots/charity_reef/45a770f9e74e_Charity Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "45a770f9e74e0d0eec2ed138608a181d5c7ed9cc41bc4ffaf9e1123a6ccf138e",
+      "size_bytes": 1205
+    },
+    "raw_exports/cots/chicken_reef/99d768f4ea91_manta_cots_density.csv": {
+      "sha256": "99d768f4ea9181547d08f149885a488669d4d1e7dc101ecd0fad417ff3064319",
+      "size_bytes": 2814
+    },
+    "raw_exports/cots/chinaman_reef_22_102/5f85fc0cf283_Chinaman Reef (22-102)_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "5f85fc0cf2833aeb0c0b1ce923957814771cf83b792b9f437d152cdc2df80f68",
+      "size_bytes": 3396
+    },
+    "raw_exports/cots/corbett_reef/0937a0f13097_Corbett Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "0937a0f13097dc61986ac2e8073965d7773bcf74c5dabd08252c6fdb6403563f",
+      "size_bytes": 813
+    },
+    "raw_exports/cots/davie_reef/e6a0993259ae_Davie Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "e6a0993259ae2bb7371757f3fcd994160a22d51133985702cfae2b7993316057",
+      "size_bytes": 1578
+    },
+    "raw_exports/cots/davies_reef/35e46f86de45_Davies Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "35e46f86de458020306d2378e27a240d0a79a372cd9d4fcb6546a2a4d69ff6cf",
+      "size_bytes": 2686
+    },
+    "raw_exports/cots/dip_reef/e79a5130d6cb_Dip Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "e79a5130d6cb8dc5e0204babab16c17f756f58c4698f13af6556e4a3cc09092f",
+      "size_bytes": 1986
+    },
+    "raw_exports/cots/east_cay/161ef7379d82_East Cay_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "161ef7379d825fee8b4d30799122a291b1a1b9a5c9549b16ffb183c85141430c",
+      "size_bytes": 2396
+    },
+    "raw_exports/cots/egret_reef/f82c10d16f3a_Egret Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "f82c10d16f3a59b4913038c9ddf2b99bc29988e07297e668a06992e4e0638299",
+      "size_bytes": 1185
+    },
+    "raw_exports/cots/elizabeth_reef/6b0d31a6cafe_Elizabeth Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "6b0d31a6cafef8901fb0709769e11f7888f14a2c13fe32baa0c2d5bed2b33699",
+      "size_bytes": 817
+    },
+    "raw_exports/cots/evening_reef/834de4da9723_Evening Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "834de4da9723db61fed02bf4a69fae7d333e1d8dca3d40c80fbb0ca3d3fe2d0f",
+      "size_bytes": 1136
+    },
+    "raw_exports/cots/eye_reef/8f9566ae16fd_Eye Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "8f9566ae16fda9276d0fabfe5c7c44e7fdc495f265a85388e5b21d598e9ed91c",
+      "size_bytes": 692
+    },
+    "raw_exports/cots/eyrie_reef/c95ffcc30a79_Eyrie Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "c95ffcc30a7991cde60d52e8c125dfd7d4de81c3763d9d26a9af3302124ab27e",
+      "size_bytes": 1012
+    },
+    "raw_exports/cots/fairfax_island/c94fde7dc3ee_Fairfax Island_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "c94fde7dc3ee120e39569492f17aad97b7b9ef1b2f3e33db06db6f40bd8c77b8",
+      "size_bytes": 1370
+    },
+    "raw_exports/cots/faith_reef/605b44543ceb_Faith Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "605b44543cebdb3a444bb83003961cc423d115aed7cdaed445f5121f5bff4ec9",
+      "size_bytes": 1960
+    },
+    "raw_exports/cots/farquharson_reef/700dbd3dd386_Farquharson Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "700dbd3dd386b1e095e2eb815fb685e6bf9c63f22891be03e359e8fdbe78e592",
+      "size_bytes": 762
+    },
+    "raw_exports/cots/feather_reef/8fd04c489f95_Feather Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "8fd04c489f959c600113b7862686d9a0d73dcc8bbe1e559120f2caef6aef85a5",
+      "size_bytes": 2835
+    },
+    "raw_exports/cots/fly_reef/94521721a20a_Fly Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "94521721a20a68081f0217bc217a6e7c1bdf69c584a6c57966ff38efe1517f52",
+      "size_bytes": 676
+    },
+    "raw_exports/cots/fore_and_aft_reef/b179ea7e9ed1_Fore and Aft Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "b179ea7e9ed12a343e2fd6c3cc7f370060322a331998ea604f4db120196a2b00",
+      "size_bytes": 1193
+    },
+    "raw_exports/cots/fork_reef/a2f5a8b8f401_Fork Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "a2f5a8b8f40160452de3a5cfb08f97ac2bb3f464ec4b45f63026755cdf4aadca",
+      "size_bytes": 912
+    },
+    "raw_exports/cots/forrester_reef/bc1032008d0b_Forrester Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "bc1032008d0b06b038c5b0520b1825059912b9f3b42179373dbd18a5248c1fa6",
+      "size_bytes": 1407
+    },
+    "raw_exports/cots/gannet_cay/670a567fa669_Gannet Cay_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "670a567fa669a47e6baad50791ec4b5e77d9dce687f50d34cf2901f45890948f",
+      "size_bytes": 2874
+    },
+    "raw_exports/cots/green_island/cf2da7acd280_Green Island_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "cf2da7acd280c5a88a956b90c404d8524935d14aa3b6f729de4e15fed2a2694f",
+      "size_bytes": 2669
+    },
+    "raw_exports/cots/grub_reef_18_077/c66673fa819f_Grub Reef (18-077)_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "c66673fa819f6c0f49ba6966d6a742784981f9361221c5b2c0daa66600395c24",
+      "size_bytes": 1272
+    },
+    "raw_exports/cots/hardy_reef/4abd77f0c2d9_Hardy Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "4abd77f0c2d9b5cfe7a9010152d7718dcc4cd794769cd4d82905f3807c556acb",
+      "size_bytes": 1935
+    },
+    "raw_exports/cots/hastings_reef/b8ae11f88085_manta_cots_density.csv": {
+      "sha256": "b8ae11f880850120575c2d42108f13f47bc63765dbfe49e7be4c6c0d31719bf4",
+      "size_bytes": 3110
+    },
+    "raw_exports/cots/hedley_reef/87397d402852_Hedley Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "87397d4028525bad2103edffa53a9a9fe0cc79968e556d6789e91cc1b8299674",
+      "size_bytes": 1233
+    },
+    "raw_exports/cots/helix_reef/6b11c1a70c38_Helix Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "6b11c1a70c38b503ea098ec84ce914831548ac29b3c08709d037f3744354578b",
+      "size_bytes": 1964
+    },
+    "raw_exports/cots/helsdon_reef/376ea6a68e3b_Helsdon Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "376ea6a68e3b70d39f3469581d8d0f9e13bd24ea2bbd3a08b8f480e84501488e",
+      "size_bytes": 1458
+    },
+    "raw_exports/cots/holbourne_island/ea7dd5a24caf_Holbourne Island_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "ea7dd5a24caf7909b9d01b92342e57c497c0f8477778971b54fc079c87c46d26",
+      "size_bytes": 1007
+    },
+    "raw_exports/cots/hope_reef_19046/8ec97e90d30c_Hope Reef(19046)_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "8ec97e90d30c90c0bace0512857e72bf86dbd1cedaebe7617cc86c4b6995e260",
+      "size_bytes": 667
+    },
+    "raw_exports/cots/horseshoe_reef/9680aac29f84_manta_cots_density.csv": {
+      "sha256": "9680aac29f849dab604f85345699cbd35e11ef4a1be4a8a4e5dfd11f32194d0c",
+      "size_bytes": 2376
+    },
+    "raw_exports/cots/irene_reef/ee46d26e16b6_Irene Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "ee46d26e16b67e39b828232b9f925f86b124d749277ca3458840129180c16d22",
+      "size_bytes": 1034
+    },
+    "raw_exports/cots/jaguar_reef/5cfadb449a19_Jaguar Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "5cfadb449a195a1a2721e4e2c93bdd97c4906dd046488f399aec05347baed144",
+      "size_bytes": 711
+    },
+    "raw_exports/cots/jenkins_reef/1d100a4d1059_Jenkins Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "1d100a4d1059902471baf9969f8eeba4defb24fac37e1e62b251c15f80b7e560",
+      "size_bytes": 874
+    },
+    "raw_exports/cots/john_brewer_reef/9e4781753f0d_John Brewer Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "9e4781753f0d0fdd33f86dc261ccf61ab3f205bdf3cc13037a5490ed2c6c4716",
+      "size_bytes": 2960
+    },
+    "raw_exports/cots/kangaroo_reef_west/2e7312f068be_Kangaroo Reef West_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "2e7312f068befd9cf02410e040fccc6fb7423c75c0c880f9109b584a819c5333",
+      "size_bytes": 855
+    },
+    "raw_exports/cots/kelso_reef/a8bbf13ec533_manta_cots_density.csv": {
+      "sha256": "a8bbf13ec533734f7ada51079ef15fac7647810aeff19624f2c795cd1ac61a7c",
+      "size_bytes": 1338
+    },
+    "raw_exports/cots/knife_reef/a8bc13e332e2_Knife Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "a8bc13e332e23c7c2ced6e10bb6d5463e347538ec75b5cd0ce46ba36d7282a32",
+      "size_bytes": 1486
+    },
+    "raw_exports/cots/lady_musgrave_island/2a07821b2768_Lady Musgrave Island_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "2a07821b276879355ef6c7de20b9509864080ee5979f1bac29b5fb1b20a7e7b8",
+      "size_bytes": 3393
+    },
+    "raw_exports/cots/lagoon_reef/87164aa2dd78_Lagoon Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "87164aa2dd78d6d76867a9639e867ddab379a628f0f974e62caa6c831b0bd0af",
+      "size_bytes": 1435
+    },
+    "raw_exports/cots/linnet_reef/07ec16239c1e_Linnet Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "07ec16239c1e0b7938dab484fa3f1f6686fb4953cfa22a29ef9ad1763df6aa9a",
+      "size_bytes": 2784
+    },
+    "raw_exports/cots/little_kelso_reef/0f8d37bdc5ef_Little Kelso Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "0f8d37bdc5efed00318619349c89a392a0f688b75be1977e354c6afd88705b32",
+      "size_bytes": 1359
+    },
+    "raw_exports/cots/lizard_isles/2f864d4b10b5_Lizard Isles_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "2f864d4b10b553078225056699660cdc4f5d23283b0876605e103bb34e2f42f0",
+      "size_bytes": 2840
+    },
+    "raw_exports/cots/low_isles/46c5bad746c0_Low Isles_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "46c5bad746c0da839845eb4f9af5ccb9961041e87eaa16791fc9268f2db041db",
+      "size_bytes": 2170
+    },
+    "raw_exports/cots/macgillivray_reef/398d8ee31783_Macgillivray Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "398d8ee31783478846d43e80b5bd66187139d651a89093d98ce3f25aaf704052",
+      "size_bytes": 3084
+    },
+    "raw_exports/cots/mackay_reef/f6878c122c39_Mackay Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "f6878c122c394bb5b8d075d6536f3b7ffda7fa0b3c94db87ba1dffacfe8de504",
+      "size_bytes": 2715
+    },
+    "raw_exports/cots/martin_reef/991fcd716a08_Martin Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "991fcd716a081d247dd4b2f218986cabcfa53163fe95db66d46e30fe0eeb53eb",
+      "size_bytes": 2386
+    },
+    "raw_exports/cots/marx_reef/422e5acc8fd8_Marx Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "422e5acc8fd81f499f8bda5834880bc20105c34a5e06058452d47482befcdbe7",
+      "size_bytes": 1479
+    },
+    "raw_exports/cots/mcculloch_reef/0be555e14bc7_manta_cots_density.csv": {
+      "sha256": "0be555e14bc770b5bcc43f2cdb7d2527c611e7d02ae452d4c287a103b782948b",
+      "size_bytes": 675
+    },
+    "raw_exports/cots/mcsweeney_reef/334498b48666_McSweeney Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "334498b48666e2178f7ea481ae11a04bbdd67b74653c0294129dfa1f04f50397",
+      "size_bytes": 656
+    },
+    "raw_exports/cots/michaelmas_cay/a449a7f17abb_Michaelmas Cay_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "a449a7f17abb35f52ce8f91fca997ddfb9d6aa9a2859819e398b5162aecaca2e",
+      "size_bytes": 2511
+    },
+    "raw_exports/cots/middle_banks_2/32668fd3d55f_Middle Banks 2_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "32668fd3d55fe531deff9421fcdf60e54c0a1c91df8dd245471517efb96fc5ec",
+      "size_bytes": 1154
+    },
+    "raw_exports/cots/middle_banks_3/96399a3fc5c0_Middle Banks 3_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "96399a3fc5c020cfc77731cbe883e10340e8f5e443a2cda614d2e2c94c1bb56a",
+      "size_bytes": 1239
+    },
+    "raw_exports/cots/monsoon_reef/1105d0da1492_Monsoon Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "1105d0da14927b711ab57905fedda50d4d7240340a44c71e3d8fcc86286aab45",
+      "size_bytes": 643
+    },
+    "raw_exports/cots/moore_reef/ac9fcca15d00_Moore Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "ac9fcca15d00eba130d4bc1b2b40de801b412966777491f5b5067d5bc326e249",
+      "size_bytes": 1219
+    },
+    "raw_exports/cots/north_direction_island/48f6739dbe8e_North Direction Island_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "48f6739dbe8e06803605ddab80dff51a1e44302891eccd8d9727c5a189b6c964",
+      "size_bytes": 2593
+    },
+    "raw_exports/cots/one_tree_island/32b354f49c05_One Tree Island_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "32b354f49c055e7b662eeac54ce6c6265b3cda259d5f01b91dd9d013f28ec443",
+      "size_bytes": 2685
+    },
+    "raw_exports/cots/opal_reef/777a6fec5334_Opal Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "777a6fec533404af0db5255ae473eb69aa77f55f3f35c16af9d9546dcc0647b0",
+      "size_bytes": 2015
+    },
+    "raw_exports/cots/osborne_reef/2d4acd5ce149_Osborne Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "2d4acd5ce1492b6405d4d35e2eeca12251f2dc3e3151b4602ec1ec0195639c7d",
+      "size_bytes": 873
+    },
+    "raw_exports/cots/pearson_reef/a9454b0fcbcd_Pearson Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "a9454b0fcbcdda91751396a1dc3b546286c9380b39a9716c597bd75af0ea6c28",
+      "size_bytes": 1051
+    },
+    "raw_exports/cots/peart_reef/b5d5bb2ce641_Peart Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "b5d5bb2ce64135407c4ad7131be446bdb61278807099436e62b500d8e4b38b5e",
+      "size_bytes": 1459
+    },
+    "raw_exports/cots/pickersgill_reef/2791ce2e76dc_Pickersgill Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "2791ce2e76dcec4ccab11dcba78c2182ab567192c78648fce8be9c383a70d411",
+      "size_bytes": 2082
+    },
+    "raw_exports/cots/raine_island/a44216a3a3c1_Raine Island_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "a44216a3a3c149b9d9662c4634c312493f166e44654e06ad6254df7c22360569",
+      "size_bytes": 400
+    },
+    "raw_exports/cots/reef_11_049/c162ffbe6984_Reef 11-049_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "c162ffbe6984956e0fc8b6218697c052fd8083abea2f7d4129440a1007f909d6",
+      "size_bytes": 720
+    },
+    "raw_exports/cots/reef_11_162/8c95ab7155da_Reef 11-162_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "8c95ab7155da8d1ba6969022ec59ff14d3f7c56c1d3afb9a2d00595cebed9479",
+      "size_bytes": 635
+    },
+    "raw_exports/cots/reef_13_124/6e5441a1c0bb_Reef 13-124_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "6e5441a1c0bb95725d8fa93a3ba67575d5a6e64b6837f2da1c3619dd94381a2e",
+      "size_bytes": 2162
+    },
+    "raw_exports/cots/reef_14_056/b5c61f389d87_Reef 14-056_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "b5c61f389d87e3b88c021bc4a8975095bd94541750778d4d9fba452010ee6541",
+      "size_bytes": 1195
+    },
+    "raw_exports/cots/reef_14_075/5fdd4a5115e3_Reef 14-075_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "5fdd4a5115e34d44da2d6f50b1c63cd707b239d0210e963f811ee8906ddae670",
+      "size_bytes": 716
+    },
+    "raw_exports/cots/reef_16_017/d59b8971697f_Reef 16-017_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "d59b8971697fcef01948da82381d3abcf97d89a6208732c1d65204a66924b13c",
+      "size_bytes": 738
+    },
+    "raw_exports/cots/reef_19_138/e26f8dd1fa07_Reef 19-138_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "e26f8dd1fa073a83671e607ed723d94421bbcbbd71d94df886e2c82b728ad919",
+      "size_bytes": 2733
+    },
+    "raw_exports/cots/reef_20_104/4ce5b4bfc094_manta_cots_density.csv": {
+      "sha256": "4ce5b4bfc094b06a960b5130627748ccae1524d629728bd653bc154855056ad5",
+      "size_bytes": 2628
+    },
+    "raw_exports/cots/reef_20_354/6ee0b9ebef57_Reef 20-354_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "6ee0b9ebef572837506f3a6b6d8400eb4680c830cec9e106c64301a327df0845",
+      "size_bytes": 864
+    },
+    "raw_exports/cots/reef_21_060/73e595f945d0_manta_cots_density.csv": {
+      "sha256": "73e595f945d0f8f79980a8c50459fafdba9b841e723e200324a2f35b2747096b",
+      "size_bytes": 941
+    },
+    "raw_exports/cots/reef_21_062/1dd49583f22a_manta_cots_density.csv": {
+      "sha256": "1dd49583f22aa7e75f1f3fd1e1bfc52686a20db2345850fee95a979abc00fb1f",
+      "size_bytes": 709
+    },
+    "raw_exports/cots/reef_21_064/3b378cc76454_manta_cots_density.csv": {
+      "sha256": "3b378cc764549b3d4172b84a4a1487d1e176c29d00510d7e2964213335d36492",
+      "size_bytes": 945
+    },
+    "raw_exports/cots/reef_21_187/c86438b43a0a_manta_cots_density.csv": {
+      "sha256": "c86438b43a0a10e03fc9d935861ee5fae82a6b5ac35f64d7a49ad5edde0dc7e6",
+      "size_bytes": 1257
+    },
+    "raw_exports/cots/reef_21_245/170874cbae8e_Reef 21-245_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "170874cbae8e66e7b0b4fcc087f23969301ea969b1f8c21ae34f83e0422d8b70",
+      "size_bytes": 860
+    },
+    "raw_exports/cots/reef_21_550/999bece05c5e_Reef 21-550_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "999bece05c5eeda766df32ad2045e40bb559444c5685a5155fd603882e3f194f",
+      "size_bytes": 1016
+    },
+    "raw_exports/cots/reef_21_558/c89670573f44_Reef 21-558_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "c89670573f445647b980070136985a91a3a03e16b9e3686a957c55ea63bb8144",
+      "size_bytes": 937
+    },
+    "raw_exports/cots/reef_21_591/e686326ed5b4_manta_cots_density.csv": {
+      "sha256": "e686326ed5b44a714c4bfe21168889cc44863f805775e958c2c170a33b7a1119",
+      "size_bytes": 1053
+    },
+    "raw_exports/cots/reef_22_084/4909646e3e97_manta_cots_density.csv": {
+      "sha256": "4909646e3e97a4feb5d04c2f9765289927214db47129bb6977206138d21ac102",
+      "size_bytes": 1020
+    },
+    "raw_exports/cots/rib_reef/6c28089abca0_Rib Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "6c28089abca0711f1a2dc81186f914b5d56a9fc4709000b2d60ef08e80c86acb",
+      "size_bytes": 2841
+    },
+    "raw_exports/cots/rodda_reef/62e68d55c740_Rodda Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "62e68d55c7406115032b6c3ed56600a53cc6378d3eff9d84eb3dc8ad5b4d1d59",
+      "size_bytes": 2212
+    },
+    "raw_exports/cots/saville_kent_reef/47bc69764f6d_Saville-Kent Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "47bc69764f6d62e3cb0b9428981fdafc62801a103a74ebf73598cc8c30507181",
+      "size_bytes": 1106
+    },
+    "raw_exports/cots/scott_reef/952fb33578a3_Scott Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "952fb33578a32bc1a6e6eb8a4c5bc633183f431ae27ba2073e38f44229344dac",
+      "size_bytes": 894
+    },
+    "raw_exports/cots/shell_reef/6575910e7666_Shell Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "6575910e7666c2cf7d021686a95643d9f19fdaf2e20bf0e7ff4ddad73259ab5f",
+      "size_bytes": 927
+    },
+    "raw_exports/cots/showers_reef/0e38f9bd3a3d_Showers Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "0e38f9bd3a3d40dac9262f28946803a4046cc90962743894e6f4a3761ce4ac93",
+      "size_bytes": 786
+    },
+    "raw_exports/cots/shrimp_reef/777096ca6a9a_Shrimp Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "777096ca6a9a67f9769686265f4fc1c69844264615f97018d6928a303b47f7f2",
+      "size_bytes": 1188
+    },
+    "raw_exports/cots/small_lagoon_reef/722841acf122_Small Lagoon Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "722841acf122acd384f1a1e7d7290f65fd09afb7b0704add72fcbc1ccfe0485c",
+      "size_bytes": 913
+    },
+    "raw_exports/cots/snake_reef/383c6bc70f5b_Snake Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "383c6bc70f5bde337bb6a9fa02f61f16990505c03ee636b09defcde8904e6f65",
+      "size_bytes": 2097
+    },
+    "raw_exports/cots/south_direction_island/a987433f045e_South Direction Island_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "a987433f045eb40ef3a305b764be2c9f453aef0cc8a22eabf2dc3ece23d20030",
+      "size_bytes": 622
+    },
+    "raw_exports/cots/st_crispin_reef/2e3e49838d57_St. Crispin Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "2e3e49838d575d7ab190ca678251561192e7a64c81f467c050243a82ba1405b8",
+      "size_bytes": 3129
+    },
+    "raw_exports/cots/startle_reef_east/383b4b4b791c_Startle Reef East_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "383b4b4b791c1bcaa22f8e25f3bd1c2ea09b8c7d95d3750d9308b86c6b97f597",
+      "size_bytes": 1283
+    },
+    "raw_exports/cots/swinger_reef/f46b87bf75d0_Swinger Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "f46b87bf75d0ae5cee531838b5e5002b7748a3e4b098cecc5958f64933564c7c",
+      "size_bytes": 1617
+    },
+    "raw_exports/cots/taylor_reef/2efb60d15d15_Taylor Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "2efb60d15d151156a3aa443a3d89d48813a99d3828498a598e648f9cbe7b595e",
+      "size_bytes": 1317
+    },
+    "raw_exports/cots/tern_island/1ab0286eff7e_manta_cots_density.csv": {
+      "sha256": "1ab0286eff7e8e7fda072288d24cd5dcf458fae3fa940ca5d8c79de07974f1a7",
+      "size_bytes": 1147
+    },
+    "raw_exports/cots/thetford_reef/84589d45e0ac_Thetford Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "84589d45e0ac69d2fe8a5d6e6a5b10c1aefab41052132a191bf9e22a3e9546f6",
+      "size_bytes": 2951
+    },
+    "raw_exports/cots/tongue_reef/66da3e5f937c_Tongue Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "66da3e5f937caf379ae1c9e4f3f66e170ca0b8107e44962ae86cb5de8cb2aac7",
+      "size_bytes": 738
+    },
+    "raw_exports/cots/turner_cay/b80bec646bbc_manta_cots_density.csv": {
+      "sha256": "b80bec646bbc733bf542cff39997179682007739ded67a6de08d372543b9a941",
+      "size_bytes": 2171
+    },
+    "raw_exports/cots/upolu_cay/da7608de3287_Upolu Cay_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "da7608de328747c46184fd04e9350b1338ee26baf7be0a3ba073079727146a06",
+      "size_bytes": 560
+    },
+    "raw_exports/cots/viper_reef/3362298ff971_Viper Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "3362298ff971dfeda6dcdfae866aaf38ec5a63b713f03ba12016ef8edfb65647",
+      "size_bytes": 1077
+    },
+    "raw_exports/cots/wade_reef/caba21c94220_manta_cots_density.csv": {
+      "sha256": "caba21c9422009a61753cc5c6cc282efa6f5d183d835e7c38aee5cccecb48b91",
+      "size_bytes": 1070
+    },
+    "raw_exports/cots/wardle_reef/8b2dbd52b479_Wardle Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "8b2dbd52b479504120f0d5aad3393b058abe5651a90a9079e41ad493b4f15763",
+      "size_bytes": 1809
+    },
+    "raw_exports/cots/wheeler_reef/b95408170f0f_Wheeler Reef_Manta Tow_cots_modelled_2026-01-21.csv": {
+      "sha256": "b95408170f0fa7addfc52f84acd62bee48b06a62a309773c84559e7bac752c79",
+      "size_bytes": 1596
+    },
+    "raw_exports/manta_hc/agincourt_reef_no_1/f697217d2360_manta_HC_visual_estimate.csv": {
+      "sha256": "f697217d2360026f53d460e1e349d577f5ae65200056e3cc28ff8f67062326ef",
+      "size_bytes": 5948
+    },
+    "raw_exports/manta_hc/arlington_reef/2543f967c2d8_Arlington Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "2543f967c2d840a7b7f86a75c0a78d7bbe1075766b8048ee42b35864870ca4b5",
+      "size_bytes": 2187
+    },
+    "raw_exports/manta_hc/ashmore_banks_c/3e8dfa22e5bc_Ashmore Banks c_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "3e8dfa22e5bc29158e43c88f6ae7329810a7e2816925b346961fd15ac6b867d3",
+      "size_bytes": 2350
+    },
+    "raw_exports/manta_hc/beaver_reef/b791f70fa6bd_Beaver Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "b791f70fa6bd10624e355cc7242fb9cb4db3325c556bbd357ce4b16a56930293",
+      "size_bytes": 2140
+    },
+    "raw_exports/manta_hc/border_island/96cbb96b6dd2_manta_HC_visual_estimate.csv": {
+      "sha256": "96cbb96b6dd24382d4c34d9bd0e302e9295c6e56b4e263c7ab99310fbdb58ce0",
+      "size_bytes": 2378
+    },
+    "raw_exports/manta_hc/boulder_reef/382b4e97e001_Boulder Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "382b4e97e0015cac32fed6bd596d981e4fe9adaa8aaf136e4978a43c86179ef5",
+      "size_bytes": 4695
+    },
+    "raw_exports/manta_hc/boult_reef/699d8286383a_Boult Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "699d8286383a57cab00b0d70a126bd8a0be044a080f3706b6a84c6cb674324d3",
+      "size_bytes": 1960
+    },
+    "raw_exports/manta_hc/bowden_reef/a4fcd09dbe5e_Bowden Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "a4fcd09dbe5ec6cfe4f6e2833bda245ae23c8fca9171818d9c9ebad45bef807c",
+      "size_bytes": 4852
+    },
+    "raw_exports/manta_hc/broomfield_reef/25f71c786b2f_manta_HC_visual_estimate.csv": {
+      "sha256": "25f71c786b2fd814b43c3bce8014669aa074b155d4aedbe1de24067c5a636f9b",
+      "size_bytes": 6161
+    },
+    "raw_exports/manta_hc/carter_reef/948b0d8beda7_Carter Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "948b0d8beda7aadee51d8471cea91dc70d4eb48a9bb464925b5d35583cc243cb",
+      "size_bytes": 4846
+    },
+    "raw_exports/manta_hc/centipede_reef/6bbcaaabfc05_Centipede Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "6bbcaaabfc0540639aec0b5f7c129e40af52ab3b85621242e8dc421e38ca8a1a",
+      "size_bytes": 2688
+    },
+    "raw_exports/manta_hc/charity_reef/be0c7fb25f60_Charity Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "be0c7fb25f60bbd3da257bd60e7e55a48797152435124a4ed20fbf7d3a3b7089",
+      "size_bytes": 2489
+    },
+    "raw_exports/manta_hc/chicken_reef/c4c920fd38d6_manta_HC_visual_estimate.csv": {
+      "sha256": "c4c920fd38d60bd61d6a6bf413a115a2147a988007ab441ef94a9c8cf520a75d",
+      "size_bytes": 5943
+    },
+    "raw_exports/manta_hc/chinaman_reef_22_102/f3c433878435_Chinaman Reef (22-102)_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "f3c43387843589c808cf2d0e69305443b5cd87fb907a78ba582a3d78c7f977b4",
+      "size_bytes": 6754
+    },
+    "raw_exports/manta_hc/corbett_reef/fdff9df9d3c6_Corbett Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "fdff9df9d3c6e71cd9206e76e66e600e6a8061a5b1f7afa7bd1594c1a4a592a2",
+      "size_bytes": 1659
+    },
+    "raw_exports/manta_hc/davie_reef/b75911fa2f0a_Davie Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "b75911fa2f0a69d942fcd2628187ad333d8318ef47773d6f352bab934e352f48",
+      "size_bytes": 3287
+    },
+    "raw_exports/manta_hc/davies_reef/365623905ce9_Davies Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "365623905ce9cb7b3fd4af3f4dd8edd31445d09e9a826ca4554cb2074eb8524d",
+      "size_bytes": 5612
+    },
+    "raw_exports/manta_hc/dip_reef/31894be281c0_Dip Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "31894be281c01e65fc0b179aeec5f8c6706c1b05d14c694bf260224da07313ec",
+      "size_bytes": 4191
+    },
+    "raw_exports/manta_hc/east_cay/ae171e9b6ea0_East Cay_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "ae171e9b6ea07eb11a1cd0de43b10df69536e69a1ae1f06dc5bcc235273c6739",
+      "size_bytes": 5223
+    },
+    "raw_exports/manta_hc/egret_reef/ea5089ba95c4_Egret Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "ea5089ba95c4c9d126e282a18d8eb7712cb6ef7aef3f29b9e8b4b8c70be22b80",
+      "size_bytes": 2476
+    },
+    "raw_exports/manta_hc/elizabeth_reef/d00d72733722_Elizabeth Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "d00d727337220dd2833c21d9242186709b6dd1d1fcaeda49dbcc655d69c0ec00",
+      "size_bytes": 1681
+    },
+    "raw_exports/manta_hc/erskine_island/c257507ec8f6_manta_HC_visual_estimate.csv": {
+      "sha256": "c257507ec8f6c85538bccb99e7aad6a62102025b86876d924e7d6cc1338e70a9",
+      "size_bytes": 2635
+    },
+    "raw_exports/manta_hc/evening_reef/ef5c87bb436a_Evening Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "ef5c87bb436a0574afd5e3f6a545516ff61a2660c8288ebe01a25b84d235ed24",
+      "size_bytes": 2309
+    },
+    "raw_exports/manta_hc/eye_reef/c6509cc517ac_Eye Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "c6509cc517ac41cf3e34f7f86a7e2af0f541ba5dca61c002b9ca4bc253081368",
+      "size_bytes": 1450
+    },
+    "raw_exports/manta_hc/eyrie_reef/b1cfaed936cc_Eyrie Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "b1cfaed936cc5b65c0dd55feb5bc2cd66b9b4dfc2a1eae88dd866c9474cf20cd",
+      "size_bytes": 2126
+    },
+    "raw_exports/manta_hc/fairfax_island/763e14fb0ca3_Fairfax Island_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "763e14fb0ca314844902a30a2d0c91e167b8c9f3157c584cf3aced9687a0d7b6",
+      "size_bytes": 2692
+    },
+    "raw_exports/manta_hc/faith_reef/43674165dfca_Faith Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "43674165dfca277435354278b1c6ecafbc95b5625db96929c789c67d9832f075",
+      "size_bytes": 4245
+    },
+    "raw_exports/manta_hc/farquharson_reef/9bc5c24e4ce1_Farquharson Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "9bc5c24e4ce16dc4987649cfd057259892d89dfc417b01545971af4c82764cdc",
+      "size_bytes": 1491
+    },
+    "raw_exports/manta_hc/feather_reef/3a0075bf9453_Feather Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "3a0075bf9453afeec0b56b771540ced3a87b3e548f97eef9610627708a6e6ca7",
+      "size_bytes": 5714
+    },
+    "raw_exports/manta_hc/fly_reef/2ed32dd796cf_Fly Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "2ed32dd796cf07b36f6f6ecafa643637811b6e489933381e0276c1ae97d3be50",
+      "size_bytes": 1471
+    },
+    "raw_exports/manta_hc/fore_and_aft_reef/84254f78f767_Fore and Aft Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "84254f78f767a2f9a909ff42622f0945bccf8529646eac0b608fd0a61fbd82c3",
+      "size_bytes": 2374
+    },
+    "raw_exports/manta_hc/fork_reef/9cb6e82f7995_Fork Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "9cb6e82f7995fe83b56f489fb371dc67e263a18f412a7c1d523e354f9b929b35",
+      "size_bytes": 1942
+    },
+    "raw_exports/manta_hc/forrester_reef/771beb0a34b6_Forrester Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "771beb0a34b6ea4e38b369b210e0c9031168cb8601a02c8d0d581c9c725168c9",
+      "size_bytes": 2870
+    },
+    "raw_exports/manta_hc/gannet_cay/a4c29bd7704b_Gannet Cay_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "a4c29bd7704b14d36fcdfbae6cceec10bbe8a0cace33267529ac2421851db35f",
+      "size_bytes": 6111
+    },
+    "raw_exports/manta_hc/green_island/e9015e7021bf_Green Island_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "e9015e7021bf08ffcec2a762dc0f3685404d532ff48fe4831d72170e864530c2",
+      "size_bytes": 5281
+    },
+    "raw_exports/manta_hc/grub_reef_18_077/a3bc194230ad_Grub Reef (18-077)_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "a3bc194230adeb57aba40402107e822d61383be210bdffe0508da11eee3fced8",
+      "size_bytes": 2560
+    },
+    "raw_exports/manta_hc/hardy_reef/d9f5df8efe17_Hardy Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "d9f5df8efe1769167d1e4fa17e62792650f0de73c524b5ca00aa58367536de7a",
+      "size_bytes": 3637
+    },
+    "raw_exports/manta_hc/hastings_reef/1989a8d19eae_manta_HC_visual_estimate.csv": {
+      "sha256": "1989a8d19eae8185b019f5aa4d29487748a2756f169cc2537e64b2e3c1ec6532",
+      "size_bytes": 6436
+    },
+    "raw_exports/manta_hc/hedley_reef/0b734ec789d7_Hedley Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "0b734ec789d793d0eeba8129f9c0b0198b908069b84187abe7858fc64b1a09e1",
+      "size_bytes": 2550
+    },
+    "raw_exports/manta_hc/helix_reef/eea3490c51f5_Helix Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "eea3490c51f516542d735aaa1780ce74379d0a1341dcfce5449c0eb5e46b19bf",
+      "size_bytes": 3965
+    },
+    "raw_exports/manta_hc/helsdon_reef/33ba6d0e17b8_Helsdon Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "33ba6d0e17b8bb12563ed459d8b4a5b8c6f4a37b47131850b9705a2b177d9ad7",
+      "size_bytes": 3009
+    },
+    "raw_exports/manta_hc/holbourne_island/2127612ede73_Holbourne Island_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "2127612ede73776a52ee79d0bf6e79d45ebed57e6f5d0d7b844b2c8fa2f10c97",
+      "size_bytes": 2023
+    },
+    "raw_exports/manta_hc/hope_reef_19046/cf36f3240940_Hope Reef(19046)_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "cf36f3240940d1d8390926f11b5588f1f7b75591813fb5c79276d20382bef6b0",
+      "size_bytes": 1343
+    },
+    "raw_exports/manta_hc/horseshoe_reef/9c4290c0a325_manta_HC_visual_estimate.csv": {
+      "sha256": "9c4290c0a325a59ed0aa0af7913062c2b58b0c82d4a08dc00f16e941d61e7bc3",
+      "size_bytes": 4975
+    },
+    "raw_exports/manta_hc/irene_reef/fc3c64247337_Irene Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "fc3c64247337e6f44fa03fda8a3a17a5a59bd5e97224e55aceacf43ee3f8757c",
+      "size_bytes": 2127
+    },
+    "raw_exports/manta_hc/jaguar_reef/0bc6a737dc98_Jaguar Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "0bc6a737dc982a2514ac69728408ad23a39ff3d1bd192c5ead1512c10deccdf3",
+      "size_bytes": 1479
+    },
+    "raw_exports/manta_hc/jenkins_reef/a7a567ce91eb_Jenkins Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "a7a567ce91eb1f2d4c22e457d1f25d15c77559a24a09ac14386aea4ab6408f5b",
+      "size_bytes": 1819
+    },
+    "raw_exports/manta_hc/john_brewer_reef/058773d19116_John Brewer Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "058773d19116a62395c190a3ce24952fb22d1e858fc36a0ba1461c7b72cc468c",
+      "size_bytes": 5804
+    },
+    "raw_exports/manta_hc/kangaroo_reef_west/7d77e8dc0abf_Kangaroo Reef West_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "7d77e8dc0abfc9d60d7eed7234e8af21fd0c5192ee2f069b50a16fc79f958680",
+      "size_bytes": 1707
+    },
+    "raw_exports/manta_hc/kelso_reef/352fabef979d_manta_HC_visual_estimate.csv": {
+      "sha256": "352fabef979dce3f81cb6446847da132398b57b5fbc6b79d2a0d1835a0652e21",
+      "size_bytes": 2834
+    },
+    "raw_exports/manta_hc/knife_reef/f6c82163e4e6_Knife Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "f6c82163e4e6b03b199854e8517e9e8ce093e90cbc06eed1cb933b7ba11260e4",
+      "size_bytes": 3141
+    },
+    "raw_exports/manta_hc/lady_musgrave_island/2c80c98a6da1_Lady Musgrave Island_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "2c80c98a6da16ece3c6d4520a62d133c182a6ac60b129e34cf1c6b686c634523",
+      "size_bytes": 6472
+    },
+    "raw_exports/manta_hc/lagoon_reef/34c723cd717b_Lagoon Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "34c723cd717b21a355401c7e08c492ec6795cc86a736fcb3aa469233ccf7da3f",
+      "size_bytes": 3032
+    },
+    "raw_exports/manta_hc/linnet_reef/3a567ed91c8c_Linnet Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "3a567ed91c8c0597e1f8303a0c2622d1e0688d9c53f32b07016896ca4787f2ad",
+      "size_bytes": 5927
+    },
+    "raw_exports/manta_hc/little_kelso_reef/3b13fb8f87b6_Little Kelso Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "3b13fb8f87b649a5534963126f5acc2588986312961bbd79263cd79bc10c4976",
+      "size_bytes": 2739
+    },
+    "raw_exports/manta_hc/lizard_isles/50ea297bc299_Lizard Isles_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "50ea297bc299672fd9a26a6604957fedf4f37a75ac8169862c96f4afbed1d878",
+      "size_bytes": 5883
+    },
+    "raw_exports/manta_hc/low_isles/ee9bd262d489_Low Isles_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "ee9bd262d489915719ee815665909b771d8be116bce355a38634c79ea33d66d9",
+      "size_bytes": 4455
+    },
+    "raw_exports/manta_hc/macgillivray_reef/671486a7e20c_Macgillivray Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "671486a7e20c72a6ec5998f9fb0538298a08e0d951af0bcacf001bde8ec5579c",
+      "size_bytes": 6335
+    },
+    "raw_exports/manta_hc/mackay_reef/2892dd1a2fa0_Mackay Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "2892dd1a2fa012ae7b2a786d8743ed918a033fed883d5d6ebd380d3ea184fa41",
+      "size_bytes": 5519
+    },
+    "raw_exports/manta_hc/martin_reef/0406ae609611_Martin Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "0406ae60961121bc765f93bb99733cbc39491530de9cbeda3f9b24a760ff0f8d",
+      "size_bytes": 5006
+    },
+    "raw_exports/manta_hc/marx_reef/548c8f5a8ffc_Marx Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "548c8f5a8ffc299b473e9f60931c3982d45f045b731cb2429219a46929357115",
+      "size_bytes": 3106
+    },
+    "raw_exports/manta_hc/mcsweeney_reef/21594a9aede1_McSweeney Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "21594a9aede13232d85009a0c6222959621fd481fe7909fa37818be0b90653f7",
+      "size_bytes": 1326
+    },
+    "raw_exports/manta_hc/michaelmas_cay/957ccf38b8af_Michaelmas Cay_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "957ccf38b8af59c199c02a0805927bb0931845894dfc6aeae7651ceb8c7e2068",
+      "size_bytes": 5045
+    },
+    "raw_exports/manta_hc/middle_banks_2/5aa54e518e5c_Middle Banks 2_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "5aa54e518e5c907fbea8b169102f2c0a30bc27619a4d66784bd6fd8af1424b02",
+      "size_bytes": 2325
+    },
+    "raw_exports/manta_hc/middle_banks_3/c5fbad6c471e_Middle Banks 3_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "c5fbad6c471e0432f849e6d19932463ab53982f511f8ca79748eba7781123dd1",
+      "size_bytes": 2506
+    },
+    "raw_exports/manta_hc/monsoon_reef/45a8ce658998_Monsoon Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "45a8ce6589985b01578fde402b71e62f4b7962f5c1ac156d593770d56ce13609",
+      "size_bytes": 1309
+    },
+    "raw_exports/manta_hc/moore_reef/4a16bfac3533_Moore Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "4a16bfac35337f133b6a3b9bdc347fcbde86a4ecf015b0181b09395f3af657d1",
+      "size_bytes": 2487
+    },
+    "raw_exports/manta_hc/north_direction_island/4615f6acdfd3_North Direction Island_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "4615f6acdfd3a504fc249c1a34e064a02e7a1f2d732cf27bcd5723b50be47615",
+      "size_bytes": 5091
+    },
+    "raw_exports/manta_hc/one_tree_island/0d639b880177_One Tree Island_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "0d639b88017732295d5b172ce067c13a18689a77221251ce8eb60eb630aa983c",
+      "size_bytes": 5273
+    },
+    "raw_exports/manta_hc/opal_reef/7555981d7785_Opal Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "7555981d7785925edb252db21cbf2f6766f8a35147f8b086fe0303a23a619dbb",
+      "size_bytes": 4145
+    },
+    "raw_exports/manta_hc/osborne_reef/37fcb93ff649_Osborne Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "37fcb93ff649bf49796193b452dee75ab06b9dc6dd2548c5cfad4a5c1f009824",
+      "size_bytes": 1803
+    },
+    "raw_exports/manta_hc/pearson_reef/ce46f7c36210_Pearson Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "ce46f7c36210a6d7e884e251274ba9282e8983b5da0dc4e0e0993d327e0843bd",
+      "size_bytes": 2160
+    },
+    "raw_exports/manta_hc/peart_reef/20788318967a_Peart Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "20788318967a644ea85aab530bfb71b0cdb697a06dc496f1f0cfc4391c44e043",
+      "size_bytes": 2968
+    },
+    "raw_exports/manta_hc/pickersgill_reef/1a78d0bf013f_Pickersgill Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "1a78d0bf013f079fa68e2fbf02b2dd57bf55b065eda12f5b958c9baf0d23b226",
+      "size_bytes": 4192
+    },
+    "raw_exports/manta_hc/raine_island/0c2291b7d6e3_Raine Island_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "0c2291b7d6e30f376256f4c0b2dddb6d044ba707c2a28613f26f63c8f4eed34b",
+      "size_bytes": 800
+    },
+    "raw_exports/manta_hc/reef_11_049/c47755c38f54_Reef 11-049_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "c47755c38f54ac482ab23b0544a50820619261cda2685d815833a3d34ec0b484",
+      "size_bytes": 1469
+    },
+    "raw_exports/manta_hc/reef_11_162/f77554547149_Reef 11-162_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "f77554547149253fd55e796335298f07fb403f29bf6ddc44067d9f727e7b046d",
+      "size_bytes": 1307
+    },
+    "raw_exports/manta_hc/reef_13_124/5adb6dbd90b8_Reef 13-124_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "5adb6dbd90b8bfa7d99fb6b2b9c2ff6f012a604362046c6a6143d3d104fed63d",
+      "size_bytes": 4519
+    },
+    "raw_exports/manta_hc/reef_14_056/7f3b02487c81_Reef 14-056_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "7f3b02487c81e625843bb270584622a985e8df9a4de354ae84ec671a10cca25f",
+      "size_bytes": 2467
+    },
+    "raw_exports/manta_hc/reef_14_075/d1b692ec5547_Reef 14-075_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "d1b692ec5547635b7a5856f723480eca3cb7f19ae3d346db8a95fc5b6b1c19de",
+      "size_bytes": 1475
+    },
+    "raw_exports/manta_hc/reef_16_017/d30db24cf01b_Reef 16-017_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "d30db24cf01bf819e7bedcbf97282893466913981826d4cf45d77c1650f74fd8",
+      "size_bytes": 1476
+    },
+    "raw_exports/manta_hc/reef_19_138/b224d7faf5ef_Reef 19-138_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "b224d7faf5efd3391711d344de7a0b1726781bb3448b25420ba26a272b846c4a",
+      "size_bytes": 5194
+    },
+    "raw_exports/manta_hc/reef_20_104/30587f512c26_manta_HC_visual_estimate.csv": {
+      "sha256": "30587f512c26f4cc4cc3887c22a7b1720a9763c504f2cfa9a06881ea34d9d8b9",
+      "size_bytes": 5048
+    },
+    "raw_exports/manta_hc/reef_20_354/e85b21a1d0d8_Reef 20-354_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "e85b21a1d0d8eda1bc5c784e6a68502e1837b16ffcaa01734d28a714310536fa",
+      "size_bytes": 1849
+    },
+    "raw_exports/manta_hc/reef_21_060/dd44f268eb85_manta_HC_visual_estimate.csv": {
+      "sha256": "dd44f268eb854868d9e2b5d29b1b4c33ae139c40eaacdbff69ee8eff255f7bd9",
+      "size_bytes": 2115
+    },
+    "raw_exports/manta_hc/reef_21_062/c7e24eeb6235_manta_HC_visual_estimate.csv": {
+      "sha256": "c7e24eeb6235e9424a15007751694fc0af1f3e0f55b6548bbd51492d20ea28c1",
+      "size_bytes": 1552
+    },
+    "raw_exports/manta_hc/reef_21_064/42da2745fd3a_manta_HC_visual_estimate.csv": {
+      "sha256": "42da2745fd3a196f6432207cb2b957b58c50c53034f94d1b3aab6a4de2f4f16d",
+      "size_bytes": 2080
+    },
+    "raw_exports/manta_hc/reef_21_187/e051fb71e053_manta_HC_visual_estimate.csv": {
+      "sha256": "e051fb71e053db0d0fba9c49f7f27972129d3893352b4d86fdce8502075ccddc",
+      "size_bytes": 2737
+    },
+    "raw_exports/manta_hc/reef_21_245/888e2b103ad8_Reef 21-245_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "888e2b103ad8edc47c0e03ae15956b327f5a846b6fddb8426de79a3840614d28",
+      "size_bytes": 1805
+    },
+    "raw_exports/manta_hc/reef_21_550/b8cc8d91265f_Reef 21-550_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "b8cc8d91265ffc8e88f7c88aad26b6724ee9501cf8b36e6fcea699de1c992225",
+      "size_bytes": 2140
+    },
+    "raw_exports/manta_hc/reef_21_558/9b818d595d97_Reef 21-558_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "9b818d595d97724f9d2e1a65ebf2d91d0e0b360632c5477947e5ab0222b2a3ff",
+      "size_bytes": 1969
+    },
+    "raw_exports/manta_hc/reef_21_591/efdc0be2bb2e_manta_HC_visual_estimate.csv": {
+      "sha256": "efdc0be2bb2e8444812fca41b81aa75fed45eb59b9115f8f579d0e9c247702d2",
+      "size_bytes": 2066
+    },
+    "raw_exports/manta_hc/reef_22_084/18fb011df6be_manta_HC_visual_estimate.csv": {
+      "sha256": "18fb011df6beb33169d779e8fed7fc2bc30a9b66ddde222e5f4f788e7b4255d6",
+      "size_bytes": 2245
+    },
+    "raw_exports/manta_hc/rib_reef/2c9cdb8e61d8_Rib Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "2c9cdb8e61d8c79974e0fffcf4940d5bc29567acedffa70cdbe7bb7694ed4698",
+      "size_bytes": 6083
+    },
+    "raw_exports/manta_hc/rodda_reef/9fe8420785d2_Rodda Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "9fe8420785d2d0284a7d73e835e31ab7d6bc0fcf91beb841a42bfc9a6f1eedc9",
+      "size_bytes": 4623
+    },
+    "raw_exports/manta_hc/saville_kent_reef/44e12bae81a1_Saville-Kent Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "44e12bae81a1e6fa9eae87e39135b86984d72c04f11a51e76974e530918f6e0d",
+      "size_bytes": 2232
+    },
+    "raw_exports/manta_hc/scott_reef/7aeb46cd8a63_Scott Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "7aeb46cd8a638819a2ffa2f5fc7f34fec3368fbee02678d71193bbe3f70de5e3",
+      "size_bytes": 1861
+    },
+    "raw_exports/manta_hc/shell_reef/aabbc92e6292_Shell Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "aabbc92e62929502d1de5226762ecdbe12a91ac8ae8cf551c7dfca61cd58343e",
+      "size_bytes": 1964
+    },
+    "raw_exports/manta_hc/showers_reef/b3c8f30e77d5_Showers Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "b3c8f30e77d57dae6bab2168080e76b2f5f7fe12bacb953c1664f7827a4a9025",
+      "size_bytes": 1643
+    },
+    "raw_exports/manta_hc/shrimp_reef/a264e906dfbb_Shrimp Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "a264e906dfbbde7d9c9d52feb03b83715d197aea809e79e587aab358ac6c74a5",
+      "size_bytes": 2548
+    },
+    "raw_exports/manta_hc/small_lagoon_reef/c828d18e892d_Small Lagoon Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "c828d18e892df1dabee82c1201315c1c216d0dc12ca218204d1b1e25c2861c44",
+      "size_bytes": 1864
+    },
+    "raw_exports/manta_hc/snake_reef/7c94bd87c798_Snake Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "7c94bd87c7985afbf2dcd944ae8237886df3d6bda592f7f15f26a14fc21b6bf1",
+      "size_bytes": 4496
+    },
+    "raw_exports/manta_hc/south_direction_island/d24dd0685973_South Direction Island_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "d24dd0685973c676fdd4c0d4aa3b86fbe00e0fb3d8be2e16b90c59d066c12b2b",
+      "size_bytes": 1203
+    },
+    "raw_exports/manta_hc/st_crispin_reef/54caeeae1328_St. Crispin Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "54caeeae132873fc81568c1822e3c87537046f53543401c68c46af2cd22ba8d8",
+      "size_bytes": 6206
+    },
+    "raw_exports/manta_hc/startle_reef_east/35a2fbf7605c_Startle Reef East_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "35a2fbf7605c84ea4a01ef6966a48393b12726116d16bae12d21d6643b9a595c",
+      "size_bytes": 2567
+    },
+    "raw_exports/manta_hc/swinger_reef/5f56830b635a_Swinger Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "5f56830b635a953858e1a62a4fedee86a355c5bf21e69431c361fa1af8c1dbaf",
+      "size_bytes": 3412
+    },
+    "raw_exports/manta_hc/taylor_reef/6f3df27e94b1_Taylor Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "6f3df27e94b1cb4981ada8d85fcbbf4ec7481f5c498d7a60ac004b55fb7057c5",
+      "size_bytes": 2653
+    },
+    "raw_exports/manta_hc/tern_island/e32baef6d12e_manta_HC_visual_estimate.csv": {
+      "sha256": "e32baef6d12ebf64d782b06ab1ffefaef1975cf6901b31a5638d9a55becf8bc6",
+      "size_bytes": 2250
+    },
+    "raw_exports/manta_hc/thetford_reef/e485a340db92_Thetford Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "e485a340db923c1b920a07c96f3e2549319eadebf4e80c5254536afb7f96bdd3",
+      "size_bytes": 5941
+    },
+    "raw_exports/manta_hc/tongue_reef/9dbbe0896a0b_Tongue Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "9dbbe0896a0bce7521e64c9ca053e8754a8f52274d6614eca4e1d3adba829da8",
+      "size_bytes": 1467
+    },
+    "raw_exports/manta_hc/turner_cay/955c28fd0327_manta_HC_visual_estimate.csv": {
+      "sha256": "955c28fd032720b720964a29e4a9a1f9736d635ffffdc97378ef4eb20391f703",
+      "size_bytes": 4682
+    },
+    "raw_exports/manta_hc/upolu_cay/08dc335ebc82_Upolu Cay_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "08dc335ebc82089ae3fdbe0ca9b3a9e2cc6e418f9e2862c7404ceac367227ff0",
+      "size_bytes": 1119
+    },
+    "raw_exports/manta_hc/viper_reef/17864941626c_Viper Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "17864941626c0aa4d6674896641cf4737b14d3e4075ae3276b378023d4ae748e",
+      "size_bytes": 2295
+    },
+    "raw_exports/manta_hc/wade_reef/7e8fbb3f803d_manta_HC_visual_estimate.csv": {
+      "sha256": "7e8fbb3f803ddfa860c71258213823f5dea99a4e5513376c5534bfe8e53b35bd",
+      "size_bytes": 2403
+    },
+    "raw_exports/manta_hc/wardle_reef/dd8c9ba83b25_Wardle Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "dd8c9ba83b255da28d4cc4fcdbfa1d58ef44c2a3b9f6bce31069abebaf001fe4",
+      "size_bytes": 3675
+    },
+    "raw_exports/manta_hc/wheeler_reef/c7c6b029a004_Wheeler Reef_Manta Tow_line_chart_modelled_2026-01-21.csv": {
+      "sha256": "c7c6b029a0046c3445347b1840674baaa88629b1bd7ebba021c9487ca5ce7056",
+      "size_bytes": 2815
+    },
+    "raw_exports/manta_hc/wreck_island/9337201e44e8_manta_HC_visual_estimate.csv": {
+      "sha256": "9337201e44e8ad0051aae8b4ab31c257fec5178d876b7301373b2ff757f91235",
+      "size_bytes": 4199
+    },
+    "raw_exports/photo_hc/agincourt_reef_no_1/b8c058ad8a7a_photo_transect_HARD_CORAL.csv": {
+      "sha256": "b8c058ad8a7af9cfd44cbac34e046e13fc50134d666f613ad54b59c6963de000",
+      "size_bytes": 6168
+    },
+    "raw_exports/photo_hc/arlington_reef/b1cb68060282_photo_transect_HARD_CORAL.csv": {
+      "sha256": "b1cb68060282cabf6b6ca6eb36eb3d5a1e2d7cc59967159788905d947de05687",
+      "size_bytes": 1853
+    },
+    "raw_exports/photo_hc/barren_island/cd0fbc6cb5a6_photo_transect_HARD_CORAL.csv": {
+      "sha256": "cd0fbc6cb5a68f2cf61520e921ef3cf0aaf2b01c76541baac80b40db274f08eb",
+      "size_bytes": 7358
+    },
+    "raw_exports/photo_hc/border_island/61a72d3ec4d2_photo_transect_HARD_CORAL.csv": {
+      "sha256": "61a72d3ec4d21a78eef99f078adb299199c2ea44e02ea9b94e3ed9c97a9bf86d",
+      "size_bytes": 4491
+    },
+    "raw_exports/photo_hc/boult_reef/c2983c8fa065_photo_transect_HARD_CORAL.csv": {
+      "sha256": "c2983c8fa0655a4a171102aca608d618b5b1e95d0b18232b83e827d8190cfdc4",
+      "size_bytes": 1613
+    },
+    "raw_exports/photo_hc/broomfield_reef/16566b05932f_photo_transect_HARD_CORAL.csv": {
+      "sha256": "16566b05932f67ae44430e663329659694b972da132f994c747b7291e593617f",
+      "size_bytes": 6183
+    },
+    "raw_exports/photo_hc/carter_reef/e668d3ef80f8_photo_transect_HARD_CORAL.csv": {
+      "sha256": "e668d3ef80f88d6c15a1e599933166a57b75428ad36c406bf58520b6d31254c2",
+      "size_bytes": 4597
+    },
+    "raw_exports/photo_hc/centipede_reef/796bb2c8ade3_photo_transect_HARD_CORAL.csv": {
+      "sha256": "796bb2c8ade3c7e1f2af70dfb6202f32deadc290d420bf920b916498ed90c69b",
+      "size_bytes": 1463
+    },
+    "raw_exports/photo_hc/chicken_reef/d5aa649efd6c_photo_transect_HARD_CORAL.csv": {
+      "sha256": "d5aa649efd6c5eb2322a7ade93e50a724ce12d471fbc97e7d18bbce5b1b1134a",
+      "size_bytes": 5936
+    },
+    "raw_exports/photo_hc/chinaman_reef_22_102/60eae64e5fb4_photo_transect_HARD_CORAL.csv": {
+      "sha256": "60eae64e5fb40068171c00bc4346793ac235701b201630d9428e4a3c6aeb7bff",
+      "size_bytes": 6254
+    },
+    "raw_exports/photo_hc/corbett_reef/9370edfb6e7a_photo_transect_HARD_CORAL.csv": {
+      "sha256": "9370edfb6e7a9f0bfc2372ec69ba1666a9fedddc28a9b7676ea2284885507d2b",
+      "size_bytes": 1454
+    },
+    "raw_exports/photo_hc/davie_reef/2da7bd7b9e2b_photo_transect_HARD_CORAL.csv": {
+      "sha256": "2da7bd7b9e2b8a37d36f1e3c612448b92a64d0f7d57e5b7da7a8b705afd59143",
+      "size_bytes": 1434
+    },
+    "raw_exports/photo_hc/davies_reef/a62666773f08_photo_transect_HARD_CORAL.csv": {
+      "sha256": "a62666773f08fd060c5f7398ced9438df86434101dc7d96d612cb63a57a7573d",
+      "size_bytes": 4778
+    },
+    "raw_exports/photo_hc/dip_reef/bc637347e52f_photo_transect_HARD_CORAL.csv": {
+      "sha256": "bc637347e52f354a329da4a89e34ff7d7a6d2e1b5bbfa78bd1f0a858729b331b",
+      "size_bytes": 4541
+    },
+    "raw_exports/photo_hc/double_cone_island/3ad9d821b606_photo_transect_HARD_CORAL.csv": {
+      "sha256": "3ad9d821b606c4706766a76bbf33b96023f4477a70e31e913163d06a4e2c7e5d",
+      "size_bytes": 7806
+    },
+    "raw_exports/photo_hc/dunk_island/bbdc7701a333_photo_transect_HARD_CORAL.csv": {
+      "sha256": "bbdc7701a333cbd2835474ba5f82727d550eda19be037a9ae56d23212608b1fd",
+      "size_bytes": 7512
+    },
+    "raw_exports/photo_hc/east_cay/8940317b2ad6_photo_transect_HARD_CORAL.csv": {
+      "sha256": "8940317b2ad6718defdfbaed138c3bebef07f290e077df9c50f78f2c1aa9ad88",
+      "size_bytes": 5810
+    },
+    "raw_exports/photo_hc/erskine_island/63bcd85227fd_photo_transect_HARD_CORAL.csv": {
+      "sha256": "63bcd85227fd1a5e47a79ed548e5a8f56d0c3e039de0a974e220213315d156c5",
+      "size_bytes": 2455
+    },
+    "raw_exports/photo_hc/fairfax_island/105be460b64c_photo_transect_HARD_CORAL.csv": {
+      "sha256": "105be460b64c21cf00196d3e333a153c687d424efaa90c1f9db7912f59087900",
+      "size_bytes": 2410
+    },
+    "raw_exports/photo_hc/farquharson_reef/3e230c2b8730_photo_transect_HARD_CORAL.csv": {
+      "sha256": "3e230c2b8730aeed249db191a186972b9f515f17d0a90845f0ad141f717cd0b0",
+      "size_bytes": 2215
+    },
+    "raw_exports/photo_hc/feather_reef/721a6b9dbbdb_photo_transect_HARD_CORAL.csv": {
+      "sha256": "721a6b9dbbdb43d374907fa220851fe45d6f04ff67d649efb0c85eb02f533305",
+      "size_bytes": 2382
+    },
+    "raw_exports/photo_hc/fitzroy_island/9e988d632614_photo_transect_HARD_CORAL.csv": {
+      "sha256": "9e988d632614d3384ae449dfdf7e2abdf1d81b1acdc9d3030ff566eea65cbfbc",
+      "size_bytes": 8361
+    },
+    "raw_exports/photo_hc/fitzroy_island/e23f3018c841_photo_transect_HARD_CORAL.csv": {
+      "sha256": "e23f3018c8411ba3fe67d1556010ea3e522ab643fa9eaae392ea9faf4e7e3654",
+      "size_bytes": 5487
+    },
+    "raw_exports/photo_hc/fore_and_aft_reef/81400556ce9d_photo_transect_HARD_CORAL.csv": {
+      "sha256": "81400556ce9db45383a02e983838522594b5562ad54343705f975479ea6865d1",
+      "size_bytes": 1676
+    },
+    "raw_exports/photo_hc/fork_reef/e0f047cd48e9_photo_transect_HARD_CORAL.csv": {
+      "sha256": "e0f047cd48e9a53128a8e6a49971d092e9eb49a2788aeb844af4b2cb2e1fe568",
+      "size_bytes": 1615
+    },
+    "raw_exports/photo_hc/frankland_islands/902d8e8c460c_photo_transect_HARD_CORAL.csv": {
+      "sha256": "902d8e8c460cd8cae16a32fe59e310781ba22f9c13876791b77ce93f07a5c539",
+      "size_bytes": 7634
+    },
+    "raw_exports/photo_hc/gannet_cay/c470646867b2_photo_transect_HARD_CORAL.csv": {
+      "sha256": "c470646867b2eaba2d34d4923769387ab3b93c5a206d5092782dd2c498813207",
+      "size_bytes": 4561
+    },
+    "raw_exports/photo_hc/geoffrey_bay/7b80917fb780_photo_transect_HARD_CORAL.csv": {
+      "sha256": "7b80917fb78012d1a78cde96389dac373ba5ac1f20928b886625d393c3026270",
+      "size_bytes": 7606
+    },
+    "raw_exports/photo_hc/green_island/1fa8a6f4901e_photo_transect_HARD_CORAL.csv": {
+      "sha256": "1fa8a6f4901e80418754a27f25382428a0a0f5f2597e5c6c0629a92240030a07",
+      "size_bytes": 4065
+    },
+    "raw_exports/photo_hc/grub_reef_18_077/71025f2e058c_photo_transect_HARD_CORAL.csv": {
+      "sha256": "71025f2e058c4cbd6b20c8a29d6515b99c3ff4c10e1412f1b9edc99cd6829f76",
+      "size_bytes": 1686
+    },
+    "raw_exports/photo_hc/hastings_reef/3a8fa1c47af5_photo_transect_HARD_CORAL.csv": {
+      "sha256": "3a8fa1c47af55b6520cdc48092cde14f60438e1fc36381d29f57a6f75f481f26",
+      "size_bytes": 6355
+    },
+    "raw_exports/photo_hc/havannah_island/31690f1f2791_photo_transect_HARD_CORAL.csv": {
+      "sha256": "31690f1f279189b73e0baffadcdaa33211a90560e59898a3ea08f75f711bd59e",
+      "size_bytes": 4336
+    },
+    "raw_exports/photo_hc/hayman_island/d93613442ba4_photo_transect_HARD_CORAL.csv": {
+      "sha256": "d93613442ba463b5d4332d6656773505dbcd64d3e16de62772bedc2622906a7f",
+      "size_bytes": 5002
+    },
+    "raw_exports/photo_hc/helix_reef/1dc0012d02b3_photo_transect_HARD_CORAL.csv": {
+      "sha256": "1dc0012d02b3913f15e882dc1bfdd314bce717618a33fbaac204b5c5a43d4ebe",
+      "size_bytes": 2175
+    },
+    "raw_exports/photo_hc/high_island/83a77d297b58_photo_transect_HARD_CORAL.csv": {
+      "sha256": "83a77d297b582014903912def80b94b17131151508c2138fbfd54b5e646d173b",
+      "size_bytes": 6759
+    },
+    "raw_exports/photo_hc/hook_island/ec6a30060917_photo_transect_HARD_CORAL.csv": {
+      "sha256": "ec6a300609177c442d1456231d8d68c88e0eba5272a2d937dc2818e4173e5556",
+      "size_bytes": 5412
+    },
+    "raw_exports/photo_hc/horseshoe_reef/839da638c99e_photo_transect_HARD_CORAL.csv": {
+      "sha256": "839da638c99e79768d03631e13ebb34f15b58ee3364b81aa1935d65481e74b7a",
+      "size_bytes": 4666
+    },
+    "raw_exports/photo_hc/hoskyn_island/50741d36c129_photo_transect_HARD_CORAL.csv": {
+      "sha256": "50741d36c129d7b7ffd33bc2e6f61ad9232495fe45e5bdc19664ecc54de5dbe3",
+      "size_bytes": 1646
+    },
+    "raw_exports/photo_hc/humpy_island_and_halfway_island/a46b087e45ee_photo_transect_HARD_CORAL.csv": {
+      "sha256": "a46b087e45eebaffef9cf29d830269e4ec949454f7a183caa26066add58c016f",
+      "size_bytes": 8495
+    },
+    "raw_exports/photo_hc/hyde_reef/38b6276f82a4_photo_transect_HARD_CORAL.csv": {
+      "sha256": "38b6276f82a45e4922761716e610ad7022b04af51657bd877260eedf22180070",
+      "size_bytes": 4738
+    },
+    "raw_exports/photo_hc/jenkins_reef/f0b829d72ff6_photo_transect_HARD_CORAL.csv": {
+      "sha256": "f0b829d72ff66e463ef2aa35ad8dc4853ecc77c24425a0dc949eb85324183bd8",
+      "size_bytes": 1460
+    },
+    "raw_exports/photo_hc/john_brewer_reef/db953bb19b17_photo_transect_HARD_CORAL.csv": {
+      "sha256": "db953bb19b17a4ecfdea058488e31da0e38db03c7bef60328ab92aafc828a967",
+      "size_bytes": 4925
+    },
+    "raw_exports/photo_hc/kelso_reef/2d421903d02b_photo_transect_HARD_CORAL.csv": {
+      "sha256": "2d421903d02b6d23af4b011f6b2746c4672383739cb5441d8bb1b40c3e11b3d9",
+      "size_bytes": 2365
+    },
+    "raw_exports/photo_hc/knife_reef/2a4889043bce_photo_transect_HARD_CORAL.csv": {
+      "sha256": "2a4889043bce3e2144fbe44d4f15b04ffa01eabe1afdcc6f7fee3496553e10cc",
+      "size_bytes": 2361
+    },
+    "raw_exports/photo_hc/low_isles/e5fad8267931_photo_transect_HARD_CORAL.csv": {
+      "sha256": "e5fad826793140c3004bf33ea1876ec8399f8e1ec38691a8d2992f51bbec0698",
+      "size_bytes": 4574
+    },
+    "raw_exports/photo_hc/lynchs_reef/d8d037180b03_photo_transect_HARD_CORAL.csv": {
+      "sha256": "d8d037180b03299f988aae925ff778b6e8158d815f7c8aa701b013357c0ad2fd",
+      "size_bytes": 1442
+    },
+    "raw_exports/photo_hc/macgillivray_reef/f7adb9d172a4_photo_transect_HARD_CORAL.csv": {
+      "sha256": "f7adb9d172a489ae56d6a483837365af5aac9d527a6bb088a8d25d36ce705c25",
+      "size_bytes": 4956
+    },
+    "raw_exports/photo_hc/mackay_reef/631a2d098469_photo_transect_HARD_CORAL.csv": {
+      "sha256": "631a2d0984695c7c30287808bb0142c87cf2a548bf2953fc52f06b079b0b0000",
+      "size_bytes": 4452
+    },
+    "raw_exports/photo_hc/mantis_reef/51b285bcdcc1_photo_transect_HARD_CORAL.csv": {
+      "sha256": "51b285bcdcc1f11a0f755cc1f5f852a8e50bbd8e310d4c2e63963f5b4dadbc08",
+      "size_bytes": 1487
+    },
+    "raw_exports/photo_hc/masthead_island/ce296e181b3c_photo_transect_HARD_CORAL.csv": {
+      "sha256": "ce296e181b3cca0b3e13d7752244edb5302dccd640405f2a0ee1148f2358971e",
+      "size_bytes": 2412
+    },
+    "raw_exports/photo_hc/mcculloch_reef/9152c9927968_photo_transect_HARD_CORAL.csv": {
+      "sha256": "9152c9927968a26ebfb419fb4bd76ecf5595b2c2275e00c9db7a543534ec75ad",
+      "size_bytes": 1467
+    },
+    "raw_exports/photo_hc/mcsweeney_reef/10cb90617d13_photo_transect_HARD_CORAL.csv": {
+      "sha256": "10cb90617d134ac990191ef691906a5694636d39bae91d022da2b19811f59adf",
+      "size_bytes": 1274
+    },
+    "raw_exports/photo_hc/michaelmas_cay/73fb9ed7b60d_photo_transect_HARD_CORAL.csv": {
+      "sha256": "73fb9ed7b60d784c12e49e3c96af922355ed2ea28ac6fd553db1c01f021bc2e7",
+      "size_bytes": 4143
+    },
+    "raw_exports/photo_hc/monsoon_reef/277cfe05d73c_photo_transect_HARD_CORAL.csv": {
+      "sha256": "277cfe05d73c0461ab6435dc449baa55cd046b370d6008ec6140636c7971ef12",
+      "size_bytes": 1267
+    },
+    "raw_exports/photo_hc/moore_reef/a3e070c15d67_photo_transect_HARD_CORAL.csv": {
+      "sha256": "a3e070c15d67bd3e1338cd933f53f895c69406dcebe5cea69b339a4a72bee6fc",
+      "size_bytes": 1632
+    },
+    "raw_exports/photo_hc/myrmidon_reef/3ba4579a82c5_photo_transect_HARD_CORAL.csv": {
+      "sha256": "3ba4579a82c531c38901ac775342753121a64e2e6a88e534d9d9de100a0adf74",
+      "size_bytes": 5013
+    },
+    "raw_exports/photo_hc/north_barnard_islands/0e7b91cb6e35_photo_transect_HARD_CORAL.csv": {
+      "sha256": "0e7b91cb6e3573587449f5a9df99fd768462319acce5cda4d37e2156e22d419a",
+      "size_bytes": 6346
+    },
+    "raw_exports/photo_hc/north_direction_island/3a1167b1b61a_photo_transect_HARD_CORAL.csv": {
+      "sha256": "3a1167b1b61a2579f3805174770988cd3acae24c9c3a5600771ed4b4e7a7f964",
+      "size_bytes": 4855
+    },
+    "raw_exports/photo_hc/north_island/4d75870a061e_photo_transect_HARD_CORAL.csv": {
+      "sha256": "4d75870a061ee994a16df1d7fc3c8a8cd1d08c4b04a0e71c88e4d291b1136bf5",
+      "size_bytes": 1629
+    },
+    "raw_exports/photo_hc/one_tree_island/8b0dd99ec05e_photo_transect_HARD_CORAL.csv": {
+      "sha256": "8b0dd99ec05e802ddd61dc0ddc91ce89ed0695fc0f7f82d110a1c1ff7560153a",
+      "size_bytes": 4859
+    },
+    "raw_exports/photo_hc/opal_reef/63ea0d3838dd_photo_transect_HARD_CORAL.csv": {
+      "sha256": "63ea0d3838dd012ccd60c81dce11741ea5b2b44626c1efd5253eb890916f2e66",
+      "size_bytes": 3649
+    },
+    "raw_exports/photo_hc/pandora_reef/632ffd2d95c6_photo_transect_HARD_CORAL.csv": {
+      "sha256": "632ffd2d95c69fe4a51d43d98062d71210620bec543401ff7e273b1e81d9fd84",
+      "size_bytes": 5039
+    },
+    "raw_exports/photo_hc/peart_reef/1288d88a2a10_photo_transect_HARD_CORAL.csv": {
+      "sha256": "1288d88a2a1081f3c050dbe9d371ba18f654b39f67dd7a7c6dc69134fc8890c2",
+      "size_bytes": 2362
+    },
+    "raw_exports/photo_hc/pelican_island/3c243dea3576_photo_transect_HARD_CORAL.csv": {
+      "sha256": "3c243dea3576c174f24dadec324439dcb1c73345df17593d6552d32081b1389d",
+      "size_bytes": 7302
+    },
+    "raw_exports/photo_hc/pompey_reef_no_1/7dff3f3b183f_photo_transect_HARD_CORAL.csv": {
+      "sha256": "7dff3f3b183f09345f6d21707049a0e9d63117c237d1abfc93830e3cbd3e50f0",
+      "size_bytes": 2248
+    },
+    "raw_exports/photo_hc/pompey_reef_no_2/f3e5cdc1b339_photo_transect_HARD_CORAL.csv": {
+      "sha256": "f3e5cdc1b33900853ceb3e3fcfe9d434011ca492e7ba2ecca08a74d844b24d60",
+      "size_bytes": 2041
+    },
+    "raw_exports/photo_hc/rebe_reef/0fc6e5718ae2_photo_transect_HARD_CORAL.csv": {
+      "sha256": "0fc6e5718ae2e633d1a7d5bcbc46b80ca1c025c2e284280f8a835364e5b8176e",
+      "size_bytes": 4390
+    },
+    "raw_exports/photo_hc/reef_11_049/90a6d20256b3_photo_transect_HARD_CORAL.csv": {
+      "sha256": "90a6d20256b399e40a6ef50ea1893dccecde0f063eead02f37e6ea10abf2d59f",
+      "size_bytes": 1446
+    },
+    "raw_exports/photo_hc/reef_11_162/ab44f9ed60b6_photo_transect_HARD_CORAL.csv": {
+      "sha256": "ab44f9ed60b63e186904254aac49314cef40620cfe2d64bedf6444b80772033c",
+      "size_bytes": 1240
+    },
+    "raw_exports/photo_hc/reef_13_124/65d88a41d7e4_photo_transect_HARD_CORAL.csv": {
+      "sha256": "65d88a41d7e4ca54184350bf0f93159b2013e6010aacc389f08e20eec29fd77e",
+      "size_bytes": 1438
+    },
+    "raw_exports/photo_hc/reef_19_131/3d75eb786eef_photo_transect_HARD_CORAL.csv": {
+      "sha256": "3d75eb786eef6a02ad8a67acc39c0d1f779710949e3f8fabeae962e2d3605b9e",
+      "size_bytes": 4588
+    },
+    "raw_exports/photo_hc/reef_19_138/37c93f728c83_photo_transect_HARD_CORAL.csv": {
+      "sha256": "37c93f728c83dc80fcebd9d0fbe11e68021734efaa7269576b145e80cc9734c9",
+      "size_bytes": 4698
+    },
+    "raw_exports/photo_hc/reef_20_104/aff53a8947ea_photo_transect_HARD_CORAL.csv": {
+      "sha256": "aff53a8947eaa6c533b3845fc105468ef47f949a7a0d87c567621620102999d0",
+      "size_bytes": 3856
+    },
+    "raw_exports/photo_hc/reef_20_348/78b0b1ead751_photo_transect_HARD_CORAL.csv": {
+      "sha256": "78b0b1ead751ea2447a358256de3e5ab17836d6f1ace425c18ee4bff741119e6",
+      "size_bytes": 1259
+    },
+    "raw_exports/photo_hc/reef_20_353/b1862046ca73_photo_transect_HARD_CORAL.csv": {
+      "sha256": "b1862046ca7391a92de900e4cc7781a984a8dbd6a105c804d2bed28b1cdf6907",
+      "size_bytes": 1447
+    },
+    "raw_exports/photo_hc/reef_21_060/8ff9c105c6a8_photo_transect_HARD_CORAL.csv": {
+      "sha256": "8ff9c105c6a8d60ecf6cf81b51b4c02b2e1a6ccd135e2d4cf195ed62c208fa58",
+      "size_bytes": 2187
+    },
+    "raw_exports/photo_hc/reef_21_062/27cd96866c94_photo_transect_HARD_CORAL.csv": {
+      "sha256": "27cd96866c944e38e473176000629b68f1bc2988284043ae695aca5946ad5182",
+      "size_bytes": 1254
+    },
+    "raw_exports/photo_hc/reef_21_064/f73d3d07d9b5_photo_transect_HARD_CORAL.csv": {
+      "sha256": "f73d3d07d9b5601ca0b298ac4c1aa17ee20b63c38b1ab0e56607be8d84d410b0",
+      "size_bytes": 1443
+    },
+    "raw_exports/photo_hc/reef_21_139/92585697fedb_photo_transect_HARD_CORAL.csv": {
+      "sha256": "92585697fedbf67a6a4b782efdd63aad65a3fb6cff4ca8bd3c694ff88832c7d3",
+      "size_bytes": 2001
+    },
+    "raw_exports/photo_hc/reef_21_187/89365090b543_photo_transect_HARD_CORAL.csv": {
+      "sha256": "89365090b543910304186bc77e937b5f1943426bd9cd273913b38291b1c31365",
+      "size_bytes": 2003
+    },
+    "raw_exports/photo_hc/reef_21_245/9f96af28a4b1_photo_transect_HARD_CORAL.csv": {
+      "sha256": "9f96af28a4b11a7aadc164cbc5933ffa243b5a52225f68ee28c1227c35f807d5",
+      "size_bytes": 1445
+    },
+    "raw_exports/photo_hc/reef_21_278/2c84fa403c3a_photo_transect_HARD_CORAL.csv": {
+      "sha256": "2c84fa403c3add52bec27f25ea1ea2c4a521d4d0bf04bc922b674fe6de7ab582",
+      "size_bytes": 1443
+    },
+    "raw_exports/photo_hc/reef_21_296/04e7d67d1a85_photo_transect_HARD_CORAL.csv": {
+      "sha256": "04e7d67d1a85191b4c5af6e36e7816fb26145c3ffc0dd7fe4beca79480b1c31c",
+      "size_bytes": 1448
+    },
+    "raw_exports/photo_hc/reef_21_302/9a7f02704515_photo_transect_HARD_CORAL.csv": {
+      "sha256": "9a7f02704515f82d8a1e6a8a4374b86c96b0ad78d2dcdf093d0140a6ec71df46",
+      "size_bytes": 1449
+    },
+    "raw_exports/photo_hc/reef_21_529/02f762d5ff41_photo_transect_HARD_CORAL.csv": {
+      "sha256": "02f762d5ff419641653111fd7a06747ab2907f35292c46e4f3f20b9a87934286",
+      "size_bytes": 4223
+    },
+    "raw_exports/photo_hc/reef_21_550/0392a885fe12_photo_transect_HARD_CORAL.csv": {
+      "sha256": "0392a885fe12b8bc93f99e0cc94642967b0f54fa1a86f9af7962bef0ce39b192",
+      "size_bytes": 1440
+    },
+    "raw_exports/photo_hc/reef_21_558/19df0f3ab7ab_photo_transect_HARD_CORAL.csv": {
+      "sha256": "19df0f3ab7ab2ab35d370210464b0538e9e21c2d351da8a1b662a39382007a02",
+      "size_bytes": 2192
+    },
+    "raw_exports/photo_hc/reef_21_591/813dd24224e3_photo_transect_HARD_CORAL.csv": {
+      "sha256": "813dd24224e3a2d2c51daedd5d11840b2512bf61f40b697e6b6aa3d26ba69f79",
+      "size_bytes": 2015
+    },
+    "raw_exports/photo_hc/reef_22_084/e821006adc28_photo_transect_HARD_CORAL.csv": {
+      "sha256": "e821006adc286f1415346c93326af0a532cbf4f4fadcef8c1800c93131144ba0",
+      "size_bytes": 1441
+    },
+    "raw_exports/photo_hc/rib_reef/d277f486e690_photo_transect_HARD_CORAL.csv": {
+      "sha256": "d277f486e690f4c85e3161b854028062cb62ecff5227c11663a74463bcaa4289",
+      "size_bytes": 5964
+    },
+    "raw_exports/photo_hc/roxburgh_reef/e6caef7a8a92_photo_transect_HARD_CORAL.csv": {
+      "sha256": "e6caef7a8a927e8a205b5f5e953bc8390951af0f9587ebed6bba47c2ffefcca3",
+      "size_bytes": 1646
+    },
+    "raw_exports/photo_hc/sand_bank_no_1/b09eedf3e355_photo_transect_HARD_CORAL.csv": {
+      "sha256": "b09eedf3e3554635807a5d0cc94f0369afe0684dbcc11452f1c5d13f4f1db78e",
+      "size_bytes": 1496
+    },
+    "raw_exports/photo_hc/seaforth_island/45135f43f87f_photo_transect_HARD_CORAL.csv": {
+      "sha256": "45135f43f87f1e9efe5f5ee0e824ed8d5141b357c47210ed9022bcb8cd6fd9e7",
+      "size_bytes": 5951
+    },
+    "raw_exports/photo_hc/slate_reef/ea08d2b114bb_photo_transect_HARD_CORAL.csv": {
+      "sha256": "ea08d2b114bbc8d994c7493d33188178c9d704f3a342e9c10ef445a8a7b4d67f",
+      "size_bytes": 4580
+    },
+    "raw_exports/photo_hc/small_lagoon_reef/8b85aeeed314_photo_transect_HARD_CORAL.csv": {
+      "sha256": "8b85aeeed314ebd12aff1fdbecb86ac440d3ba8640e657d64325bacc8605bbe2",
+      "size_bytes": 1471
+    },
+    "raw_exports/photo_hc/snake_reef/fa49ea66875b_photo_transect_HARD_CORAL.csv": {
+      "sha256": "fa49ea66875be48614022884c2b34eb4eb8b9c7ec5588654800b1ce4e185b315",
+      "size_bytes": 4757
+    },
+    "raw_exports/photo_hc/snapper_island/afea9f451f7d_photo_transect_HARD_CORAL.csv": {
+      "sha256": "afea9f451f7d5784c8a8243a2e0b8c107f417b57f027cc8d5f353325c4d70c9a",
+      "size_bytes": 8291
+    },
+    "raw_exports/photo_hc/st_crispin_reef/22ce378a941d_photo_transect_HARD_CORAL.csv": {
+      "sha256": "22ce378a941d8352eedfb50f5365a08629c9c2b79edb290353b7ce18f653af0f",
+      "size_bytes": 6266
+    },
+    "raw_exports/photo_hc/taylor_reef/d9c696aa62fa_photo_transect_HARD_CORAL.csv": {
+      "sha256": "d9c696aa62fac63311c602e6b92f2b4fa7c55a123d38b5332cb865438c49ed81",
+      "size_bytes": 2179
+    },
+    "raw_exports/photo_hc/tern_island/16a38d92c91a_photo_transect_HARD_CORAL.csv": {
+      "sha256": "16a38d92c91afa157bb246a032aff5fd08cba9b85a3b67d487ae428396b794ca",
+      "size_bytes": 1998
+    },
+    "raw_exports/photo_hc/thetford_reef/81b379b2657c_photo_transect_HARD_CORAL.csv": {
+      "sha256": "81b379b2657c695c396e8236497ccfa1e0f71b45513e2f7fe703e158381cf7ee",
+      "size_bytes": 5991
+    },
+    "raw_exports/photo_hc/turner_cay/8c8125ec1042_photo_transect_HARD_CORAL.csv": {
+      "sha256": "8c8125ec104239b29b5a2c945312af503fde3e9d95b219b97f46db37631e43a5",
+      "size_bytes": 4579
+    },
+    "raw_exports/photo_hc/wade_reef/bbd803cd8e20_photo_transect_HARD_CORAL.csv": {
+      "sha256": "bbd803cd8e2004a6679d14180b60c129d041e262ce8b03e5f6ce58877a0811a6",
+      "size_bytes": 2164
+    },
+    "raw_exports/photo_hc/wreck_island/bda0f0bdfafb_photo_transect_HARD_CORAL.csv": {
+      "sha256": "bda0f0bdfafb32bfd960792062142984cec0b450599ac5482bf1bfb52b7778c3",
+      "size_bytes": 4230
+    },
+    "raw_exports/photo_hc/yonge_reef/7ba70e54cc76_photo_transect_HARD_CORAL.csv": {
+      "sha256": "7ba70e54cc76f5a2659659b13d6dfc1ca467ea6dc2e5ee6ed356f188e3dc3992",
+      "size_bytes": 4738
+    }
+  }
+}

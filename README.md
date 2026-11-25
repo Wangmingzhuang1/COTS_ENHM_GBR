@@ -1,67 +1,76 @@
-# Ecological Null Hypothesis Model for Crown-of-Thorns Starfish Outbreaks
+# COTS ENHM GBR: dated-survey analysis and source data
 
-This repository contains the public analysis workflow supporting the associated Great Barrier Reef (GBR) crown-of-thorns starfish (COTS) manuscript. The Ecological Null Hypothesis Model (ENHM) separates a coral-linked baseline from the remaining abundance variation and then evaluates whether the residual field contains interdecadal periodicity and spatial phase organization consistent with an IPO-conditioned susceptibility window.
+Version **2026.11.25** accompanies *The Interdecadal Pacific Oscillation Organizes Starfish Outbreak Windows on the Great Barrier Reef*. This version replaces the earlier calendar-year workflow with the exact dated-survey pipeline used by the current manuscript.
 
-The analysis does not treat the Interdecadal Pacific Oscillation (IPO) as a direct trigger of individual outbreaks. Rainfall, runoff, chlorophyll-a, and circulation products provide hydroclimatic context for the susceptibility-window interpretation.
+## Reproduce the core analysis
 
-## Analysis outline
-
-1. Pair COTS abundance in year `t` with coral cover observed in the exact calendar year `t - lag`.
-2. Use a 3-year default lag, selected within a 2–4 year biologically plausible range.
-3. Fit the coral-linked regression-through-the-origin baseline and retain residual anomalies.
-4. Estimate dominant residual periods with Lomb–Scargle analysis and compare white-noise, 3-calendar-year block, and AR(1) null models.
-5. Evaluate spatial phase organization and place the result in its hydroclimatic context.
-
-## Repository contents
-
-```text
-COTS_ENHM_GBR/
-|-- data/                 # Compact analysis inputs and source-mapping guide
-|-- scripts/              # Analysis, robustness, and figure scripts
-|-- run_all.py            # Public workflow entry point
-|-- requirements.txt      # Python dependencies
-|-- LICENSE               # MIT licence for repository software
-`-- README.md
-```
-
-The compact data files in this repository match the corresponding files used by the formal analysis. A duplicate Lizard Isles juvenile file carrying the suffix `(1)` was removed; the identically hashed, unsuffixed file is the retained source.
-
-## Data sources and availability
-
-The repository includes the compact reef-survey CSV files, juvenile support tables, the processed annual IPO index, and the reef-coordinate table used by the workflow. These files remain subject to the licences and attribution requirements of their source providers; the repository software licence does not replace those terms.
-
-Larger gridded and spatial resources are not redistributed here. Obtain them from the following official sources and stage them according to [`data/README.md`](data/README.md):
-
-- **COTS abundance, hard-coral cover, and juvenile-coral observations:** Australian Institute of Marine Science (AIMS) Long-Term Monitoring Program, [Reef Monitoring Dashboard](https://apps.aims.gov.au/reef-monitoring/). AIMS states that the monitoring data are open access; users should follow the licence and attribution shown with the relevant data record.
-- **IPO Tripole Index:** NOAA Physical Sciences Laboratory, [TPI (IPO) climate time series](https://psl.noaa.gov/data/timeseries/IPOTPI/). The workflow uses the annual mean derived from the unfiltered NOAA ERSST v5 monthly series.
-- **Gridded rainfall:** Australian Bureau of Meteorology, [Australian Gridded Climate Data (AGCD)](https://www.bom.gov.au/climate/austmaps/about-agcd-maps.shtml) and [rainfall maps and grid downloads](https://www.bom.gov.au/climate/maps/rainfall/).
-- **River discharge:** Queensland Government, [Water Monitoring Information Portal](https://water-monitoring.information.qld.gov.au/).
-- **Chlorophyll-a:** Copernicus Marine Service, [global ocean-colour monthly product OCEANCOLOUR_GLO_BGC_L4_MY_009_104](https://data.marine.copernicus.eu/product/OCEANCOLOUR_GLO_BGC_L4_MY_009_104/services).
-- **Surface currents:** Copernicus Marine Service, [GLORYS global ocean reanalysis GLOBAL_MULTIYEAR_PHY_001_030](https://data.marine.copernicus.eu/product/GLOBAL_MULTIYEAR_PHY_001_030/description). The workflow uses the signed northward velocity field `vo`.
-- **GBR reef and management-region boundaries:** Great Barrier Reef Marine Park Authority, [Spatial Data Information Services](https://www.gbrmpa.gov.au/about-us/spatial-data-information-services) and its linked Reef GeoHub. Observe the licence attached to each downloaded layer.
-
-## Reproducing the workflow
-
-Use Python 3.9 or later:
+Use Python 3.12. Install `requirements-tested.txt` for the package versions recorded in the analysis environment, or `requirements.txt` for compatible minimum versions. Cartopy and other spatial packages are used for optional figure stages.
 
 ```bash
 python -m venv .venv
-.venv/Scripts/python -m pip install -r requirements.txt
+# Windows
+.venv/Scripts/python -m pip install -r requirements-tested.txt
 .venv/Scripts/python run_all.py
+# macOS/Linux: use .venv/bin/python instead
 ```
 
-The default command runs the compact-data ENHM analysis. Optional stages are:
+The first run safely expands `data/aims_local_stock/ecology_snapshot_20261120.zip` and verifies every file against the SHA-256 manifest. The archive preserves the exact 6,104-row observation table, reef coordinates, and 335 referenced unmodified AIMS dashboard exports. The table includes both manta and photo-transect cover; the analysis **explicitly selects LTMP manta hard-coral cover**, not photo-transect cover. No accounts or gridded downloads are required for the core analysis.
+
+The default command fits the baseline, runs exact floating-mean Lomb–Scargle screening and the spectral null hierarchy, then audits original source rows through to results. Expected checkpoints are:
+
+| Quantity | Reference value |
+| --- | ---: |
+| Coordinate-bearing COTS reefs | 113 |
+| Reefs with both COTS and manta hard-coral data | 112 |
+| Fitted reefs / dated lag-3 pairs | 92 / 1,051 |
+| Spectrally screened reefs | 58 |
+| White-noise significant / IPO-band significant reefs | 15 / 12 |
+| 3-calendar-year block significant / IPO-band reefs | 9 / 6 |
+| Continuous-time AR(1) significant / IPO-band reefs | 1 / 0 |
+| Mean centered / non-centered R² (80 defined reefs) | 0.076 / 0.310 |
+| Primary 12-reef circular phase R / apparent speed | 0.876 / 31.2 km/year |
+
+`reference_results/tables/` contains the manuscript output snapshot. Newly computed outputs go to ignored `results/`, so reference files are not overwritten.
+
+## Methods encoded by this version
+
+- Every COTS survey is paired to the nearest strictly prior coral survey within ±183 days of the nominal 3-year anniversary. Alternative lags use the same dated matching rule, rather than shifting observation rows or averaging first into calendar years.
+- The 1–4-year lag profile holds the 30-reef membership and response survey dates constant. The empirical peak is at 2 years; 3 years is the biologically motivated default, with 2-year sensitivity.
+- Lomb–Scargle uses actual survey dates, `method="slow"`, a 1,000-point uniform frequency grid, at least five residual observations, and periods from 3 years to `min(30 years, record span)`.
+- The primary white-noise screen uses 5,000 permutations and `(k+1)/(N+1)`. Short-memory and continuous-time AR(1) nulls are also retained; single-reef IPO-band periodicity is not robust to the latter.
+- Circular–linear phase scans avoid ordinary phase unwrapping. All-58-reef and 2-year-lag diagnostics explicitly show competing branches. Reported approximately 30–32 km/year sensitivity values refer to the **north-to-south branch**. Its plotted bootstrap interval is conditional on that branch, not uncertainty across all competing solutions.
+- Annual unfiltered TPI retains interannual variance. Environmental composites are climate-state associations, and Eulerian meridional velocity does not directly estimate residence times or larval trajectories.
+
+## Optional stages
 
 ```bash
-.venv/Scripts/python run_all.py --robustness
-.venv/Scripts/python run_all.py --figures
+python run_all.py --robustness
+python run_all.py --audit-only
+python run_all.py --environment
+python run_all.py --figures
+python run_all.py --supplementary
 ```
 
-`--robustness` adds the hierarchical null-model comparison. `--figures` requires the external rainfall, runoff, Copernicus Marine, and spatial files listed in [`data/README.md`](data/README.md). Outputs are written to `results/`, which is intentionally excluded from version control because it is regenerated by the workflow.
+`--robustness` adds baseline, lag, phase-null and all-reef phase sensitivity analyses, Table S1 and the phase-sensitivity figure. It does not require the external environmental grids.
 
-## Licence and citation
+`--environment` exports the exact environmental composite fields, annual chlorophyll/TPI and discharge series, nearest-grid-cell reef currents and regional summaries. `--figures` generates the current main and supplementary figures and requires the provider grids and spatial resources listed in [data/README.md](data/README.md). Cartopy may need its usual Natural Earth assets on first use. Times New Roman is the original figure font; an unavailable font may change appearance but not numeric analyses.
 
-The software in this repository is released under the [MIT License](LICENSE). Source and derived data retain the terms specified by AIMS, NOAA, the Australian Bureau of Meteorology, the Queensland Government, the Copernicus Marine Service, and the Great Barrier Reef Marine Park Authority.
+`--supplementary` runs additional reef-level climate comparisons and growth/threshold-transition diagnostics. These have different estimands from the primary spectral/phase analysis and are not an independently validated outbreak forecasting model. They are included for transparency.
 
-Please cite the associated manuscript when using the analytical framework. A versioned archival DOI should be added here after the repository is archived with a DOI-issuing service such as Zenodo.
+## Source data and figure mapping
 
+| Paper display | Implementation | Public supporting data |
+| --- | --- | --- |
+| Figure 1 | `04_cots_overview.py` | AIMS snapshot; reef coordinates; 2026 is partial through February |
+| Figure 2; Figure S2 and S4 | `02_paper_figures.py` | matched observations, model and spectral tables |
+| Figure 3 | `05_propagation.py` | residual/period/phase tables; `source_data/environment/` current composites |
+| Figure 4 | `06_mechanism_fig6.py` | `source_data/environment/` arrays and annual series; reference environmental tests |
+| Figure S1 | `16_conceptual_susceptibility_schematic.py` | conceptual interpretation, not a reconstructed circulation or particle field |
+| Figure S3 | `04_spatial_heterogeneity.py` | model and spectral tables; external spatial backgrounds |
+| Figure S5; Table S1 | `13_robustness_null_comparison.py` | phase sensitivity and complete screened-reef tables |
+
+File stems retain historical numbering where necessary; this table maps them to the current paper. The obsolete calendar-year implementation is not an alternative entry point for reproducing this release.
+
+## Data, attribution and citation
+
+The software is MIT-licensed under [LICENSE](LICENSE). Source and derived data retain their providers' attribution and applicable terms; the software license does not relicense AIMS, NOAA, BoM, Queensland, Copernicus or GBRMPA data. [data/README.md](data/README.md) records source URLs, staging paths and exclusions. [CITATION.cff](CITATION.cff) identifies this software version; no archival DOI has yet been assigned.

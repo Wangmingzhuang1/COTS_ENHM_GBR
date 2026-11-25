@@ -1,0 +1,2 @@
+start_year,end_year,n_years,peak_period_years,peak_mean_coherence,band_15_30_mean_coherence,ar1_null_mean,ar1_null_q95,ar1_p_value,near_coi
+1988,2025,38,23.412858247099198,0.8455696431440907,0.5874695074365076,0.6216826835195307,0.9075087417646108,0.562874251497006,True

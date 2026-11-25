@@ -1,0 +1,25 @@
+{
+  "version": "2026.11.25",
+  "python": "3.12",
+  "checks": {
+    "archive_members_verified": 337,
+    "core_rerun": true,
+    "source_to_result_audit": true,
+    "six_core_tables_match_reference": true,
+    "five_robustness_tables_match_reference": true,
+    "supplementary_modules_run": true,
+    "environment_source_data_exported": true
+  },
+  "expected": {
+    "fitted_reefs": 92,
+    "paired_observations": 1051,
+    "screened_reefs": 58,
+    "significant_reefs": 15,
+    "ipo_band_reefs": 12,
+    "current_positive_difference_reefs": 92
+  },
+  "limits": [
+    "Full monthly environmental products and GIS layers must be obtained from the providers to rebuild every figure.",
+    "Directional phase results are conditional on the selected branch."
+  ]
+}
