@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: "Please cite this version and acknowledge the original data providers."
 type: software
 title: "COTS ENHM GBR: dated-survey analysis and source data"
-version: "2026.11.25"
-date-released: "2026-11-25"
+version: "2026.11.27"
+date-released: "2026-11-27"
 authors:
   - family-names: Wang
     given-names: Mingzhuang

@@ -7,18 +7,22 @@
 
 import numpy as np
 import pandas as pd
+import xarray as xr
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from scipy import optimize, stats
+from scipy.signal import butter, filtfilt
 
-from analysis_inputs import align_survey_lag, ecological_observations, reef_coordinates, reef_series
-from config import FIGURES_DIR, TABLES_DIR
+from analysis_inputs import align_survey_lag, ecological_observations, ipo_phase_years, reef_coordinates, reef_series
+from config import DATA_DIR, FIGURES_DIR, RESULTS_DIR, TABLES_DIR
 from publication_style import apply_base_style, save_publication
 from spectral_inference import (
+    batch_lomb_scargle_power,
     block_permutation_samples,
     peak_p_value,
     red_noise_samples,
+    reef_rng,
     spectrum,
 )
 
@@ -82,12 +86,14 @@ def run_phase_slope_null(periods, residuals, coords, n_iter=500, seed=42):
     rows = []
     for null_name in ("ar1", "block", "uniform_circular"):
         if null_name == "uniform_circular":
+            rng_u = np.random.default_rng(seed)
+            lats_u = np.sort(abs_lats)
             n_u = 2000
             null_R = np.empty(n_u, dtype=float)
             for m in range(n_u):
-                th_r = rng.uniform(-np.pi, np.pi, size=len(abs_lats))
+                th_r = rng_u.uniform(-np.pi, np.pi, size=len(lats_u))
                 null_R[m] = float(
-                    np.max(np.abs(np.mean(np.exp(1j * (th_r[:, None] - abs_lats[:, None] * ks_null[None, :])), axis=0)))
+                    np.max(np.abs(np.mean(np.exp(1j * (th_r[:, None] - lats_u[:, None] * ks_null[None, :])), axis=0)))
                 )
             iters_used = n_u
         else:
@@ -119,37 +125,49 @@ def run_phase_slope_null(periods, residuals, coords, n_iter=500, seed=42):
     return pd.DataFrame(rows)
 
 
-def run_baseline_sensitivity(residuals, n_boot=5000, seed=42):
-    """Compare spectral IPO concentration across Raw log1p(COTS), ENHM (RTO), and OLS (intercept, beta>=0)."""
+def _baseline_series(grp, label):
+    y_raw = grp["log_cots"].to_numpy(dtype=float)
+    x = grp["coral_lagged"].to_numpy(dtype=float)
+    if label == "raw_log_cots":
+        return y_raw
+    if label == "enhm_rto":
+        return grp["residual"].to_numpy(dtype=float)
+    if label == "ols_intercept_nonneg":
+        if np.std(x) > 1e-12:
+            sl, ic, _, _, _ = stats.linregress(x, y_raw)
+            return y_raw - np.mean(y_raw) if sl < 0 else y_raw - (ic + sl * x)
+        return y_raw - np.mean(y_raw)
+    if label == "log_coral_ols":
+        xl = np.log1p(np.maximum(0.0, x))
+        if np.std(xl) > 1e-12:
+            sl, ic, _, _, _ = stats.linregress(xl, y_raw)
+            return y_raw - np.mean(y_raw) if sl < 0 else y_raw - (ic + sl * xl)
+        return y_raw - np.mean(y_raw)
+    raise ValueError(label)
+
+
+def run_baseline_sensitivity(residuals, coords, mean_period, n_boot=10000, n_phase_iter=500, seed=42):
+    """Compare spectral IPO concentration AND all-58-reef circular-linear phase progression
+    across Raw log1p(COTS), ENHM (RTO), OLS (intercept, beta>=0), and Nonlinear log-coral OLS."""
+    coords_idx = coords.set_index("reef_name")
+    omega = 2.0 * np.pi / mean_period
+    ks_ns = np.linspace(0.05, 2.0, 1951)
     rows = []
-    for label in ("raw_log_cots", "enhm_rto", "ols_intercept_nonneg"):
-        rng = np.random.default_rng(seed)
+    for label in ("raw_log_cots", "enhm_rto", "ols_intercept_nonneg", "log_coral_ols"):
         tested, sig_n, ipo_n, enso_n = 0, 0, 0, 0
-        for _, grp in sorted(residuals.groupby("reef_name")):
+        s_list, l_list, w_list = [], [], []
+        for reef_name, grp in sorted(residuals.groupby("reef_name")):
             grp = grp.sort_values("time_years")
             t = grp["time_years"].to_numpy(dtype=float)
-            y_raw = grp["log_cots"].to_numpy(dtype=float)
-            x = grp["coral_lagged"].to_numpy(dtype=float)
-            if label == "raw_log_cots":
-                vals = y_raw
-            elif label == "enhm_rto":
-                vals = grp["residual"].to_numpy(dtype=float)
-            else:
-                if np.std(x) > 1e-12:
-                    sl, ic, _, _, _ = stats.linregress(x, y_raw)
-                    if sl < 0:
-                        vals = y_raw - np.mean(y_raw)
-                    else:
-                        vals = y_raw - (ic + sl * x)
-                else:
-                    vals = y_raw - np.mean(y_raw)
+            vals = _baseline_series(grp, label)
             sp = spectrum(t, vals)
             if sp is None:
                 continue
             tested += 1
             freq, pwr = sp
             idx = int(np.nanargmax(pwr))
-            perms = np.asarray([rng.permutation(vals) for _ in range(n_boot)])
+            rng_r = reef_rng(reef_name, "wn", seed)
+            perms = np.asarray([rng_r.permutation(vals) for _ in range(n_boot)])
             p = peak_p_value(t, freq, float(pwr[idx]), perms)
             per = 1.0 / freq[idx]
             if p < 0.05:
@@ -158,6 +176,25 @@ def run_baseline_sensitivity(residuals, n_boot=5000, seed=42):
                     ipo_n += 1
                 elif 3.0 <= per <= 7.0:
                     enso_n += 1
+            if reef_name in coords_idx.index:
+                t_yr = t + 1970.0
+                X = np.column_stack([np.cos(omega * t_yr), np.sin(omega * t_yr)])
+                yc = vals - np.mean(vals)
+                coef, _, _, _ = np.linalg.lstsq(X, yc, rcond=None)
+                r2_h = float(np.sum((X @ coef) ** 2) / np.sum(yc ** 2))
+                s_list.append((t_yr, vals))
+                l_list.append(abs(float(coords_idx.loc[reef_name, "lat"])))
+                w_list.append(r2_h)
+
+        l_arr = np.asarray(l_list)
+        w_arr = np.asarray(w_list)
+        th_arr = _extract_phases(s_list, mean_period)
+        R_curve = _scan_resultant(th_arr, l_arr, ks_ns, weights=w_arr)
+        bi = int(np.argmax(R_curve))
+        kp, Rp = float(ks_ns[bi]), float(R_curve[bi])
+        spd = float(111.0 / (abs(kp) * mean_period / (2.0 * np.pi)))
+        nulls = _test_directional_nulls(s_list, l_arr, mean_period, Rp, k_min=0.05, k_max=2.0,
+                                        weights=w_arr, n_iter=n_phase_iter, seed=seed)
         rows.append({
             "baseline_model": label,
             "tested_reefs": tested,
@@ -165,17 +202,21 @@ def run_baseline_sensitivity(residuals, n_boot=5000, seed=42):
             "ipo_band_reefs": ipo_n,
             "ipo_fraction": ipo_n / sig_n if sig_n else np.nan,
             "enso_band_reefs": enso_n,
+            "all58_k_ns": kp,
+            "all58_speed_km_yr": spd,
+            "all58_R_weighted": Rp,
+            "all58_p_ar1": nulls["p_ar1"],
+            "all58_p_block": nulls["p_block"],
         })
     return pd.DataFrame(rows)
 
 
-def run_lag_sensitivity(coords, n_boot=5000, seed=42):
+def run_lag_sensitivity(coords, n_boot=10000, seed=42):
     """Compare dated lag=2 yr vs lag=3 yr across the full 113-reef dataset."""
     groups = reef_series()
     coords_idx = coords.set_index("reef_name")
     rows = []
     for lag_y in (2, 3):
-        rng = np.random.default_rng(seed)
         fitted, tested, sig_n, ipo_n = 0, 0, 0, 0
         ipo_series, ipo_lats, ipo_T = [], [], []
         for reef, df in sorted(groups.items()):
@@ -194,7 +235,8 @@ def run_lag_sensitivity(coords, n_boot=5000, seed=42):
             tested += 1
             freq, pwr = sp
             idx = int(np.nanargmax(pwr))
-            perms = np.asarray([rng.permutation(res) for _ in range(n_boot)])
+            rng_r = reef_rng(reef, "wn", seed)
+            perms = np.asarray([rng_r.permutation(res) for _ in range(n_boot)])
             p = peak_p_value(t, freq, float(pwr[idx]), perms)
             per = 1.0 / freq[idx]
             if p < 0.05:
@@ -223,6 +265,215 @@ def run_lag_sensitivity(coords, n_boot=5000, seed=42):
             "resultant_R": R_best,
             "direction": direction,
             "speed_km_per_year": speed,
+        })
+    return pd.DataFrame(rows)
+
+
+def run_field_significance(periods, residuals, n_iter=1000, seed=42):
+    """Uniform-frequency-grid field significance for 58-reef IPO-band fractional power
+    and empirical white-noise null for IPO-band concentration among top-K peaks."""
+    rng = np.random.default_rng(seed)
+    n_reefs = len(periods)
+    obs_fracs = np.zeros(n_reefs, dtype=float)
+    wn_fracs = np.zeros((n_iter, n_reefs), dtype=float)
+    blk_fracs = np.zeros((n_iter, n_reefs), dtype=float)
+    ar1_fracs = np.zeros((n_iter, n_reefs), dtype=float)
+    wn_peak_ipo = np.zeros((n_iter, n_reefs), dtype=bool)
+    wn_peak_pwr = np.zeros((n_iter, n_reefs), dtype=float)
+
+    obs_sig = periods["primary_significant"].eq(True)
+    obs_k = int(obs_sig.sum())
+    obs_ipo_in_sig = int((obs_sig & periods["primary_period"].between(15.0, 30.0)).sum())
+
+    for i, rname in enumerate(periods["reef_name"]):
+        sub = residuals.loc[residuals["reef_name"].eq(rname)].sort_values("time_years")
+        t = sub["time_years"].to_numpy(dtype=float)
+        y = sub["residual"].to_numpy(dtype=float)
+        freq, pwr = spectrum(t, y)
+        per = 1.0 / freq
+        ipo_mask = (per >= 15.0) & (per <= 30.0)
+        obs_fracs[i] = float(np.sum(pwr[ipo_mask]) / np.sum(pwr)) if ipo_mask.any() else 0.0
+
+        wn_s = np.asarray([rng.permutation(y) for _ in range(n_iter)])
+        p_wn = batch_lomb_scargle_power(t, freq, wn_s)
+        wn_fracs[:, i] = np.sum(p_wn[:, ipo_mask], axis=1) / np.maximum(np.sum(p_wn, axis=1), 1e-12) if ipo_mask.any() else 0.0
+        peak_idx = np.argmax(p_wn, axis=1)
+        wn_peak_ipo[:, i] = (per[peak_idx] >= 15.0) & (per[peak_idx] <= 30.0)
+        wn_peak_pwr[:, i] = p_wn[np.arange(n_iter), peak_idx]
+
+        blk_s = block_permutation_samples(t, y, rng, n_iter, block_years=3.0)
+        p_blk = batch_lomb_scargle_power(t, freq, blk_s)
+        blk_fracs[:, i] = np.sum(p_blk[:, ipo_mask], axis=1) / np.maximum(np.sum(p_blk, axis=1), 1e-12) if ipo_mask.any() else 0.0
+
+        ar1_s, _ = red_noise_samples(t, y, rng, n_iter)
+        p_ar1 = batch_lomb_scargle_power(t, freq, ar1_s)
+        ar1_fracs[:, i] = np.sum(p_ar1[:, ipo_mask], axis=1) / np.maximum(np.sum(p_ar1, axis=1), 1e-12) if ipo_mask.any() else 0.0
+
+    obs_mean = float(obs_fracs.mean())
+    rows = []
+    for lbl, mat in (("white_noise_power_fraction", wn_fracs),
+                     ("block_3yr_power_fraction", blk_fracs),
+                     ("ar1_power_fraction", ar1_fracs)):
+        sim_m = mat.mean(axis=1)
+        p_val = (1 + int(np.sum(sim_m >= obs_mean - 1e-12))) / (1 + n_iter)
+        rows.append({
+            "metric": lbl,
+            "n_iter": n_iter,
+            "observed": obs_mean,
+            "null_mean": float(sim_m.mean()),
+            "null_q95": float(np.quantile(sim_m, 0.95)),
+            "p_value": float(p_val),
+        })
+
+    top_k_ipo = np.array([wn_peak_ipo[s, np.argsort(wn_peak_pwr[s])[-obs_k:]].sum() for s in range(n_iter)])
+    p_topk = (1 + int(np.sum(top_k_ipo >= obs_ipo_in_sig))) / (1 + n_iter)
+    rows.append({
+        "metric": f"wn_uniform_freq_top{obs_k}_ipo_count",
+        "n_iter": n_iter,
+        "observed": float(obs_ipo_in_sig),
+        "null_mean": float(top_k_ipo.mean()),
+        "null_q95": float(np.quantile(top_k_ipo, 0.95)),
+        "p_value": float(p_topk),
+    })
+    rows.append({
+        "metric": "wn_uniform_freq_all58_peak_ipo_rate",
+        "n_iter": n_iter,
+        "observed": float(obs_ipo_in_sig / obs_k) if obs_k else np.nan,
+        "null_mean": float(wn_peak_ipo.mean()),
+        "null_q95": float(np.quantile(wn_peak_ipo.mean(axis=1), 0.95)),
+        "p_value": float(p_topk),
+    })
+    return pd.DataFrame(rows)
+
+
+def _bretherton_corr(x, y):
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    m = np.isfinite(x) & np.isfinite(y)
+    x, y = x[m], y[m]
+    n = len(x)
+    r, p_raw = stats.pearsonr(x, y)
+    r1x = float(np.corrcoef(x[:-1], x[1:])[0, 1])
+    r1y = float(np.corrcoef(y[:-1], y[1:])[0, 1])
+    neff = max(3.0, min(float(n), n * (1.0 - r1x * r1y) / (1.0 + r1x * r1y)))
+    t_stat = r * np.sqrt((neff - 2.0) / max(1e-12, 1.0 - r * r))
+    p_eff = float(2.0 * stats.t.sf(abs(t_stat), df=neff - 2.0))
+    return float(r), float(p_raw), p_eff, float(neff), n
+
+
+def run_environmental_sensitivity(periods, residuals):
+    """Compute NDJF spawning-season Chl-a (raw & ex-Nino3.4 partial), 13-yr low-pass TPI rivers,
+    NDJF GLORYS meridional velocity, and 113/92/58 reef subset velocity consistency."""
+    neg_yrs, pos_yrs, ipo_s = ipo_phase_years()
+    ipo_s = ipo_s.sort_index().dropna()
+    b_lp, a_lp = butter(3, 1.0 / 6.5, btype="low")
+    ipo_lp = pd.Series(filtfilt(b_lp, a_lp, ipo_s.values), index=ipo_s.index)
+    lp_neg = set(ipo_lp[ipo_lp < ipo_lp.mean() - 0.5 * ipo_lp.std()].index)
+    lp_pos = set(ipo_lp[ipo_lp > ipo_lp.mean() + 0.5 * ipo_lp.std()].index)
+
+    nino_wide = pd.read_csv(DATA_DIR / "climate/enso_nino34_monthly.csv")
+    months_map = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
+                  "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12}
+    nl = nino_wide.melt(id_vars=["year"], value_vars=list(months_map.keys()), var_name="m", value_name="val")
+    nl["month"] = nl["m"].map(months_map)
+    nl["val"] = pd.to_numeric(nl["val"], errors="coerce")
+    nl = nl[nl["val"] > -90].dropna()
+    clim = nl[nl["year"].between(1981, 2010)].groupby("month")["val"].mean()
+    nl["anom"] = nl["val"] - nl["month"].map(clim)
+    nino_ann = nl.groupby("year").filter(lambda g: len(g) == 12).groupby("year")["anom"].mean()
+    nl["syr"] = np.where(nl["month"] >= 11, nl["year"] + 1, nl["year"])
+    nino_ndjf = nl[nl["month"].isin([11, 12, 1, 2])].groupby("syr").filter(lambda g: len(g) == 4).groupby("syr")["anom"].mean()
+
+    rows = []
+    # 1. Annual & NDJF Chl-a vs TPI and ex-Nino3.4 partial
+    chl_ann_df = pd.read_csv(RESULTS_DIR / "source_data/chlorophyll_tpi_annual.csv", index_col=0)
+    m_ann = pd.concat([chl_ann_df, nino_ann.rename("nino")], axis=1).dropna()
+    r, pr, pe, neff, n = _bretherton_corr(m_ann["chlorophyll_mg_m3"], m_ann["unfiltered_tpi"])
+    rows.append({"category": "chl_annual_vs_tpi", "n": n, "value": r, "p_raw": pr, "p_eff_or_mw": pe, "detail": f"neff={neff:.1f}"})
+    c_res = m_ann["chlorophyll_mg_m3"] - np.polyval(np.polyfit(m_ann["nino"], m_ann["chlorophyll_mg_m3"], 1), m_ann["nino"])
+    t_res = m_ann["unfiltered_tpi"] - np.polyval(np.polyfit(m_ann["nino"], m_ann["unfiltered_tpi"], 1), m_ann["nino"])
+    r, pr, pe, neff, n = _bretherton_corr(c_res, t_res)
+    rows.append({"category": "chl_annual_vs_tpi_partial_ex_nino34", "n": n, "value": r, "p_raw": pr, "p_eff_or_mw": pe, "detail": f"neff={neff:.1f}"})
+
+    with xr.open_dataset(DATA_DIR / "climate/GBR_chlorophyll_monthly_1998_2025.nc") as ds_c:
+        vname = [v for v in ds_c.data_vars if "chl" in v.lower()][0]
+        da = ds_c[vname]
+        lat_n = [d for d in da.dims if "lat" in d.lower()][0]
+        lon_n = [d for d in da.dims if "lon" in d.lower()][0]
+        w = np.cos(np.deg2rad(da[lat_n]))
+        ts_m = da.weighted(w).mean(dim=[lat_n, lon_n]).to_series().dropna()
+        ts_m.index = pd.to_datetime(ts_m.index)
+        df_cm = pd.DataFrame({"chl": ts_m, "year": ts_m.index.year, "month": ts_m.index.month})
+        df_cm["syr"] = np.where(df_cm["month"] >= 11, df_cm["year"] + 1, df_cm["year"])
+        chl_ndjf = df_cm[df_cm["month"].isin([11, 12, 1, 2])].groupby("syr").filter(lambda g: len(g) == 4).groupby("syr")["chl"].mean()
+    m_nd = pd.concat([chl_ndjf.rename("chl"), ipo_s.rename("tpi"), nino_ndjf.rename("nino")], axis=1).dropna()
+    r, pr, pe, neff, n = _bretherton_corr(m_nd["chl"], m_nd["tpi"])
+    rows.append({"category": "chl_ndjf_vs_tpi", "n": n, "value": r, "p_raw": pr, "p_eff_or_mw": pe, "detail": f"neff={neff:.1f}"})
+    cr = m_nd["chl"] - np.polyval(np.polyfit(m_nd["nino"], m_nd["chl"], 1), m_nd["nino"])
+    tr = m_nd["tpi"] - np.polyval(np.polyfit(m_nd["nino"], m_nd["tpi"], 1), m_nd["nino"])
+    r, pr, pe, neff, n = _bretherton_corr(cr, tr)
+    rows.append({"category": "chl_ndjf_vs_tpi_partial_ex_nino34", "n": n, "value": r, "p_raw": pr, "p_eff_or_mw": pe, "detail": f"neff={neff:.1f}"})
+
+    # 2. 13-yr low-pass TPI on three rivers
+    rivers_df = pd.read_csv(RESULTS_DIR / "source_data/river_discharge_annual_m3_s.csv", index_col=0)
+    for rcol in ("Pascoe", "Burdekin", "Fitzroy"):
+        s = rivers_df[rcol].dropna()
+        qn = s[s.index.isin(lp_neg)]
+        qp = s[s.index.isin(lp_pos)]
+        _, pmw = stats.mannwhitneyu(qn, qp, alternative="two-sided")
+        rows.append({
+            "category": f"river_{rcol.lower()}_lp13_diff_m3_s",
+            "n": len(qn) + len(qp),
+            "value": float(qn.mean() - qp.mean()),
+            "p_raw": float(pmw),
+            "p_eff_or_mw": float(pmw),
+            "detail": f"neg_n={len(qn)},pos_n={len(qp)}",
+        })
+
+    # 3. GLORYS vo subset consistency (113 vs 92 vs 58) & NDJF
+    rc = pd.read_csv(RESULTS_DIR / "source_data/reef_current_phase_composites.csv")
+    enhm92 = set(residuals["reef_name"].unique())
+    scr58 = set(periods["reef_name"].unique())
+    for lbl, sset in (("all113", set(rc["reef_name"])), ("enhm92", enhm92), ("screened58", scr58)):
+        sub = rc[rc["reef_name"].isin(sset)]
+        cent = sub[sub["lat"].abs().between(16.0, 20.0)]
+        burd = sub[sub["nrm_region"].eq("Burdekin")]
+        pos_n = int((sub["difference_vo_m_s"] > 0).sum())
+        rows.append({
+            "category": f"glorys_annual_{lbl}",
+            "n": len(sub),
+            "value": float(100.0 * pos_n / len(sub)),
+            "p_raw": float(cent["positive_vo_m_s"].mean()),
+            "p_eff_or_mw": float(cent["negative_vo_m_s"].mean()),
+            "detail": f"pos_diff={pos_n}/{len(sub)};burd={burd['positive_vo_m_s'].mean():+.4f}->{burd['negative_vo_m_s'].mean():+.4f}",
+        })
+
+    with xr.open_dataset(DATA_DIR / "climate/GBR_currents_monthly_1993_2025.nc") as ds_v:
+        vo = ds_v.vo.squeeze("depth", drop=True)
+        dts = pd.to_datetime(vo.time.values)
+        ndjf_m = dts.month.isin([11, 12, 1, 2])
+        vo_nd = vo.sel(time=ndjf_m)
+        syrs = np.where(dts[ndjf_m].month >= 11, dts[ndjf_m].year + 1, dts[ndjf_m].year)
+        vo_nd = vo_nd.assign_coords(syr=("time", syrs)).groupby("syr").mean("time")
+        cnts = pd.Series(syrs).value_counts()
+        vo_nd = vo_nd.sel(syr=vo_nd.syr.isin(cnts[cnts == 4].index))
+        vn = vo_nd.sel(syr=vo_nd.syr.isin(neg_yrs)).mean("syr")
+        vp = vo_nd.sel(syr=vo_nd.syr.isin(pos_yrs)).mean("syr")
+        rlat = xr.DataArray(rc["lat"].to_numpy(), dims="reef")
+        rlon = xr.DataArray(rc["lon"].to_numpy(), dims="reef")
+        rc["ndjf_pos"] = vp.sel(latitude=rlat, longitude=rlon, method="nearest").values
+        rc["ndjf_neg"] = vn.sel(latitude=rlat, longitude=rlon, method="nearest").values
+        cent = rc[rc["lat"].abs().between(16.0, 20.0)]
+        burd = rc[rc["nrm_region"].eq("Burdekin")]
+        c_pos, c_neg = float(cent["ndjf_pos"].mean()), float(cent["ndjf_neg"].mean())
+        b_pos, b_neg = float(burd["ndjf_pos"].mean()), float(burd["ndjf_neg"].mean())
+        rows.append({
+            "category": "glorys_ndjf_central_16_20S_weakening_pct",
+            "n": len(cent),
+            "value": float(100.0 * (c_pos - c_neg) / c_pos),
+            "p_raw": c_pos,
+            "p_eff_or_mw": c_neg,
+            "detail": f"burd_weakening_pct={100.0*(b_pos-b_neg)/b_pos:.1f}({b_pos:+.4f}->{b_neg:+.4f})",
         })
     return pd.DataFrame(rows)
 
@@ -322,9 +573,8 @@ def run_phase_aliasing_and_unconditional_diagnostics(periods, residuals, coords,
     is12_58 = np.asarray(is12_58)
     th58 = _extract_phases(s58, mean_T12)
 
-    # 3. 2-year lag IPO-band reefs (17 reefs)
+    # 3. 2-year lag IPO-band reefs (using deterministic per-reef RNG at N=10000)
     groups = reef_series()
-    rng2 = np.random.default_rng(seed)
     s2, l2, T2_list = [], [], []
     for reef, df in sorted(groups.items()):
         v = align_survey_lag(df, 2, 183)
@@ -340,7 +590,8 @@ def run_phase_aliasing_and_unconditional_diagnostics(periods, residuals, coords,
             continue
         freq, pwr = sp
         idx = int(np.nanargmax(pwr))
-        perms = np.asarray([rng2.permutation(res) for _ in range(5000)])
+        rng2 = reef_rng(reef, "wn", seed)
+        perms = np.asarray([rng2.permutation(res) for _ in range(10000)])
         p = peak_p_value(t, freq, float(pwr[idx]), perms)
         per = 1.0 / freq[idx]
         if p < 0.05 and 15.0 <= per <= 30.0:
@@ -356,10 +607,10 @@ def run_phase_aliasing_and_unconditional_diagnostics(periods, residuals, coords,
     neg_mask = ks <= -0.05
 
     datasets = [
-        ("primary_12_lag3", "Primary 12 reefs (3-yr lag)", s12, l12, th12, mean_T12, None, "#c0392b", "-", 2.0),
-        ("all_58_weighted_lag3", "All 58 reefs, power-weighted (3-yr lag)", s58, l58, th58, mean_T12, w58, "#1f77b4", "-", 1.9),
-        ("all_58_unweighted_lag3", "All 58 reefs, unweighted (3-yr lag)", s58, l58, th58, mean_T12, None, "#4d6475", "--", 1.5),
-        ("lag2_17_reefs", "17 IPO-band reefs (2-yr lag)", s2, l2, th2, mean_T2, None, "#2ca02c", "-", 1.8),
+        ("primary_12_lag3", f"Primary {len(l12)} IPO reefs (3-yr lag)", s12, l12, th12, mean_T12, None, "#c0392b", "-", 2.0),
+        ("all_58_weighted_lag3", f"All {len(l58)} reefs, power-weighted (3-yr lag)", s58, l58, th58, mean_T12, w58, "#1f77b4", "-", 1.9),
+        ("all_58_unweighted_lag3", f"All {len(l58)} reefs, unweighted (3-yr lag)", s58, l58, th58, mean_T12, None, "#4d6475", "--", 1.5),
+        ("lag2_17_reefs", f"{len(l2)} IPO-band reefs (2-yr lag)", s2, l2, th2, mean_T2, None, "#2ca02c", "-", 1.8),
     ]
 
     diag_rows = []
@@ -409,17 +660,17 @@ def run_phase_aliasing_and_unconditional_diagnostics(periods, residuals, coords,
         R_curve, label, color, ls, lw = curves[key]
         kp, Rp, spd_p, nulls_p, _ = fits_ns[key]
         ax_a.plot(ks, R_curve, color=color, ls=ls, lw=lw,
-                  label=f"{label} (N→S: {spd_p:.1f} km yr$^{{-1}}$, AR(1) $p$ = {nulls_p['p_ar1']:.3f})")
+                  label=f"{label} (N→S: {spd_p:.1f} km yr⁻¹, AR(1) p = {nulls_p['p_ar1']:.3f})")
         ax_a.scatter([kp], [Rp], color=color, s=36, zorder=6, edgecolors="white", linewidths=0.6)
 
-    ax_a.text(1.10, 1.055, "N→S branch constraint\n(30.1–32.1 km yr$^{-1}$)",
+    ax_a.text(1.10, 1.075, "N→S a priori branch\n(30–32 km yr⁻¹)",
               ha="center", va="top", fontsize=9, fontweight="bold", color="#902018")
-    ax_a.text(-0.68, 1.055, "2$\\pi$ approx. spatial-alias peak\n($\\Delta k \\approx 2\\pi / 3.7^\\circ \\approx 1.70$)",
+    ax_a.text(-0.68, 1.075, "2π approx. spatial-alias peak\n(Δk ≈ 2π / 3.7° ≈ 1.70)",
               ha="center", va="top", fontsize=9, fontweight="bold", color="#444444")
     ax_a.set_xlim(-1.8, 1.8)
-    ax_a.set_ylim(0.0, 1.10)
-    ax_a.set_xlabel("Latitudinal phase gradient $k$ (rad deg$^{-1}$; $k > 0$: North → South)")
-    ax_a.set_ylabel("Mean resultant length $R(k)$")
+    ax_a.set_ylim(0.0, 1.12)
+    ax_a.set_xlabel("Latitudinal phase gradient k (rad deg⁻¹; k > 0: North → South)")
+    ax_a.set_ylabel("Mean resultant length R(k)")
     ax_a.set_title("Circular–linear resultant spectra across subsets and lags", loc="left", pad=6)
     ax_a.text(-0.08, 1.08, "A", transform=ax_a.transAxes, fontsize=13, fontweight="bold", va="top", ha="left")
     ax_a.legend(loc="lower center", frameon=True, facecolor="white", framealpha=0.92, edgecolor="#cccccc", fontsize=8.5)
@@ -468,28 +719,218 @@ def run_phase_aliasing_and_unconditional_diagnostics(periods, residuals, coords,
         ax.text(-0.14, 1.08, panel_lbl, transform=ax.transAxes, fontsize=13, fontweight="bold", va="top", ha="left")
         ax.text(
             0.04, 0.96,
-            f"n = {len(lats)} reefs ($k$ = {kp:+.3f})\n"
-            f"$R$ = {Rp:.3f} (AR(1) $p$ = {p_ar1:.3f}, Block $p$ = {p_blk:.3f})\n"
-            f"Speed = {spd:.1f} km yr$^{{-1}}$ (mean $T$ = {T_val:.1f} yr)",
+            f"n = {len(lats)} reefs (k = {kp:+.3f})\n"
+            f"R = {Rp:.3f} (AR(1) p = {p_ar1:.3f}, Block p = {p_blk:.3f})\n"
+            f"Speed = {spd:.1f} km yr⁻¹ (mean T = {T_val:.1f} yr)",
             transform=ax.transAxes, va="top", ha="left", fontsize=8.3,
             bbox=dict(facecolor="white", alpha=0.90, edgecolor="#cccccc", linewidth=0.6),
         )
         ax.legend(loc="lower right", frameon=True, facecolor="white", framealpha=0.9, edgecolor="#cccccc", fontsize=8.0)
         ax.spines[["top", "right"]].set_visible(False)
 
-    kp_w, Rp_w, spd_w, null_w, Tw = fits_ns["all_58_weighted_lag3"]
-    _plot_branch(ax_b, l58, th58, kp_w, Rp_w, spd_w, null_w["p_ar1"], null_w["p_block"], Tw,
-                 "All 58 screened reefs (no pre-selection)", "B",
-                 weights=w58, highlight_mask=is12_58)
+    # Panel B: Primary 12 IPO-band reefs (high-SNR verification zoom, complementing Main Text Fig. 3B all-58)
+    kp_12, Rp_12, spd_12, null_12, T12 = fits_ns["primary_12_lag3"]
+    _plot_branch(ax_b, l12, th12, kp_12, Rp_12, spd_12, null_12["p_ar1"], null_12["p_block"], T12,
+                 f"Primary {len(l12)} IPO-band reefs (3-yr lag)", "B",
+                 pt_color="#c0392b")
 
     kp_2, Rp_2, spd_2, null_2, T2 = fits_ns["lag2_17_reefs"]
     _plot_branch(ax_c, l2, th2, kp_2, Rp_2, spd_2, null_2["p_ar1"], null_2["p_block"], T2,
-                 "2-yr lag IPO reefs (N→S branch)", "C",
+                 f"2-yr lag IPO reefs (n = {len(l2)}, N→S branch)", "C",
                  pt_color="#2ca02c")
 
     save_publication(fig, FIGURES_DIR / "FigureS6_Phase_Sensitivity")
     plt.close(fig)
     return diag_df
+
+
+def run_fixed_period_phase_sensitivity(residuals, coords, periods_to_test=(18.0, 19.0, 20.0, 21.0, 21.3, 22.0, 23.0, 24.0, 25.0), n_iter=500, seed=42):
+    """Evaluate all-58-reef weighted circular-linear phase coherence across a priori fixed periods T=18-25 yr."""
+    coords_idx = coords.set_index("reef_name")
+    s_list, l_list = [], []
+    for rn, grp in sorted(residuals.groupby("reef_name")):
+        grp = grp.sort_values("time_years")
+        t = grp["time_years"].to_numpy(dtype=float)
+        vals = grp["residual"].to_numpy(dtype=float)
+        if spectrum(t, vals) is None or rn not in coords_idx.index:
+            continue
+        s_list.append((t + 1970.0, vals))
+        l_list.append(abs(float(coords_idx.loc[rn, "lat"])))
+    l_arr = np.asarray(l_list)
+    ks_ns = np.linspace(0.05, 2.0, 1951)
+    ks_sn = np.linspace(-2.0, -0.05, 1951)
+    rows = []
+    for T in periods_to_test:
+        omega = 2.0 * np.pi / float(T)
+        w_list = []
+        for t_yr, vals in s_list:
+            X = np.column_stack([np.cos(omega * t_yr), np.sin(omega * t_yr)])
+            yc = vals - np.mean(vals)
+            coef, _, _, _ = np.linalg.lstsq(X, yc, rcond=None)
+            w_list.append(float(np.sum((X @ coef) ** 2) / np.sum(yc ** 2)))
+        w_arr = np.asarray(w_list)
+        th_arr = _extract_phases(s_list, float(T))
+        R_ns = _scan_resultant(th_arr, l_arr, ks_ns, weights=w_arr)
+        R_sn = _scan_resultant(th_arr, l_arr, ks_sn, weights=w_arr)
+        bi = int(np.argmax(R_ns)); kp, Rp = float(ks_ns[bi]), float(R_ns[bi])
+        bi_s = int(np.argmax(R_sn)); km, Rm = float(ks_sn[bi_s]), float(R_sn[bi_s])
+        spd = float(111.0 / (abs(kp) * float(T) / (2.0 * np.pi)))
+        nulls = _test_directional_nulls(s_list, l_arr, float(T), Rp, k_min=0.05, k_max=2.0,
+                                        weights=w_arr, n_iter=n_iter, seed=seed)
+        rows.append({
+            "period_yr": float(T),
+            "k_ns_rad_per_deg": kp,
+            "speed_km_per_yr": spd,
+            "R_ns_weighted": Rp,
+            "k_alias_rad_per_deg": km,
+            "R_alias_weighted": Rm,
+            "p_ar1": nulls["p_ar1"],
+            "p_block": nulls["p_block"],
+        })
+    return pd.DataFrame(rows)
+
+
+def run_unfolded_timedomain_lag_test(residuals, coords, max_lag=7, n_perm=5000, seed=42):
+    """Unfolded time-domain cross-correlation within a half-cycle window (|lag|<=7 yr) breaking circular 2pi aliasing."""
+    cots_df, _ = ecological_observations()
+    cots_m = cots_df.merge(coords[["reef_name", "lat"]], on="reef_name", how="inner").copy()
+    cots_m["abs_lat"] = cots_m["lat"].abs()
+    cots_m["val"] = np.log1p(pd.to_numeric(cots_m["cots_density"], errors="coerce"))
+    cots_m = cots_m.dropna(subset=["val", "year"])
+
+    res_m = residuals.merge(coords[["reef_name", "lat"]], on="reef_name", how="inner").copy()
+    res_m["abs_lat"] = res_m["lat"].abs()
+
+    yrs = np.arange(1985, 2026)
+    rows = []
+    for ds_name, df_in, col in (("raw_113_reefs", cots_m, "val"), ("enhm_residuals", res_m, "residual")):
+        for pair_name, ba, bb in (
+            ("NorthInit_14_16.5S_to_Central_16.5_20S", (14.0, 16.5), (16.5, 20.0)),
+            ("Central_16.5_20S_to_South_20_23.5S", (16.5, 20.0), (20.0, 23.5)),
+        ):
+            a = df_in[df_in["abs_lat"].between(*ba)].groupby("year")[col].mean().reindex(yrs).interpolate(limit=2).values
+            b = df_in[df_in["abs_lat"].between(*bb)].groupby("year")[col].mean().reindex(yrs).interpolate(limit=2).values
+
+            def _corr_at(arr_a, arr_b, lag):
+                x, y = (arr_a[:len(yrs) - lag], arr_b[lag:]) if lag >= 0 else (arr_a[-lag:], arr_b[:len(yrs) + lag])
+                m = np.isfinite(x) & np.isfinite(y)
+                if m.sum() < 6:
+                    return np.nan, int(m.sum()), x[m], y[m]
+                return float(stats.pearsonr(x[m], y[m])[0]), int(m.sum()), x[m], y[m]
+
+            lag_rs = {l: _corr_at(a, b, l) for l in range(-max_lag, max_lag + 1)}
+            best_pos_lag = max(range(1, max_lag + 1), key=lambda l: lag_rs[l][0] if np.isfinite(lag_rs[l][0]) else -2.0)
+            best_neg_lag = max(range(-max_lag, 0), key=lambda l: lag_rs[l][0] if np.isfinite(lag_rs[l][0]) else -2.0)
+            r_obs, n_obs, xm, ym = lag_rs[best_pos_lag]
+            r_neg = lag_rs[best_neg_lag][0]
+            r1x = float(np.corrcoef(xm[:-1], xm[1:])[0, 1])
+            r1y = float(np.corrcoef(ym[:-1], ym[1:])[0, 1])
+            neff = max(3.0, min(float(n_obs), n_obs * (1.0 - r1x * r1y) / (1.0 + r1x * r1y)))
+            tstat = r_obs * np.sqrt((neff - 2.0) / max(1e-12, 1.0 - r_obs ** 2))
+            p_neff = float(2.0 * stats.t.sf(abs(tstat), df=neff - 2.0))
+
+            blocks = [b[i:i + 3] for i in range(0, len(b), 3)]
+            rng = np.random.default_rng(seed)
+            ex_dir = 0
+            for _ in range(n_perm):
+                bp = np.concatenate([blocks[k] for k in rng.permutation(len(blocks))])[:len(b)]
+                rp = _corr_at(a, bp, best_pos_lag)[0]
+                if np.isfinite(rp) and rp >= r_obs - 1e-12:
+                    ex_dir += 1
+            p_blk = float((ex_dir + 1) / (n_perm + 1))
+            rows.append({
+                "dataset": ds_name,
+                "band_pair": pair_name,
+                "best_ns_lag_yr": int(best_pos_lag),
+                "r_best_ns": r_obs,
+                "n_years": n_obs,
+                "neff": neff,
+                "p_neff_two_sided": p_neff,
+                "p_block_3yr_one_sided": p_blk,
+                "best_sn_lag_yr": int(best_neg_lag),
+                "r_best_sn": r_neg,
+            })
+    return pd.DataFrame(rows)
+
+
+def run_direct_ipo_phase_locking_check(periods, residuals, coords, v_speed=31.2, n_perm=5000, seed=42):
+    """Test direct 1:1 phase-locking between de-lagged/regional ENHM residuals and annual TPI."""
+    ipo_df = pd.read_csv(DATA_DIR / "climate" / "ipo_index.csv", encoding="gb18030")
+    yr_col = [c for c in ipo_df.columns if "year" in c.lower()][0]
+    m_cols = [c for c in ipo_df.columns if c != yr_col]
+    ipo_ann = pd.DataFrame({
+        "year": pd.to_numeric(ipo_df[yr_col], errors="coerce"),
+        "tpi": ipo_df[m_cols].apply(pd.to_numeric, errors="coerce").mean(axis=1),
+    }).dropna()
+    ipo_ann["year"] = ipo_ann["year"].astype(int)
+    ipo_map = dict(zip(ipo_ann["year"], ipo_ann["tpi"]))
+    sub_ipo = ipo_ann[ipo_ann["year"].between(1983, 2025)]["tpi"]
+    mu_tpi, sd_tpi = float(sub_ipo.mean()), float(sub_ipo.std(ddof=1))
+
+    df = residuals.merge(coords[["reef_name", "lat"]], on="reef_name", how="inner").copy()
+    df["abs_lat"] = df["lat"].abs()
+    screened = df[df["reef_name"].isin(periods["reef_name"])].copy()
+
+    rows = []
+    # Test A: de-lagged 58-reef residual index aligned to 15S at 31.2 km/yr vs TPI (lags -6..+6)
+    t_cal = 1970.0 + screened["time_years"].to_numpy(dtype=float)
+    shift = (screened["abs_lat"].to_numpy(dtype=float) - 15.0) * 111.195 / float(v_speed)
+    screened["t_aligned"] = np.round(t_cal - shift).astype(int)
+    ann = screened.groupby("t_aligned")["residual"].mean().sort_index()
+    ann = ann[(ann.index >= 1983) & (ann.index <= 2025)]
+    best = (0, 0.0, 1.0, 1.0, len(ann))
+    for lag in range(-6, 7):
+        x = ann.values
+        y = np.array([ipo_map.get(int(yr) - lag, np.nan) for yr in ann.index])
+        m = np.isfinite(x) & np.isfinite(y)
+        r, pr = stats.pearsonr(x[m], y[m])
+        r1x = float(np.corrcoef(x[m][:-1], x[m][1:])[0, 1])
+        r1y = float(np.corrcoef(y[m][:-1], y[m][1:])[0, 1])
+        neff = max(3.0, min(float(m.sum()), m.sum() * (1.0 - r1x * r1y) / (1.0 + r1x * r1y)))
+        tstat = r * np.sqrt((neff - 2.0) / max(1e-12, 1.0 - r ** 2))
+        pn = float(2.0 * stats.t.sf(abs(tstat), df=neff - 2.0))
+        if abs(r) > abs(best[1]):
+            best = (lag, float(r), float(pr), pn, int(m.sum()))
+    rows.append({
+        "test_type": "TestA_delagged_58reef_resid_vs_TPI",
+        "region_or_lag": f"best_lag_{best[0]:+d}yr",
+        "statistic": best[1],
+        "p_param_or_mwu": best[2],
+        "p_neff_or_block3yr": best[3],
+        "n_obs": best[4],
+    })
+
+    # Test B: Negative vs Positive IPO (|TPI - mu| > 0.5 sd) composites of ENHM residuals by zone
+    for zname, zdf in (
+        ("NorthInit_14_16.5S", df[df["abs_lat"].between(14.0, 16.5)]),
+        ("Central_16_20S", df[df["abs_lat"].between(16.0, 20.0)]),
+        ("SouthFitzroy_20_23.5S", df[df["abs_lat"].between(20.0, 23.5)]),
+        ("All_58_screened", screened),
+    ):
+        za = zdf.groupby("year")["residual"].mean().reset_index()
+        za["tpi"] = za["year"].map(ipo_map)
+        za = za[za["year"].between(1983, 2025)].dropna().sort_values("year")
+        neg = (za["tpi"] < mu_tpi - 0.5 * sd_tpi).values
+        pos = (za["tpi"] > mu_tpi + 0.5 * sd_tpi).values
+        v_arr = za["residual"].values
+        diff = float(v_arr[neg].mean() - v_arr[pos].mean())
+        _, p_mwu = stats.mannwhitneyu(v_arr[neg], v_arr[pos], alternative="two-sided")
+        blocks = [v_arr[i:i + 3] for i in range(0, len(v_arr), 3)]
+        rng = np.random.default_rng(seed)
+        ex = 0
+        for _ in range(n_perm):
+            perm = np.concatenate([blocks[k] for k in rng.permutation(len(blocks))])[:len(v_arr)]
+            if abs(float(perm[neg].mean() - perm[pos].mean())) >= abs(diff) - 1e-12:
+                ex += 1
+        rows.append({
+            "test_type": "TestB_resid_IPO_neg_minus_pos",
+            "region_or_lag": zname,
+            "statistic": diff,
+            "p_param_or_mwu": float(p_mwu),
+            "p_neff_or_block3yr": float((ex + 1) / (n_perm + 1)),
+            "n_obs": int(neg.sum() + pos.sum()),
+        })
+    return pd.DataFrame(rows)
 
 
 def export_table_s1(periods, coords):
@@ -513,6 +954,10 @@ def export_table_s1(periods, coords):
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--skip-environment", action="store_true", help="Run ecology diagnostics without external monthly grids")
+    args = parser.parse_args()
     periods = pd.read_csv(TABLES_DIR / "period_results.csv")
     residuals = pd.read_csv(TABLES_DIR / "all_residuals.csv")
     coords = reef_coordinates()
@@ -538,32 +983,62 @@ def main():
     phase_null = run_phase_slope_null(periods, residuals, coords, n_iter=500, seed=42)
     phase_null.to_csv(TABLES_DIR / "phase_slope_null.csv", index=False)
 
-    baseline_sens = run_baseline_sensitivity(residuals, n_boot=5000, seed=42)
+    ipo12_mean_T = float(periods[periods["primary_significant"].eq(True) & periods["primary_period"].between(15.0, 30.0)]["primary_period"].mean())
+    baseline_sens = run_baseline_sensitivity(residuals, coords, ipo12_mean_T, n_boot=10000, n_phase_iter=500, seed=42)
     baseline_sens.to_csv(TABLES_DIR / "baseline_sensitivity_comparison.csv", index=False)
 
-    lag_sens = run_lag_sensitivity(coords, n_boot=5000, seed=42)
+    lag_sens = run_lag_sensitivity(coords, n_boot=10000, seed=42)
     lag_sens.to_csv(TABLES_DIR / "lag_sensitivity_dated.csv", index=False)
 
+    field_sig = run_field_significance(periods, residuals, n_iter=1000, seed=42)
+    field_sig.to_csv(TABLES_DIR / "spectral_field_significance.csv", index=False)
+
+    env_sens = pd.DataFrame()
+    if not args.skip_environment:
+        env_sens = run_environmental_sensitivity(periods, residuals)
+        env_sens.to_csv(TABLES_DIR / "ndjf_and_tpi_sensitivity.csv", index=False)
+
     phase_diag = run_phase_aliasing_and_unconditional_diagnostics(periods, residuals, coords, n_iter=500, seed=42)
+    fixed_t = run_fixed_period_phase_sensitivity(residuals, coords, n_iter=500, seed=42)
+    fixed_t.to_csv(TABLES_DIR / "fixed_period_phase_sensitivity.csv", index=False)
+    unfolded_lag = run_unfolded_timedomain_lag_test(residuals, coords, max_lag=7, n_perm=5000, seed=42)
+    unfolded_lag.to_csv(TABLES_DIR / "unfolded_timedomain_lag_test.csv", index=False)
+    direct_lock = run_direct_ipo_phase_locking_check(periods, residuals, coords, v_speed=31.2, n_perm=5000, seed=42)
+    direct_lock.to_csv(TABLES_DIR / "direct_ipo_phase_locking_check.csv", index=False)
     table_s1 = export_table_s1(periods, coords)
 
     lines = [
-        "1. Spectral null hierarchy:",
+        "1. Spectral null hierarchy (N=10000 per-reef deterministic seeds):",
         summary.to_string(index=False),
         "",
-        "2. Unwrap-free circular-linear spatial phase null:",
+        "2. Uniform-frequency field significance (N=1000 ensembles):",
+        field_sig.to_string(index=False),
+        "",
+        "3. Unwrap-free circular-linear spatial phase null (primary IPO subset):",
         phase_null.to_string(index=False) if not phase_null.empty else "Insufficient reefs",
         "",
-        "3. Baseline model sensitivity (identical 58 reefs, N=5000):",
+        "4. Baseline model sensitivity + all-58-reef phase convergence (N=10000):",
         baseline_sens.to_string(index=False),
         "",
-        "4. Dated lag sensitivity (full 113-reef dataset, N=5000):",
+        "5. Dated lag sensitivity (full 113-reef dataset, N=10000):",
         lag_sens.to_string(index=False),
         "",
-        "5. All-58-reef (direction-constrained) & 2-yr lag spatial-alias diagnostics:",
+        "6. All-58-reef (direction-constrained) & 2-yr lag spatial-alias diagnostics:",
         phase_diag.to_string(index=False),
         "",
-        f"6. Table S1 exported: {len(table_s1)} spectrally screened reefs",
+        "7. Environmental sensitivity (NDJF Chl-a ex-Nino3.4, LP13 rivers, GLORYS subsets & NDJF):",
+        env_sens.to_string(index=False),
+        "",
+        f"8. Table S1 exported: {len(table_s1)} spectrally screened reefs",
+        "",
+        "9. A priori fixed evaluation period sensitivity (T=18-25 yr, all 58 reefs weighted):",
+        fixed_t.to_string(index=False),
+        "",
+        "10. Unfolded time-domain lag cross-correlation (half-cycle |lag|<=7 yr):",
+        unfolded_lag.to_string(index=False),
+        "",
+        "11. Direct 1:1 IPO phase-locking diagnostics (Test A de-lagged & Test B regional composites):",
+        direct_lock.to_string(index=False),
     ]
     text = "\n".join(lines) + "\n"
     (TABLES_DIR / "robustness_null_comparison.txt").write_text(text, encoding="utf-8")

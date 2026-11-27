@@ -20,6 +20,7 @@ from spectral_inference import (
     holm_adjust,
     peak_p_value,
     red_noise_samples,
+    reef_rng,
     spectrum,
 )
 
@@ -71,6 +72,44 @@ def find_optimal_lag(merged_data, max_lag=4):
     reef_lag_frame = pd.DataFrame.from_dict(reef_lags, orient='index').rename_axis('reef_name').reset_index()
     reef_lag_frame.reindex(columns=['reef_name', 'optimal_lag', 'correlation']).to_csv(RESULTS_DIR / 'reef_lags.csv', index=False)
     print(f'Dated lag diagnostic: {len(site_scores)} reefs with common COTS survey dates')
+
+    # Bidirectional coral-COTS cross-correlation (tau in [-4, +4] yr)
+    # tau > 0: coral(t - tau) vs COTS(t) [pre-outbreak coral baseline]; tau < 0: coral(t + |tau|) vs COTS(t) [post-outbreak grazing]
+    cots_obs, coral_obs = ecological_observations()
+    cots_obs = cots_obs.copy()
+    coral_obs = coral_obs.copy()
+    cots_obs['dt'] = pd.to_datetime(cots_obs['survey_date'])
+    coral_obs['dt'] = pd.to_datetime(coral_obs['survey_date'])
+    cots_obs['log_cots'] = np.log1p(cots_obs['cots_density'].astype(float))
+    bidir_rows = []
+    for tau in range(-max_lag, max_lag + 1):
+        rs = []
+        for rname, cg in cots_obs.groupby('reef_name'):
+            hg = coral_obs[coral_obs['reef_name'] == rname]
+            if len(cg) < 5 or len(hg) < 5:
+                continue
+            ht = hg['dt'].values
+            hv = hg['coral_cover'].to_numpy(dtype=float)
+            pc, ph = [], []
+            for dt_c, vc in zip(cg['dt'].values, cg['log_cots'].to_numpy(dtype=float)):
+                target = dt_c - np.timedelta64(int(round(tau * 365.2425)), 'D')
+                diffs = np.abs((ht - target) / np.timedelta64(1, 'D'))
+                j = int(np.argmin(diffs))
+                if diffs[j] <= LAG_TOLERANCE_DAYS:
+                    pc.append(vc)
+                    ph.append(hv[j])
+            if len(pc) >= 5 and np.std(pc) > 1e-10 and np.std(ph) > 1e-10:
+                rs.append(float(np.corrcoef(ph, pc)[0, 1]))
+        bidir_rows.append({
+            'lag_years': tau,
+            'mean': float(np.mean(rs)) if rs else np.nan,
+            'median': float(np.median(rs)) if rs else np.nan,
+            'std': float(np.std(rs)) if rs else np.nan,
+            'se': float(np.std(rs) / np.sqrt(len(rs))) if rs else np.nan,
+            'n': len(rs),
+        })
+    pd.DataFrame(bidir_rows).to_csv(RESULTS_DIR / 'bidirectional_lag_analysis.csv', index=False)
+
     return {
         'optimal_lag': max(lag_means, key=lambda lag: lag_means[lag]['mean']) if lag_means else None,
         'primary_lag': PRIMARY_LAG_YEARS,
@@ -199,10 +238,11 @@ def fit_coral_cots_model(merged_data, lag_years=None):
 # =============================================================================
 
 
-def screen_residual_periods(residual_data, n_bootstrap=5000, significance_level=0.05):
+def screen_residual_periods(residual_data, n_bootstrap=10000, significance_level=0.05):
     """Screen dominant residual periods under white-noise permutation (primary),
-    plus 3-year calendar-block permutation and continuous-time AR(1) red-noise nulls."""
-    rng = np.random.default_rng(42)
+    plus 3-year calendar-block permutation and continuous-time AR(1) red-noise nulls.
+    Uses deterministic per-reef RNG streams so white-noise p-values are bit-identical
+    across primary and sensitivity pipelines."""
     results = {}
     for reef_name, frame in sorted(residual_data.items()):
         time = frame['time_years'].to_numpy()
@@ -212,9 +252,12 @@ def screen_residual_periods(residual_data, n_bootstrap=5000, significance_level=
             continue
         frequency, power = result
         primary = int(np.nanargmax(power))
-        permuted = np.asarray([rng.permutation(values) for _ in range(n_bootstrap)])
-        blocked = block_permutation_samples(time, values, rng, n_bootstrap, block_years=3.0)
-        simulated, decay = red_noise_samples(time, values, rng, n_bootstrap)
+        rng_wn = reef_rng(reef_name, "wn", 42)
+        rng_blk = reef_rng(reef_name, "blk", 42)
+        rng_ar1 = reef_rng(reef_name, "ar1", 42)
+        permuted = np.asarray([rng_wn.permutation(values) for _ in range(n_bootstrap)])
+        blocked = block_permutation_samples(time, values, rng_blk, n_bootstrap, block_years=3.0)
+        simulated, decay = red_noise_samples(time, values, rng_ar1, n_bootstrap)
         wn_p = peak_p_value(time, frequency, power[primary], permuted)
         blk_p = peak_p_value(time, frequency, power[primary], blocked)
         ar1_p = peak_p_value(time, frequency, power[primary], simulated)
@@ -414,7 +457,7 @@ def save_results(residual_data, model_results, period_results, pattern_summary):
         f.write(f"   - 名义基准滞后: {lag_years}年 ± {LAG_TOLERANCE_DAYS}天，按实际调查日期配对\n")
         f.write(f"   - 生态输入: {ECOLOGY_OBSERVATIONS}\n\n")
         
-        f.write("3. 残差周期分析（主筛选：白噪声置换 N=5000；附 3 年块置换与连续时间 AR(1) 零假设层级）\n")
+        f.write("3. 残差周期分析（主筛选：白噪声置换 N=10000，逐礁确定性种子；附 3 年块置换与连续时间 AR(1) 零假设层级）\n")
         sig_count = sum(1 for v in period_results.values() if v['primary_significant'])
         blk_count = sum(1 for v in period_results.values() if v['block_p_value'] < 0.05)
         ar1_count = sum(1 for v in period_results.values() if v['ar1_p_value'] < 0.05)
@@ -455,7 +498,7 @@ def main():
     residual_data, model_results = fit_coral_cots_model(merged_data, lag_years=PRIMARY_LAG_YEARS)
     
     # 步骤3: DLS周期分析
-    period_results = screen_residual_periods(residual_data, n_bootstrap=5000)
+    period_results = screen_residual_periods(residual_data, n_bootstrap=10000)
     
     # 步骤4: 时空模式分析
     pattern_summary = analyze_spatiotemporal_patterns(period_results, model_results, residual_data)
