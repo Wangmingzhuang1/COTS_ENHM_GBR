@@ -1,6 +1,6 @@
 # Source data and staging
 
-This release uses the exact ecological snapshot and dated-survey rules of the 2026-11-25 manuscript. It does not use the older `data/reef_surveys/` calendar-year inputs. Those historical files, where retained in repository history, must not be substituted for the versioned snapshot.
+This release uses the exact ecological snapshot and dated-survey rules of the 2026-11-27 analysis snapshot. It does not use the older `data/reef_surveys/` calendar-year inputs. Those historical files, where retained in repository history, must not be substituted for the versioned snapshot.
 
 ## Included
 

@@ -22,11 +22,14 @@ def main():
         stages.append('13_robustness_null_comparison.py')
     if args.environment:
         stages.append('17_environment_source_data.py')
+    if args.environment:
+        stages.append('13_environment_sensitivity.py')
     if args.figures:
         stages += ['04_cots_overview.py','02_paper_figures.py','04_spatial_heterogeneity.py','05_propagation.py','06_mechanism_fig6.py','16_conceptual_susceptibility_schematic.py']
     for stage in stages:
         print('Running '+stage,flush=True)
-        subprocess.run([sys.executable,'-B',str(root/'scripts'/stage)],cwd=root,check=True)
+        extra = ['--skip-environment'] if stage == '13_robustness_null_comparison.py' else []
+        subprocess.run([sys.executable,'-B',str(root/'scripts'/stage),*extra],cwd=root,check=True)
     if args.supplementary:
         for module in ['05_reef_level_exclusivity','06_ipo_outbreak_transitions']:
             subprocess.run([sys.executable,'-B','-m','pnas_aug.scripts.'+module],cwd=root,check=True)

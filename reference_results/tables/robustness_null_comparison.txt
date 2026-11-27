@@ -1,32 +1,82 @@
-1. Spectral null hierarchy:
+1. Spectral null hierarchy (N=10000 per-reef deterministic seeds):
           null_and_decision  tested_reefs  detected_reefs  detections_15_30_years
-        white_noise_nominal            58              15                      12
+        white_noise_nominal            58              16                      13
          calendar_block_3yr            58               9                       6
 continuous_time_ar1_nominal            58               1                       0
    continuous_time_ar1_holm            58               0                       0
 
-2. Unwrap-free circular-linear spatial phase null:
+2. Uniform-frequency field significance (N=1000 ensembles):
+                             metric  n_iter  observed  null_mean  null_q95  p_value
+         white_noise_power_fraction    1000  0.159628   0.093197  0.105611 0.000999
+           block_3yr_power_fraction    1000  0.159628   0.114514  0.126942 0.000999
+                 ar1_power_fraction    1000  0.159628   0.146644  0.166602 0.139860
+    wn_uniform_freq_top16_ipo_count    1000 13.000000   1.674000  4.000000 0.000999
+wn_uniform_freq_all58_peak_ipo_rate    1000  0.812500   0.150259  0.224138 0.000999
+
+3. Unwrap-free circular-linear spatial phase null (primary IPO subset):
       null_model  n_reefs  n_iter  k_obs_rad_per_deg  speed_km_per_year    R_obs  null_mean_R  null_q95_R  p_value
-             ar1       12     500           1.078567          31.210085 0.875712     0.477323    0.638983 0.001996
-           block       12     500           1.078567          31.210085 0.875712     0.477030    0.655232 0.001996
-uniform_circular       12    2000           1.078567          31.210085 0.875712     0.478080    0.676915 0.000500
+             ar1       13     500           1.057751          30.959023 0.874069     0.458829    0.629310 0.001996
+           block       13     500           1.057751          30.959023 0.874069     0.465847    0.648667 0.001996
+uniform_circular       13    2000           1.057751          30.959023 0.874069     0.462325    0.647131 0.001000
 
-3. Baseline model sensitivity (identical 58 reefs, N=5000):
-      baseline_model  tested_reefs  significant_reefs  ipo_band_reefs  ipo_fraction  enso_band_reefs
-        raw_log_cots            58                 17              15      0.882353                2
-            enhm_rto            58                 16              13      0.812500                1
-ols_intercept_nonneg            58                 13               9      0.692308                0
+4. Baseline model sensitivity + all-58-reef phase convergence (N=10000):
+      baseline_model  tested_reefs  significant_reefs  ipo_band_reefs  ipo_fraction  enso_band_reefs  all58_k_ns  all58_speed_km_yr  all58_R_weighted  all58_p_ar1  all58_p_block
+        raw_log_cots            58                 17              15      0.882353                2       0.957          34.218338          0.662763     0.001996       0.001996
+            enhm_rto            58                 16              13      0.812500                1       1.048          31.247090          0.600626     0.001996       0.001996
+ols_intercept_nonneg            58                 13              10      0.769231                0       1.119          29.264477          0.557713     0.001996       0.001996
+       log_coral_ols            58                 12               8      0.666667                1       1.111          29.475202          0.576961     0.001996       0.001996
 
-4. Dated lag sensitivity (full 113-reef dataset, N=5000):
+5. Dated lag sensitivity (full 113-reef dataset, N=10000):
  lag_years  fitted_reefs  screened_reefs  significant_reefs  ipo_band_reefs  ipo_fraction  mean_ipo_period  k_rad_per_deg  resultant_R      direction  speed_km_per_year
          2            93              81                 20              17        0.8500        19.521858         -0.742     0.759029 South-to-North          48.147949
          3            92              58                 16              13        0.8125        21.297665          1.058     0.874068 North-to-South          30.951749
 
-5. All-58-reef (direction-constrained) & 2-yr lag spatial-alias diagnostics:
+6. All-58-reef (direction-constrained) & 2-yr lag spatial-alias diagnostics:
                dataset  n_reefs  mean_period_years  k_north_to_south  R_north_to_south  speed_km_per_year_ns  p_uniform_ns  p_block_ns  p_ar1_ns  k_alias_neg  R_alias_neg  delta_k_alias
-       primary_12_lag3       12          20.718624             1.079          0.875712             31.197550      0.000500    0.001996  0.001996       -0.621     0.786463          1.700
-  all_58_weighted_lag3       58          20.718624             1.048          0.592707             32.120378      0.000500    0.001996  0.001996       -0.600     0.622634          1.648
-all_58_unweighted_lag3       58          20.718624             1.074          0.463076             31.342790      0.000500    0.001996  0.003992       -0.695     0.488452          1.769
+       primary_12_lag3       13          21.297665             1.058          0.874068             30.951749      0.000500    0.001996  0.001996       -0.673     0.729843          1.731
+  all_58_weighted_lag3       58          21.297665             1.048          0.600626             31.247090      0.000500    0.001996  0.001996       -0.602     0.600166          1.650
+all_58_unweighted_lag3       58          21.297665             1.080          0.465638             30.321250      0.000500    0.001996  0.003992       -0.698     0.464384          1.778
          lag2_17_reefs       17          19.521858             1.186          0.641879             30.122916      0.006497    0.003992  0.009980       -0.742     0.759029          1.928
 
-6. Table S1 exported: 58 spectrally screened reefs
+7. Environmental sensitivity (NDJF Chl-a ex-Nino3.4, LP13 rivers, GLORYS subsets & NDJF):
+                                category   n      value     p_raw  p_eff_or_mw                                    detail
+                       chl_annual_vs_tpi  28  -0.459969  0.013787     0.045683                                 neff=19.3
+     chl_annual_vs_tpi_partial_ex_nino34  28  -0.363177  0.057489     0.180766                                 neff=15.1
+                         chl_ndjf_vs_tpi  27  -0.495502  0.008585     0.029784                                 neff=19.2
+       chl_ndjf_vs_tpi_partial_ex_nino34  27  -0.424775  0.027206     0.038512                                 neff=24.0
+             river_pascoe_lp13_diff_m3_s  18  13.998709  0.124650     0.124650                          neg_n=6,pos_n=12
+           river_burdekin_lp13_diff_m3_s  27 283.819319  0.019270     0.019270                          neg_n=9,pos_n=18
+            river_fitzroy_lp13_diff_m3_s  25 112.612067  0.192389     0.192389                         neg_n=10,pos_n=15
+                    glorys_annual_all113 113  81.415929 -0.008513     0.003235     pos_diff=92/113;burd=-0.0420->-0.0356
+                    glorys_annual_enhm92  92  85.869565 -0.007812     0.004608      pos_diff=79/92;burd=-0.0438->-0.0375
+                glorys_annual_screened58  58  86.206897 -0.014756    -0.003008      pos_diff=50/58;burd=-0.0464->-0.0399
+glorys_ndjf_central_16_20S_weakening_pct  51  27.158687 -0.074036    -0.053929 burd_weakening_pct=15.2(-0.0839->-0.0712)
+
+8. Table S1 exported: 58 spectrally screened reefs
+
+9. A priori fixed evaluation period sensitivity (T=18-25 yr, all 58 reefs weighted):
+ period_yr  k_ns_rad_per_deg  speed_km_per_yr  R_ns_weighted  k_alias_rad_per_deg  R_alias_weighted    p_ar1  p_block
+      18.0             1.069        36.245378       0.520904               -0.621          0.645961 0.001996 0.001996
+      19.0             1.069        34.337727       0.551701               -0.610          0.648617 0.001996 0.001996
+      20.0             1.057        32.991181       0.577620               -0.602          0.640345 0.001996 0.001996
+      21.0             1.047        31.720270       0.597113               -0.600          0.612639 0.001996 0.001996
+      21.3             1.048        31.243664       0.600649               -0.602          0.600060 0.001996 0.001996
+      22.0             1.058        29.963635       0.603133               -0.610          0.562901 0.001996 0.001996
+      23.0             1.100        27.566544       0.589307               -0.642          0.492962 0.001996 0.001996
+      24.0             1.164        24.965406       0.559307               -0.789          0.420950 0.001996 0.001996
+      25.0             1.232        22.643947       0.526481               -0.887          0.377585 0.001996 0.001996
+
+10. Unfolded time-domain lag cross-correlation (half-cycle |lag|<=7 yr):
+       dataset                              band_pair  best_ns_lag_yr  r_best_ns  n_years      neff  p_neff_two_sided  p_block_3yr_one_sided  best_sn_lag_yr  r_best_sn
+ raw_113_reefs NorthInit_14_16.5S_to_Central_16.5_20S               6   0.617749       35 26.299858          0.000714               0.001600              -7   0.181249
+ raw_113_reefs     Central_16.5_20S_to_South_20_23.5S               2   0.351220       39 20.978096          0.118706               0.082783              -1   0.269972
+enhm_residuals NorthInit_14_16.5S_to_Central_16.5_20S               5   0.408159       33 29.591134          0.026255               0.087383              -6  -0.012282
+enhm_residuals     Central_16.5_20S_to_South_20_23.5S               2   0.088405       36 27.702858          0.656515               0.331534              -3   0.521066
+
+11. Direct 1:1 IPO phase-locking diagnostics (Test A de-lagged & Test B regional composites):
+                         test_type         region_or_lag  statistic  p_param_or_mwu  p_neff_or_block3yr  n_obs
+TestA_delagged_58reef_resid_vs_TPI         best_lag_+0yr   0.272042        0.077600            0.138694     43
+     TestB_resid_IPO_neg_minus_pos    NorthInit_14_16.5S  -0.018262        0.789383            0.752849     22
+     TestB_resid_IPO_neg_minus_pos        Central_16_20S   0.015165        0.640181            0.846231     22
+     TestB_resid_IPO_neg_minus_pos SouthFitzroy_20_23.5S   0.156577        0.305390            0.336733     20
+     TestB_resid_IPO_neg_minus_pos       All_58_screened   0.043279        0.462608            0.421916     22

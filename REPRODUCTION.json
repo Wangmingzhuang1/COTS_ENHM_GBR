@@ -1,25 +1,41 @@
 {
-  "version": "2026.11.25",
+  "version": "2026.11.27",
   "python": "3.12",
   "checks": {
-    "archive_members_verified": 337,
-    "core_rerun": true,
+    "all_python_syntax": true,
+    "environment_sensitivity_regenerated_from_local_provider_grids": true,
+    "table_comparisons": {
+      "all_residuals.csv": "match",
+      "baseline_sensitivity_comparison.csv": "match",
+      "bidirectional_lag_analysis.csv": "match",
+      "direct_ipo_phase_locking_check.csv": "match",
+      "fixed_period_phase_sensitivity.csv": "match",
+      "lag_analysis.csv": "match",
+      "lag_sensitivity_dated.csv": "match",
+      "model_results.csv": "match",
+      "ndjf_and_tpi_sensitivity.csv": "match",
+      "period_results.csv": "match",
+      "phase_sensitivity_diagnostics.csv": "match",
+      "phase_slope_null.csv": "match",
+      "reef_lags.csv": "match",
+      "robustness_null_comparison.csv": "match",
+      "significant_reefs.csv": "match",
+      "spectral_field_significance.csv": "match",
+      "table_s1_screened_reefs.csv": "match",
+      "unfolded_timedomain_lag_test.csv": "match"
+    },
     "source_to_result_audit": true,
-    "six_core_tables_match_reference": true,
-    "five_robustness_tables_match_reference": true,
-    "supplementary_modules_run": true,
-    "environment_source_data_exported": true
-  },
-  "expected": {
-    "fitted_reefs": 92,
-    "paired_observations": 1051,
-    "screened_reefs": 58,
-    "significant_reefs": 15,
-    "ipo_band_reefs": 12,
-    "current_positive_difference_reefs": 92
+    "spectral_counts": {
+      "screened": 58,
+      "significant": 16,
+      "ipo": 13
+    },
+    "robustness_completed": true
   },
   "limits": [
-    "Full monthly environmental products and GIS layers must be obtained from the providers to rebuild every figure.",
-    "Directional phase results are conditional on the selected branch."
+    "Environmental monthly grids and GIS layers require provider retrieval.",
+    "Ecology runner was tested without environmental grids; environmental sensitivity was separately verified using local provider grids.",
+    "Directional phase estimates are conditional on the chosen branch.",
+    "Scientific inference limitations are documented in README."
   ]
 }

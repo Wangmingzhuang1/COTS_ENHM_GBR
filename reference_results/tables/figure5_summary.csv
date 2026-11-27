@@ -1,2 +1,2 @@
-n_reefs,mean_period_years,k_rad_per_deg,resultant_R,speed_km_per_year,direction,circular_p_uniform,period_filter_min_years,period_filter_max_years
-12,20.718624158814595,1.0785666567874124,0.8757121671951905,31.21008451145074,North-to-South,0.0009995002498750624,15.0,30.0
+n_reefs,n_all_screened,mean_period_years,k_rad_per_deg,resultant_R,speed_km_per_year,k_all58_weighted,R_all58_weighted,speed_all58_weighted,direction,circular_p_uniform,period_filter_min_years,period_filter_max_years
+13,58,21.297664985931767,1.0577513961066458,0.8740686167388833,30.9590231304177,1.048,0.6006264132779068,31.24708963577983,North-to-South,0.0009995002498750624,15.0,30.0

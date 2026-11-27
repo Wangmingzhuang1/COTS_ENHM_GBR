@@ -1,5 +1,6 @@
 """Period screening on dated observations with white-noise, block, and gap-aware red-noise nulls."""
 
+import zlib
 import numpy as np
 from astropy.timeseries import LombScargle
 from scipy.optimize import minimize_scalar
@@ -8,6 +9,12 @@ MIN_PERIOD_OBS = 5
 MIN_PERIOD_YEARS = 3.0
 MAX_PERIOD_YEARS = 30.0
 N_FREQUENCIES = 1000
+
+
+def reef_rng(reef_name, salt="wn", base_seed=42):
+    """Deterministic per-reef RNG stream independent of processing order or sibling nulls."""
+    key = f"{base_seed}:{salt}:{reef_name}".encode("utf-8")
+    return np.random.default_rng(zlib.crc32(key) & 0xFFFFFFFF)
 
 
 def spectrum(time, values):
@@ -21,26 +28,23 @@ def spectrum(time, values):
     return frequency, LombScargle(time, values).power(frequency, method="slow")
 
 
-def _batch_lomb_scargle_max_power(time, frequency, series_2d):
-    """Vectorized floating-mean Lomb-Scargle max power over a batch of series (B, N).
+def batch_lomb_scargle_power(time, frequency, series_2d):
+    """Vectorized floating-mean Lomb-Scargle power matrix (B, F) over a batch of series (B, N).
 
     Matches astropy.timeseries.LombScargle(time, y, fit_mean=True, normalization='standard').power(frequency)
-    to floating-point precision while running ~40x faster for N=5000 permutations.
+    to floating-point precision while running ~40x faster for N=5000-10000 permutations.
     """
     t = np.asarray(time, dtype=float)
     omega = 2.0 * np.pi * np.asarray(frequency, dtype=float)  # (F,)
-    # Design basis per frequency: [1, cos(wt), sin(wt)]
     wt = omega[:, None] * t[None, :]  # (F, N)
     cos_wt = np.cos(wt)
     sin_wt = np.sin(wt)
 
-    # Center cos and sin across N (floating mean)
     c_bar = cos_wt.mean(axis=1, keepdims=True)
     s_bar = sin_wt.mean(axis=1, keepdims=True)
     C = cos_wt - c_bar  # (F, N)
     S = sin_wt - s_bar  # (F, N)
 
-    # Gram matrix entries per frequency
     cc = np.sum(C * C, axis=1)  # (F,)
     ss = np.sum(S * S, axis=1)  # (F,)
     cs = np.sum(C * S, axis=1)  # (F,)
@@ -48,19 +52,20 @@ def _batch_lomb_scargle_max_power(time, frequency, series_2d):
     safe = det > 1e-24
     inv_det = np.where(safe, 1.0 / np.where(safe, det, 1.0), 0.0)
 
-    # Center each surrogate series
     Y = np.asarray(series_2d, dtype=float)  # (B, N)
     Yc = Y - Y.mean(axis=1, keepdims=True)
     yy = np.sum(Yc * Yc, axis=1)  # (B,)
 
-    # Projections: (B, F)
     yc = Yc @ C.T
     ys = Yc @ S.T
 
-    # Fitted sum of squares: (ss * yc^2 - 2*cs*yc*ys + cc * ys^2) / det
     num = ss[None, :] * (yc * yc) - 2.0 * cs[None, :] * (yc * ys) + cc[None, :] * (ys * ys)
-    power = (num * inv_det[None, :]) / np.where(yy[:, None] > 1e-24, yy[:, None], 1.0)
-    return np.nanmax(power, axis=1)
+    return (num * inv_det[None, :]) / np.where(yy[:, None] > 1e-24, yy[:, None], 1.0)
+
+
+def _batch_lomb_scargle_max_power(time, frequency, series_2d):
+    """Vectorized floating-mean Lomb-Scargle max power over a batch of series (B, N)."""
+    return np.nanmax(batch_lomb_scargle_power(time, frequency, series_2d), axis=1)
 
 
 def block_permutation_samples(time, values, rng, size, block_years=3.0):

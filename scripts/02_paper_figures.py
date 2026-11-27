@@ -115,32 +115,49 @@ def create_figure_s2_baseline(lag_analysis, model_results):
     fig = plt.figure(figsize=(13, 4.6))
     gs = GridSpec(1, 3, figure=fig, wspace=0.34)
     
-    # --- Panel A: Lag Profile ---
+    # --- Panel A: Bidirectional Coral-COTS Lag Profile (tau in [-4, +4] yr) ---
     ax_lag = fig.add_subplot(gs[0, 0])
     lags = lag_analysis['lag_years'].values
     correlations = lag_analysis['mean'].values
     standard_deviations = lag_analysis['std'].values
-    
-    ax_lag.axvspan(2, 4, color=COLORS['accent'], alpha=0.12,
-                  label='Plausible range (2-4 yr)')
-    ax_lag.errorbar(lags, correlations, yerr=standard_deviations, fmt='o-', capsize=4,
-                    color=COLORS['primary'], markersize=6, lw=1.5)
-    
     optimal_lag = int(lag_analysis.loc[lag_analysis['primary'], 'lag_years'].iloc[0])
-    ax_lag.axvline(optimal_lag, color=COLORS['secondary'], linestyle='--', lw=2)
-    ax_lag.text(optimal_lag + 0.35, np.max(correlations),
-                f'Baseline: {optimal_lag} yr',
-                color=COLORS['secondary'], fontweight='bold')
     common_n = int(lag_analysis['n'].min())
-    ax_lag.text(0.98, 0.04, f'Common reef set: n = {common_n}',
-                transform=ax_lag.transAxes, ha='right', va='bottom', fontsize=9)
+
+    bidir_path = PROJECT_ROOT / "results" / "tables" / "bidirectional_lag_analysis.csv"
+    if bidir_path.exists():
+        bidir = pd.read_csv(bidir_path)
+        ax_lag.axvspan(-4, 0, color=COLORS['secondary'], alpha=0.06, label='Post-outbreak grazing (τ < 0)')
+        ax_lag.axvspan(2, 4, color=COLORS['accent'], alpha=0.12, label='Plausible baseline (2–4 yr)')
+        ax_lag.errorbar(bidir['lag_years'], bidir['mean'], yerr=bidir['se'], fmt='s--', capsize=3,
+                        color='#5b7c99', markersize=5, lw=1.3, label='All reefs bidirectional (±1 SE)')
+        ax_lag.errorbar(lags, correlations, yerr=standard_deviations / np.sqrt(common_n), fmt='o-', capsize=4,
+                        color=COLORS['primary'], markersize=6, lw=1.8, label=f'Common cohort (n = {common_n}, ±1 SE)')
+        ax_lag.axvline(0, color='#666666', linestyle=':', lw=1.0)
+        ax_lag.axvline(optimal_lag, color=COLORS['secondary'], linestyle='--', lw=1.8)
+        ax_lag.text(optimal_lag + 0.18, float(np.nanmax(bidir['mean'])) + 0.03,
+                    f'Default: +{optimal_lag} yr', color=COLORS['secondary'], fontweight='bold', fontsize=9)
+        ax_lag.set_xlim(-4.4, 4.4)
+        ax_lag.set_xticks(range(-4, 5))
+        ax_lag.set_xlabel('Lag τ (yr; τ > 0: coral leads COTS; τ < 0: COTS leads coral)', fontsize=10.5, fontweight='bold')
+        ax_lag.set_title('Bidirectional Coral–COTS Lag Profile', fontsize=11, fontweight='bold', loc='left')
+    else:
+        ax_lag.axvspan(2, 4, color=COLORS['accent'], alpha=0.12,
+                      label='Plausible range (2–4 yr)')
+        ax_lag.errorbar(lags, correlations, yerr=standard_deviations, fmt='o-', capsize=4,
+                        color=COLORS['primary'], markersize=6, lw=1.5)
+        ax_lag.axvline(optimal_lag, color=COLORS['secondary'], linestyle='--', lw=2)
+        ax_lag.text(optimal_lag + 0.35, np.max(correlations),
+                    f'Baseline: {optimal_lag} yr',
+                    color=COLORS['secondary'], fontweight='bold')
+        ax_lag.text(0.98, 0.04, f'Common reef set: n = {common_n}',
+                    transform=ax_lag.transAxes, ha='right', va='bottom', fontsize=9)
+        ax_lag.set_xlabel('Time Lag (years)', fontsize=10.5, fontweight='bold')
+        ax_lag.set_title('System-Wide Lag Profile', fontsize=11, fontweight='bold', loc='left')
+
     ax_lag.axhline(0, color='gray', linestyle='-', lw=0.8)
-    
-    ax_lag.set_xlabel('Time Lag (years)', fontsize=10.5, fontweight='bold')
     ax_lag.set_ylabel('Mean Cross-Correlation', fontsize=10.5, fontweight='bold')
-    ax_lag.set_title('System-Wide Lag Profile', fontsize=11, fontweight='bold', loc='left')
     ax_lag.text(-0.08, 1.09, 'A', transform=ax_lag.transAxes, fontsize=13, fontweight='bold', va='top', ha='left')
-    ax_lag.legend(loc='upper right', fontsize=9, frameon=False)
+    ax_lag.legend(loc='upper left', fontsize=8.2, frameon=True, facecolor='white', framealpha=0.88, edgecolor='none')
     ax_lag.spines[['top', 'right']].set_visible(False)
 
     # --- Panel B: Lag Distribution ---
@@ -165,7 +182,7 @@ def create_figure_s2_baseline(lag_analysis, model_results):
     ax_dist.set_title('Reef-Level Lag Distribution', fontsize=11, fontweight='bold', loc='left')
     ax_dist.text(-0.08, 1.09, 'B', transform=ax_dist.transAxes, fontsize=13, fontweight='bold', va='top', ha='left')
     if reef_lags is not None:
-        ax_dist.text(0.98, 0.96, f'n = {len(reef_lags)} lag-screened reefs',
+        ax_dist.text(0.98, 0.96, f'n = {len(reef_lags)} reefs retained for lag comparison',
                      transform=ax_dist.transAxes, ha='right', va='top', fontsize=9)
     ax_dist.spines[['top', 'right']].set_visible(False)
 
@@ -180,14 +197,14 @@ def create_figure_s2_baseline(lag_analysis, model_results):
                   label=f'Centered mean: {mean_r2:.3f}')
     ax_r2.text(
         0.98, 0.96,
-        f'n = {len(r2_values)} reefs with defined $R^2$\n'
+        f'n = {len(r2_values)} reefs with defined R²\n'
         f'Non-centered mean: {mean_r2_uncentered:.3f}\n(RTO convention)',
         transform=ax_r2.transAxes, ha='right', va='top', fontsize=9,
     )
     ax_r2.legend(loc='upper right', bbox_to_anchor=(1.0, 0.72),
                  fontsize=9, frameon=False)
     
-    ax_r2.set_xlabel('Centered $R^2$', fontsize=10.5, fontweight='bold')
+    ax_r2.set_xlabel('Centered R²', fontsize=10.5, fontweight='bold')
     ax_r2.set_ylabel('Count', fontsize=10.5, fontweight='bold')
     ax_r2.set_title('Baseline Explanatory Power', fontsize=11, fontweight='bold', loc='left')
     ax_r2.text(-0.08, 1.09, 'C', transform=ax_r2.transAxes, fontsize=13, fontweight='bold', va='top', ha='left')
