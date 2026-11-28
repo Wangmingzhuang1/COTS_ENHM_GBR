@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from scipy import optimize, stats
 from scipy.signal import butter, filtfilt
 
-from analysis_inputs import align_survey_lag, ecological_observations, ipo_phase_years, reef_coordinates, reef_series
+from analysis_inputs import align_survey_lag, ecological_observations, ipo_phase_years, monthly_ipo, reef_coordinates, reef_series
 from config import DATA_DIR, FIGURES_DIR, RESULTS_DIR, TABLES_DIR
 from publication_style import apply_base_style, save_publication
 from spectral_inference import (
@@ -346,30 +346,41 @@ def run_field_significance(periods, residuals, n_iter=1000, seed=42):
     return pd.DataFrame(rows)
 
 
-def _bretherton_corr(x, y):
+def _bretherton_corr(x, y, n_controls=0):
     x = np.asarray(x, dtype=float)
     y = np.asarray(y, dtype=float)
     m = np.isfinite(x) & np.isfinite(y)
     x, y = x[m], y[m]
     n = len(x)
-    r, p_raw = stats.pearsonr(x, y)
+    r, _ = stats.pearsonr(x, y)
+    df_raw = max(1.0, float(n - 2 - n_controls))
+    t_raw = r * np.sqrt(df_raw / max(1e-12, 1.0 - r * r))
+    p_raw = float(2.0 * stats.t.sf(abs(t_raw), df=df_raw))
     r1x = float(np.corrcoef(x[:-1], x[1:])[0, 1])
     r1y = float(np.corrcoef(y[:-1], y[1:])[0, 1])
-    neff = max(3.0, min(float(n), n * (1.0 - r1x * r1y) / (1.0 + r1x * r1y)))
-    t_stat = r * np.sqrt((neff - 2.0) / max(1e-12, 1.0 - r * r))
-    p_eff = float(2.0 * stats.t.sf(abs(t_stat), df=neff - 2.0))
-    return float(r), float(p_raw), p_eff, float(neff), n
+    neff = max(float(3 + n_controls), min(float(n), n * (1.0 - r1x * r1y) / (1.0 + r1x * r1y)))
+    df_eff = max(1.0, neff - 2.0 - n_controls)
+    t_stat = r * np.sqrt(df_eff / max(1e-12, 1.0 - r * r))
+    p_eff = float(2.0 * stats.t.sf(abs(t_stat), df=df_eff))
+    return float(r), p_raw, p_eff, float(neff), n
 
 
 def run_environmental_sensitivity(periods, residuals):
-    """Compute NDJF spawning-season Chl-a (raw & ex-Nino3.4 partial), 13-yr low-pass TPI rivers,
-    NDJF GLORYS meridional velocity, and 113/92/58 reef subset velocity consistency."""
+    """Compute NDJF spawning-season Chl-a (raw & ex-Nino3.4 partial against contemporaneous NDJF TPI),
+    13-yr low-pass TPI rivers (with circular phase-shift test), NDJF GLORYS meridional velocity,
+    and 113/92/58 reef subset velocity consistency."""
     neg_yrs, pos_yrs, ipo_s = ipo_phase_years()
     ipo_s = ipo_s.sort_index().dropna()
     b_lp, a_lp = butter(3, 1.0 / 6.5, btype="low")
     ipo_lp = pd.Series(filtfilt(b_lp, a_lp, ipo_s.values), index=ipo_s.index)
-    lp_neg = set(ipo_lp[ipo_lp < ipo_lp.mean() - 0.5 * ipo_lp.std()].index)
-    lp_pos = set(ipo_lp[ipo_lp > ipo_lp.mean() + 0.5 * ipo_lp.std()].index)
+    lp_mu, lp_sd = float(ipo_lp.mean()), float(ipo_lp.std())
+    lp_neg = set(ipo_lp[ipo_lp < lp_mu - 0.5 * lp_sd].index)
+    lp_pos = set(ipo_lp[ipo_lp > lp_mu + 0.5 * lp_sd].index)
+
+    m_ipo = monthly_ipo()
+    df_ipo_m = pd.DataFrame({"tpi": m_ipo, "year": m_ipo.index.year, "month": m_ipo.index.month})
+    df_ipo_m["syr"] = np.where(df_ipo_m["month"] >= 11, df_ipo_m["year"] + 1, df_ipo_m["year"])
+    tpi_ndjf = df_ipo_m[df_ipo_m["month"].isin([11, 12, 1, 2])].groupby("syr").filter(lambda g: len(g) == 4).groupby("syr")["tpi"].mean()
 
     nino_wide = pd.read_csv(DATA_DIR / "climate/enso_nino34_monthly.csv")
     months_map = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
@@ -385,19 +396,19 @@ def run_environmental_sensitivity(periods, residuals):
     nino_ndjf = nl[nl["month"].isin([11, 12, 1, 2])].groupby("syr").filter(lambda g: len(g) == 4).groupby("syr")["anom"].mean()
 
     rows = []
-    # 1. Annual & NDJF Chl-a vs TPI and ex-Nino3.4 partial
+    # 1. Annual & NDJF Chl-a vs contemporaneous TPI and ex-Nino3.4 partial (with df = Neff - 3)
     chl_ann_df = pd.read_csv(RESULTS_DIR / "source_data/chlorophyll_tpi_annual.csv", index_col=0)
     m_ann = pd.concat([chl_ann_df, nino_ann.rename("nino")], axis=1).dropna()
-    r, pr, pe, neff, n = _bretherton_corr(m_ann["chlorophyll_mg_m3"], m_ann["unfiltered_tpi"])
-    rows.append({"category": "chl_annual_vs_tpi", "n": n, "value": r, "p_raw": pr, "p_eff_or_mw": pe, "detail": f"neff={neff:.1f}"})
+    r, pr, pe, neff, n = _bretherton_corr(m_ann["chlorophyll_mg_m3"], m_ann["unfiltered_tpi"], n_controls=0)
+    rows.append({"category": "chl_annual_vs_tpi", "n": n, "value": r, "p_raw": pr, "p_eff_or_mw": pe, "detail": f"neff={neff:.1f};df=neff-2"})
     c_res = m_ann["chlorophyll_mg_m3"] - np.polyval(np.polyfit(m_ann["nino"], m_ann["chlorophyll_mg_m3"], 1), m_ann["nino"])
     t_res = m_ann["unfiltered_tpi"] - np.polyval(np.polyfit(m_ann["nino"], m_ann["unfiltered_tpi"], 1), m_ann["nino"])
-    r, pr, pe, neff, n = _bretherton_corr(c_res, t_res)
-    rows.append({"category": "chl_annual_vs_tpi_partial_ex_nino34", "n": n, "value": r, "p_raw": pr, "p_eff_or_mw": pe, "detail": f"neff={neff:.1f}"})
+    r, pr, pe, neff, n = _bretherton_corr(c_res, t_res, n_controls=1)
+    rows.append({"category": "chl_annual_vs_tpi_partial_ex_nino34", "n": n, "value": r, "p_raw": pr, "p_eff_or_mw": pe, "detail": f"neff={neff:.1f};df=neff-3"})
 
     with xr.open_dataset(DATA_DIR / "climate/GBR_chlorophyll_monthly_1998_2025.nc") as ds_c:
         vname = [v for v in ds_c.data_vars if "chl" in v.lower()][0]
-        da = ds_c[vname]
+        da = ds_c[vname].sel(latitude=slice(-25, -10), longitude=slice(142, 154))
         lat_n = [d for d in da.dims if "lat" in d.lower()][0]
         lon_n = [d for d in da.dims if "lon" in d.lower()][0]
         w = np.cos(np.deg2rad(da[lat_n]))
@@ -406,28 +417,65 @@ def run_environmental_sensitivity(periods, residuals):
         df_cm = pd.DataFrame({"chl": ts_m, "year": ts_m.index.year, "month": ts_m.index.month})
         df_cm["syr"] = np.where(df_cm["month"] >= 11, df_cm["year"] + 1, df_cm["year"])
         chl_ndjf = df_cm[df_cm["month"].isin([11, 12, 1, 2])].groupby("syr").filter(lambda g: len(g) == 4).groupby("syr")["chl"].mean()
-    m_nd = pd.concat([chl_ndjf.rename("chl"), ipo_s.rename("tpi"), nino_ndjf.rename("nino")], axis=1).dropna()
-    r, pr, pe, neff, n = _bretherton_corr(m_nd["chl"], m_nd["tpi"])
-    rows.append({"category": "chl_ndjf_vs_tpi", "n": n, "value": r, "p_raw": pr, "p_eff_or_mw": pe, "detail": f"neff={neff:.1f}"})
+    m_nd = pd.concat([chl_ndjf.rename("chl"), tpi_ndjf.rename("tpi_ndjf"), nino_ndjf.rename("nino")], axis=1).dropna()
+    r_tn, _, _, _, _ = _bretherton_corr(m_nd["tpi_ndjf"], m_nd["nino"], n_controls=0)
+    r_cn, pr_cn, pe_cn, ne_cn, n_cn = _bretherton_corr(m_nd["chl"], m_nd["nino"], n_controls=0)
+    rows.append({"category": "chl_ndjf_vs_nino34", "n": n_cn, "value": r_cn, "p_raw": pr_cn, "p_eff_or_mw": pe_cn, "detail": f"neff={ne_cn:.1f};corr_tpi_nino34={r_tn:.3f}"})
+    r, pr, pe, neff, n = _bretherton_corr(m_nd["chl"], m_nd["tpi_ndjf"], n_controls=0)
+    rows.append({"category": "chl_ndjf_vs_tpi", "n": n, "value": r, "p_raw": pr, "p_eff_or_mw": pe, "detail": f"neff={neff:.1f};contemporaneous_NDJF_TPI"})
+    yr_x = np.arange(len(m_nd), dtype=float)
+    cd = m_nd["chl"] - np.polyval(np.polyfit(yr_x, m_nd["chl"], 1), yr_x)
+    td = m_nd["tpi_ndjf"] - np.polyval(np.polyfit(yr_x, m_nd["tpi_ndjf"], 1), yr_x)
+    r_dt, pr_dt, pe_dt, ne_dt, n_dt = _bretherton_corr(cd, td, n_controls=0)
+    rows.append({"category": "chl_ndjf_vs_tpi_detrended", "n": n_dt, "value": r_dt, "p_raw": pr_dt, "p_eff_or_mw": pe_dt, "detail": f"neff={ne_dt:.1f};linearly_detrended_NDJF"})
     cr = m_nd["chl"] - np.polyval(np.polyfit(m_nd["nino"], m_nd["chl"], 1), m_nd["nino"])
-    tr = m_nd["tpi"] - np.polyval(np.polyfit(m_nd["nino"], m_nd["tpi"], 1), m_nd["nino"])
-    r, pr, pe, neff, n = _bretherton_corr(cr, tr)
-    rows.append({"category": "chl_ndjf_vs_tpi_partial_ex_nino34", "n": n, "value": r, "p_raw": pr, "p_eff_or_mw": pe, "detail": f"neff={neff:.1f}"})
+    tr = m_nd["tpi_ndjf"] - np.polyval(np.polyfit(m_nd["nino"], m_nd["tpi_ndjf"], 1), m_nd["nino"])
+    r, pr, pe, neff, n = _bretherton_corr(cr, tr, n_controls=1)
+    rows.append({"category": "chl_ndjf_vs_tpi_partial_ex_nino34", "n": n, "value": r, "p_raw": pr, "p_eff_or_mw": pe, "detail": f"neff={neff:.1f};df=neff-3;corr_tpi_nino34={r_tn:.3f};contemporaneous_NDJF"})
+    coords_92 = reef_coordinates()
+    coords_92 = coords_92[coords_92["reef_name"].isin(residuals["reef_name"].unique())]
+    with xr.open_dataset(DATA_DIR / "climate/GBR_chlorophyll_monthly_1998_2025.nc") as ds_c:
+        vname = [v for v in ds_c.data_vars if "chl" in v.lower()][0]
+        da_r = ds_c[vname].sel(latitude=slice(-25, -10), longitude=slice(142, 154))
+        lat_n = [d for d in da_r.dims if "lat" in d.lower()][0]
+        lon_n = [d for d in da_r.dims if "lon" in d.lower()][0]
+        rlat_c = xr.DataArray(coords_92["lat"].to_numpy(), dims="reef")
+        rlon_c = xr.DataArray(coords_92["lon"].to_numpy(), dims="reef")
+        ts_reef = da_r.sel({lat_n: rlat_c, lon_n: rlon_c}, method="nearest").mean("reef").to_series().dropna()
+        ts_reef.index = pd.to_datetime(ts_reef.index)
+        df_rm = pd.DataFrame({"chl": ts_reef, "year": ts_reef.index.year, "month": ts_reef.index.month})
+        df_rm["syr"] = np.where(df_rm["month"] >= 11, df_rm["year"] + 1, df_rm["year"])
+        chl_ndjf_reef = df_rm[df_rm["month"].isin([11, 12, 1, 2])].groupby("syr").filter(lambda g: len(g) == 4).groupby("syr")["chl"].mean()
+    m_rf = pd.concat([chl_ndjf_reef.rename("chl"), tpi_ndjf.rename("tpi_ndjf")], axis=1).dropna()
+    r_rf, pr_rf, pe_rf, ne_rf, n_rf = _bretherton_corr(m_rf["chl"], m_rf["tpi_ndjf"], n_controls=0)
+    rows.append({"category": "chl_ndjf_enhm92_reef_pixels_vs_tpi", "n": n_rf, "value": r_rf, "p_raw": pr_rf, "p_eff_or_mw": pe_rf, "detail": f"neff={ne_rf:.1f};midshelf_reef_pixels_only"})
 
-    # 2. 13-yr low-pass TPI on three rivers
+    # 2. 13-yr low-pass TPI on three rivers (with circular time-shift p-value accounting for low-pass autocorrelation)
     rivers_df = pd.read_csv(RESULTS_DIR / "source_data/river_discharge_annual_m3_s.csv", index_col=0)
     for rcol in ("Pascoe", "Burdekin", "Fitzroy"):
         s = rivers_df[rcol].dropna()
         qn = s[s.index.isin(lp_neg)]
         qp = s[s.index.isin(lp_pos)]
+        obs_d = float(qn.mean() - qp.mean())
         _, pmw = stats.mannwhitneyu(qn, qp, alternative="two-sided")
+        common_y = sorted(s.index.intersection(ipo_lp.index))
+        qv = s.loc[common_y].to_numpy(dtype=float)
+        lv = ipo_lp.loc[common_y].to_numpy(dtype=float)
+        sh_ex = 0
+        for sh in range(len(common_y)):
+            lr = np.roll(lv, sh)
+            nm = lr < lp_mu - 0.5 * lp_sd
+            pm = lr > lp_mu + 0.5 * lp_sd
+            if nm.any() and pm.any() and abs(float(qv[nm].mean() - qv[pm].mean())) >= abs(obs_d) - 1e-12:
+                sh_ex += 1
+        p_shift = float(sh_ex / len(common_y))
         rows.append({
             "category": f"river_{rcol.lower()}_lp13_diff_m3_s",
             "n": len(qn) + len(qp),
-            "value": float(qn.mean() - qp.mean()),
+            "value": obs_d,
             "p_raw": float(pmw),
-            "p_eff_or_mw": float(pmw),
-            "detail": f"neg_n={len(qn)},pos_n={len(qp)}",
+            "p_eff_or_mw": p_shift,
+            "detail": f"neg_n={len(qn)},pos_n={len(qp)};mwu_p={pmw:.4f};circ_shift_p={p_shift:.4f}",
         })
 
     # 3. GLORYS vo subset consistency (113 vs 92 vs 58) & NDJF
@@ -448,6 +496,8 @@ def run_environmental_sensitivity(periods, residuals):
             "detail": f"pos_diff={pos_n}/{len(sub)};burd={burd['positive_vo_m_s'].mean():+.4f}->{burd['negative_vo_m_s'].mean():+.4f}",
         })
 
+    nd_neg_yrs = set(tpi_ndjf[tpi_ndjf < tpi_ndjf.mean() - 0.5 * tpi_ndjf.std()].index)
+    nd_pos_yrs = set(tpi_ndjf[tpi_ndjf > tpi_ndjf.mean() + 0.5 * tpi_ndjf.std()].index)
     with xr.open_dataset(DATA_DIR / "climate/GBR_currents_monthly_1993_2025.nc") as ds_v:
         vo = ds_v.vo.squeeze("depth", drop=True)
         dts = pd.to_datetime(vo.time.values)
@@ -457,8 +507,8 @@ def run_environmental_sensitivity(periods, residuals):
         vo_nd = vo_nd.assign_coords(syr=("time", syrs)).groupby("syr").mean("time")
         cnts = pd.Series(syrs).value_counts()
         vo_nd = vo_nd.sel(syr=vo_nd.syr.isin(cnts[cnts == 4].index))
-        vn = vo_nd.sel(syr=vo_nd.syr.isin(neg_yrs)).mean("syr")
-        vp = vo_nd.sel(syr=vo_nd.syr.isin(pos_yrs)).mean("syr")
+        vn = vo_nd.sel(syr=vo_nd.syr.isin(list(nd_neg_yrs))).mean("syr")
+        vp = vo_nd.sel(syr=vo_nd.syr.isin(list(nd_pos_yrs))).mean("syr")
         rlat = xr.DataArray(rc["lat"].to_numpy(), dims="reef")
         rlon = xr.DataArray(rc["lon"].to_numpy(), dims="reef")
         rc["ndjf_pos"] = vp.sel(latitude=rlat, longitude=rlon, method="nearest").values
@@ -467,13 +517,21 @@ def run_environmental_sensitivity(periods, residuals):
         burd = rc[rc["nrm_region"].eq("Burdekin")]
         c_pos, c_neg = float(cent["ndjf_pos"].mean()), float(cent["ndjf_neg"].mean())
         b_pos, b_neg = float(burd["ndjf_pos"].mean()), float(burd["ndjf_neg"].mean())
+        n_neg_nd = int(vo_nd.syr.isin(list(nd_neg_yrs)).sum())
+        n_pos_nd = int(vo_nd.syr.isin(list(nd_pos_yrs)).sum())
+        cent_lat = xr.DataArray(cent["lat"].to_numpy(), dims="reef")
+        cent_lon = xr.DataArray(cent["lon"].to_numpy(), dims="reef")
+        s_nd_cent = vo_nd.sel(latitude=cent_lat, longitude=cent_lon, method="nearest").mean("reef").to_series()
+        _, p_mwu_nd = stats.mannwhitneyu(s_nd_cent[s_nd_cent.index.isin(nd_neg_yrs)], s_nd_cent[s_nd_cent.index.isin(nd_pos_yrs)], alternative="two-sided")
+        m_vc = pd.concat([s_nd_cent.rename("vo"), tpi_ndjf.rename("tpi")], axis=1).dropna()
+        r_vc, _, p_neff_vc, _, _ = _bretherton_corr(m_vc["vo"], m_vc["tpi"], n_controls=0)
         rows.append({
             "category": "glorys_ndjf_central_16_20S_weakening_pct",
             "n": len(cent),
             "value": float(100.0 * (c_pos - c_neg) / c_pos),
             "p_raw": c_pos,
             "p_eff_or_mw": c_neg,
-            "detail": f"burd_weakening_pct={100.0*(b_pos-b_neg)/b_pos:.1f}({b_pos:+.4f}->{b_neg:+.4f})",
+            "detail": f"contemporaneous_NDJF_TPI(n={n_neg_nd}_vs_{n_pos_nd});mwu_p={p_mwu_nd:.4f};cont_r={r_vc:+.3f}(p_neff={p_neff_vc:.4f});burd_weakening_pct={100.0*(b_pos-b_neg)/b_pos:.1f}({b_pos:+.4f}->{b_neg:+.4f})",
         })
     return pd.DataFrame(rows)
 
@@ -642,6 +700,73 @@ def run_phase_aliasing_and_unconditional_diagnostics(periods, residuals, coords,
             "delta_k_alias": kp - kn,
         })
     diag_df = pd.DataFrame(diag_rows)
+    # Also evaluate full unscreened reef sets (all 80 nonzero-variance ENHM-fitted reefs & all 112 raw COTS reefs with >=5 surveys)
+    cots_all, _ = ecological_observations()
+    s80, l80, w80 = [], [], []
+    for rn, grp in sorted(residuals.groupby("reef_name")):
+        if rn not in coords_idx.index:
+            continue
+        grp = grp.sort_values("time_years")
+        t = grp["time_years"].to_numpy(dtype=float) + 1970.0
+        y = grp["residual"].to_numpy(dtype=float)
+        if len(t) < 3 or np.ptp(t) <= 3.0 or np.std(y) <= 1e-10:
+            continue
+        X = np.column_stack([np.cos(omega12 * t), np.sin(omega12 * t)])
+        yc = y - np.mean(y)
+        coef, _, _, _ = np.linalg.lstsq(X, yc, rcond=None)
+        s80.append((t, y))
+        l80.append(abs(float(coords_idx.loc[rn, "lat"])))
+        w80.append(min(1.0, float(np.sum((X @ coef) ** 2) / np.sum(yc ** 2))))
+    s112, l112, w112 = [], [], []
+    for rn, grp in sorted(cots_all.groupby("reef_name")):
+        if rn not in coords_idx.index:
+            continue
+        grp = grp.sort_values("time_years")
+        t = grp["time_years"].to_numpy(dtype=float) + 1970.0
+        y = np.log1p(grp["cots_density"].to_numpy(dtype=float))
+        if len(t) < 5 or np.ptp(t) <= 3.0 or np.std(y) <= 1e-10:
+            continue
+        X = np.column_stack([np.cos(omega12 * t), np.sin(omega12 * t)])
+        yc = y - np.mean(y)
+        coef, _, _, _ = np.linalg.lstsq(X, yc, rcond=None)
+        s112.append((t, y))
+        l112.append(abs(float(coords_idx.loc[rn, "lat"])))
+        w112.append(min(1.0, float(np.sum((X @ coef) ** 2) / np.sum(yc ** 2))))
+    extra_rows = []
+    nc_mask = l58 <= 20.5
+    s49 = [s58[i] for i in range(len(s58)) if nc_mask[i]]
+    l49 = l58[nc_mask]
+    w49 = w58[nc_mask]
+    for ex_key, slist, llist, wlist in (
+        ("north_central_le20.5S_weighted_lag3", s49, l49, w49),
+        ("north_central_le20.5S_unweighted_lag3", s49, l49, None),
+        ("all_80_enhm_fitted_lag3", s80, np.asarray(l80), np.asarray(w80)),
+        ("all_112_raw_monitored", s112, np.asarray(l112), np.asarray(w112)),
+    ):
+        ths_ex = _extract_phases(slist, mean_T12)
+        Rc_ex = _scan_resultant(ths_ex, llist, ks, weights=wlist)
+        ip_ex = np.where(pos_mask)[0][int(np.argmax(Rc_ex[pos_mask]))]
+        in_ex = np.where(neg_mask)[0][int(np.argmax(Rc_ex[neg_mask]))]
+        kp_ex, Rp_ex = float(ks[ip_ex]), float(Rc_ex[ip_ex])
+        kn_ex, Rn_ex = float(ks[in_ex]), float(Rc_ex[in_ex])
+        spd_ex = float(111.0 / (abs(kp_ex) * mean_T12 / (2.0 * np.pi)))
+        nulls_ex = _test_directional_nulls(slist, llist, mean_T12, Rp_ex, k_min=0.05, k_max=2.0,
+                                           weights=wlist, n_iter=n_iter, seed=seed)
+        extra_rows.append({
+            "dataset": ex_key,
+            "n_reefs": len(llist),
+            "mean_period_years": mean_T12,
+            "k_north_to_south": kp_ex,
+            "R_north_to_south": Rp_ex,
+            "speed_km_per_year_ns": spd_ex,
+            "p_uniform_ns": nulls_ex["p_uniform"],
+            "p_block_ns": nulls_ex["p_block"],
+            "p_ar1_ns": nulls_ex["p_ar1"],
+            "k_alias_neg": kn_ex,
+            "R_alias_neg": Rn_ex,
+            "delta_k_alias": kp_ex - kn_ex,
+        })
+    diag_df = pd.concat([diag_df, pd.DataFrame(extra_rows)], ignore_index=True)
     diag_df.to_csv(TABLES_DIR / "phase_sensitivity_diagnostics.csv", index=False)
 
     # --- Plot SI Figure S5 (saved as FigureS6_Phase_Sensitivity) ---
@@ -689,15 +814,20 @@ def run_phase_aliasing_and_unconditional_diagnostics(periods, residuals, coords,
         x_line = np.linspace(lats.min(), lats.max(), 100)
         y_line = ((th0 + kp * x_line) - y_off) * rad_to_yr
 
-        # Residual bootstrap CI
+        # Weighted residual bootstrap CI matching fitted weights
         rng_b = np.random.default_rng(42)
         boot = np.empty((1000, len(x_line)))
         y_hat = fit_at - y_off
+        w_n = w / np.sum(w)
+        resid_c = resid - float(np.sum(w_n * resid))
+        X_l = np.column_stack([np.ones_like(lats), lats])
+        XtW = X_l.T * w_n[None, :]
+        XtWX_inv = np.linalg.inv(XtW @ X_l)
         for bi in range(1000):
-            rb = rng_b.choice(resid, size=len(lats), replace=True)
-            yb = y_hat + rb
-            sl_b, ic_b, _, _, _ = stats.linregress(lats, yb)
-            boot[bi] = (ic_b + sl_b * x_line) * rad_to_yr
+            ib = rng_b.choice(len(lats), size=len(lats), replace=True)
+            yb = y_hat + resid_c[ib]
+            bb = XtWX_inv @ (XtW @ yb)
+            boot[bi] = (bb[0] + bb[1] * x_line) * rad_to_yr
         ax.fill_between(x_line, np.quantile(boot, 0.025, axis=0), np.quantile(boot, 0.975, axis=0),
                         color="#a6cee3", alpha=0.45, label="95% bootstrap CI")
         ax.plot(x_line, y_line, color="#c0392b", lw=1.9, label="Circular–linear fit")
@@ -706,10 +836,10 @@ def run_phase_aliasing_and_unconditional_diagnostics(periods, residuals, coords,
             sizes = 20 + 75 * (w / max(np.max(w), 1e-6))
             ax.scatter(lats[~highlight_mask], y_obs[~highlight_mask], s=sizes[~highlight_mask],
                        color="#5b7c99", alpha=0.65, edgecolors="white", linewidths=0.5, zorder=4,
-                       label="Other screened reefs (n = 46)")
+                       label=f"Other screened reefs (n = {int((~highlight_mask).sum())})")
             ax.scatter(lats[highlight_mask], y_obs[highlight_mask], s=sizes[highlight_mask] + 10,
                        color="#c0392b", alpha=0.95, edgecolors="black", linewidths=0.7, zorder=5,
-                       label="Primary 12 IPO-band reefs")
+                       label=f"Primary {int(highlight_mask.sum())} IPO-band reefs")
         else:
             ax.scatter(lats, y_obs, s=44, color=pt_color, edgecolors="white", linewidths=0.6, zorder=5)
 
@@ -834,8 +964,8 @@ def run_unfolded_timedomain_lag_test(residuals, coords, max_lag=7, n_perm=5000, 
             ex_dir = 0
             for _ in range(n_perm):
                 bp = np.concatenate([blocks[k] for k in rng.permutation(len(blocks))])[:len(b)]
-                rp = _corr_at(a, bp, best_pos_lag)[0]
-                if np.isfinite(rp) and rp >= r_obs - 1e-12:
+                rp_max = max(_corr_at(a, bp, l)[0] for l in range(1, max_lag + 1))
+                if np.isfinite(rp_max) and rp_max >= r_obs - 1e-12:
                     ex_dir += 1
             p_blk = float((ex_dir + 1) / (n_perm + 1))
             rows.append({
@@ -853,82 +983,134 @@ def run_unfolded_timedomain_lag_test(residuals, coords, max_lag=7, n_perm=5000, 
     return pd.DataFrame(rows)
 
 
-def run_direct_ipo_phase_locking_check(periods, residuals, coords, v_speed=31.2, n_perm=5000, seed=42):
-    """Test direct 1:1 phase-locking between de-lagged/regional ENHM residuals and annual TPI."""
-    ipo_df = pd.read_csv(DATA_DIR / "climate" / "ipo_index.csv", encoding="gb18030")
-    yr_col = [c for c in ipo_df.columns if "year" in c.lower()][0]
-    m_cols = [c for c in ipo_df.columns if c != yr_col]
-    ipo_ann = pd.DataFrame({
-        "year": pd.to_numeric(ipo_df[yr_col], errors="coerce"),
-        "tpi": ipo_df[m_cols].apply(pd.to_numeric, errors="coerce").mean(axis=1),
-    }).dropna()
-    ipo_ann["year"] = ipo_ann["year"].astype(int)
-    ipo_map = dict(zip(ipo_ann["year"], ipo_ann["tpi"]))
-    sub_ipo = ipo_ann[ipo_ann["year"].between(1983, 2025)]["tpi"]
-    mu_tpi, sd_tpi = float(sub_ipo.mean()), float(sub_ipo.std(ddof=1))
+def _stationary_bootstrap_diff_p(v_arr, neg, pos, diff_obs, mean_block=3.0, n_perm=20000, seed=42):
+    """Boundary-free stationary bootstrap (Politis & Romano 1994) with geometric block length L=mean_block."""
+    n = len(v_arr)
+    if n < 4 or neg.sum() == 0 or pos.sum() == 0:
+        return np.nan
+    p_start = 1.0 / float(mean_block)
+    rng = np.random.default_rng(seed)
+    idx = np.empty((n_perm, n), dtype=np.int64)
+    idx[:, 0] = rng.integers(0, n, size=n_perm)
+    starts = rng.random((n_perm, n - 1)) < p_start
+    rand_pos = rng.integers(0, n, size=(n_perm, n - 1))
+    for t in range(1, n):
+        idx[:, t] = np.where(starts[:, t - 1], rand_pos[:, t - 1], (idx[:, t - 1] + 1) % n)
+    surr = v_arr[idx]
+    diffs = surr[:, neg].mean(axis=1) - surr[:, pos].mean(axis=1)
+    ex = int(np.sum(np.abs(diffs) >= abs(diff_obs) - 1e-12))
+    return float((ex + 1) / (n_perm + 1))
 
-    df = residuals.merge(coords[["reef_name", "lat"]], on="reef_name", how="inner").copy()
-    df["abs_lat"] = df["lat"].abs()
-    screened = df[df["reef_name"].isin(periods["reef_name"])].copy()
+
+def _ebisuzaki_phase_rand_diff_p(v_arr, neg, pos, diff_obs, n_perm=20000, seed=42):
+    """Parameter-free Ebisuzaki (1997) Fourier phase randomization preserving the exact empirical power spectrum."""
+    n = len(v_arr)
+    if n < 4 or neg.sum() == 0 or pos.sum() == 0:
+        return np.nan
+    v_centered = v_arr - float(np.mean(v_arr))
+    F = np.fft.rfft(v_centered)
+    amp = np.abs(F)
+    m = len(amp)
+    rng = np.random.default_rng(seed)
+    phases = rng.uniform(0.0, 2.0 * np.pi, size=(n_perm, m))
+    phases[:, 0] = 0.0
+    if n % 2 == 0:
+        phases[:, -1] = 0.0
+    F_surr = amp[None, :] * np.exp(1j * phases)
+    if n % 2 == 0:
+        F_surr[:, -1] = F[-1] * rng.choice([-1.0, 1.0], size=n_perm)
+    surr = np.fft.irfft(F_surr, n=n, axis=1) + float(np.mean(v_arr))
+    diffs = surr[:, neg].mean(axis=1) - surr[:, pos].mean(axis=1)
+    ex = int(np.sum(np.abs(diffs) >= abs(diff_obs) - 1e-12))
+    return float((ex + 1) / (n_perm + 1))
+
+
+def run_direct_ipo_phase_locking_check(periods, residuals, coords, v_speed=31.2, n_perm=20000, seed=42):
+    """Evaluate all-92 ENHM-fitted and all-113 monitored reef window contrasts against NOAA TPI physical zero (1971-2000 ref)."""
+    _, _, ipo_s = ipo_phase_years()
+    ipo_s = ipo_s.sort_index().dropna()
+    clim_mean = float(ipo_s.loc[1971:2000].mean()) if 1971 in ipo_s.index else 0.0
+    ipo_map = {int(k): float(v - clim_mean) for k, v in ipo_s.items()}
+
+    df92 = residuals.merge(coords[["reef_name", "lat"]], on="reef_name", how="inner").copy()
+    df92["abs_lat"] = df92["lat"].abs()
+    df92["anom"] = df92["residual"] - df92.groupby("reef_name")["residual"].transform("mean")
+
+    cots_all, _ = ecological_observations()
+    df113 = cots_all.merge(coords[["reef_name", "lat"]], on="reef_name", how="inner").copy()
+    df113["abs_lat"] = df113["lat"].abs()
+    df113["log_cots"] = np.log1p(pd.to_numeric(df113["cots_density"], errors="coerce"))
+    df113["anom"] = df113["log_cots"] - df113.groupby("reef_name")["log_cots"].transform("mean")
 
     rows = []
-    # Test A: de-lagged 58-reef residual index aligned to 15S at 31.2 km/yr vs TPI (lags -6..+6)
-    t_cal = 1970.0 + screened["time_years"].to_numpy(dtype=float)
-    shift = (screened["abs_lat"].to_numpy(dtype=float) - 15.0) * 111.195 / float(v_speed)
-    screened["t_aligned"] = np.round(t_cal - shift).astype(int)
-    ann = screened.groupby("t_aligned")["residual"].mean().sort_index()
-    ann = ann[(ann.index >= 1983) & (ann.index <= 2025)]
-    best = (0, 0.0, 1.0, 1.0, len(ann))
-    for lag in range(-6, 7):
-        x = ann.values
-        y = np.array([ipo_map.get(int(yr) - lag, np.nan) for yr in ann.index])
-        m = np.isfinite(x) & np.isfinite(y)
-        r, pr = stats.pearsonr(x[m], y[m])
-        r1x = float(np.corrcoef(x[m][:-1], x[m][1:])[0, 1])
-        r1y = float(np.corrcoef(y[m][:-1], y[m][1:])[0, 1])
-        neff = max(3.0, min(float(m.sum()), m.sum() * (1.0 - r1x * r1y) / (1.0 + r1x * r1y)))
-        tstat = r * np.sqrt((neff - 2.0) / max(1e-12, 1.0 - r ** 2))
-        pn = float(2.0 * stats.t.sf(abs(tstat), df=neff - 2.0))
-        if abs(r) > abs(best[1]):
-            best = (lag, float(r), float(pr), pn, int(m.sum()))
-    rows.append({
-        "test_type": "TestA_delagged_58reef_resid_vs_TPI",
-        "region_or_lag": f"best_lag_{best[0]:+d}yr",
-        "statistic": best[1],
-        "p_param_or_mwu": best[2],
-        "p_neff_or_block3yr": best[3],
-        "n_obs": best[4],
-    })
 
-    # Test B: Negative vs Positive IPO (|TPI - mu| > 0.5 sd) composites of ENHM residuals by zone
-    for zname, zdf in (
-        ("NorthInit_14_16.5S", df[df["abs_lat"].between(14.0, 16.5)]),
-        ("Central_16_20S", df[df["abs_lat"].between(16.0, 20.0)]),
-        ("SouthFitzroy_20_23.5S", df[df["abs_lat"].between(20.0, 23.5)]),
-        ("All_58_screened", screened),
-    ):
-        za = zdf.groupby("year")["residual"].mean().reset_index()
+    def _window_contrast(zdf, col, test_lbl, reg_lbl, y_max=2025):
+        za = zdf[zdf["year"].between(1983, y_max)].groupby("year")[col].mean().reset_index()
         za["tpi"] = za["year"].map(ipo_map)
-        za = za[za["year"].between(1983, 2025)].dropna().sort_values("year")
-        neg = (za["tpi"] < mu_tpi - 0.5 * sd_tpi).values
-        pos = (za["tpi"] > mu_tpi + 0.5 * sd_tpi).values
-        v_arr = za["residual"].values
+        za = za.dropna().sort_values("year")
+        neg = (za["tpi"] < 0.0).to_numpy()
+        pos = (za["tpi"] > 0.0).to_numpy()
+        v_arr = za[col].to_numpy(dtype=float)
         diff = float(v_arr[neg].mean() - v_arr[pos].mean())
         _, p_mwu = stats.mannwhitneyu(v_arr[neg], v_arr[pos], alternative="two-sided")
-        blocks = [v_arr[i:i + 3] for i in range(0, len(v_arr), 3)]
-        rng = np.random.default_rng(seed)
-        ex = 0
-        for _ in range(n_perm):
-            perm = np.concatenate([blocks[k] for k in rng.permutation(len(blocks))])[:len(v_arr)]
-            if abs(float(perm[neg].mean() - perm[pos].mean())) >= abs(diff) - 1e-12:
-                ex += 1
+        p_sb = _stationary_bootstrap_diff_p(v_arr, neg, pos, diff, mean_block=3.0, n_perm=n_perm, seed=seed)
+        p_eb = _ebisuzaki_phase_rand_diff_p(v_arr, neg, pos, diff, n_perm=n_perm, seed=seed)
         rows.append({
-            "test_type": "TestB_resid_IPO_neg_minus_pos",
-            "region_or_lag": zname,
+            "test_type": test_lbl,
+            "region_or_lag": reg_lbl,
             "statistic": diff,
             "p_param_or_mwu": float(p_mwu),
-            "p_neff_or_block3yr": float((ex + 1) / (n_perm + 1)),
+            "p_stat_boot_L3_or_neff": p_sb,
+            "p_ebisuzaki_phase": p_eb,
             "n_obs": int(neg.sum() + pos.sum()),
+        })
+
+    # 1. All 92 ENHM-fitted reefs (reef-centered anomalies, 1983-2025 full span & 1983-2019 pre-bleaching/culling)
+    _window_contrast(df92, "anom", "Window_ENHM92_TPI_neg_minus_pos", "All_92_reefs_1983_2025", 2025)
+    _window_contrast(df92, "anom", "Window_ENHM92_TPI_neg_minus_pos", "All_92_reefs_1983_2019_pre2020", 2019)
+    for zname, lo, hi in (
+        ("NorthInit_14_16.5S_92reefs", 14.0, 16.5),
+        ("Central_16_20S_92reefs", 16.0, 20.0),
+        ("SouthFitzroy_20_23.5S_92reefs", 20.0, 23.5),
+    ):
+        _window_contrast(df92[df92["abs_lat"].between(lo, hi)], "anom", "Window_ENHM92_TPI_neg_minus_pos", zname, 2025)
+
+    # 2. All 113 monitored reefs (raw within-reef anomalies)
+    _window_contrast(df113, "anom", "Window_Raw113_TPI_neg_minus_pos", "All_113_reefs_1983_2025", 2025)
+    _window_contrast(df113[df113["abs_lat"].between(20.0, 23.5)], "anom", "Window_Raw113_TPI_neg_minus_pos", "SouthFitzroy_20_23.5S_113reefs", 2025)
+
+    # 3. Biologically plausible lagged correlation checks (TPI leads adult COTS by +2..+4 yr) on de-lagged 58-reef & all-92 residuals
+    screened = df92[df92["reef_name"].isin(periods["reef_name"])].copy()
+    t_cal = 1970.0 + screened["time_years"].to_numpy(dtype=float)
+    screened["t_aligned"] = np.round(t_cal - (screened["abs_lat"].to_numpy(dtype=float) - 15.0) * 111.0 / float(v_speed)).astype(int)
+    ann_delag = screened.groupby("t_aligned")["residual"].mean().sort_index()
+    for span_lbl, yr_max in (("1983_2025", 2025), ("1983_2019", 2019)):
+        sub_s = ann_delag[(ann_delag.index >= 1983) & (ann_delag.index <= yr_max)]
+        for lag_y in (2, 3, 4):
+            t_vec = np.array([ipo_map.get(int(yr) - lag_y, np.nan) for yr in sub_s.index])
+            r_l, p_r, p_e, _, n_l = _bretherton_corr(sub_s.to_numpy(dtype=float), t_vec, n_controls=0)
+            rows.append({
+                "test_type": f"Lagged_Delagged58_vs_TPI_{span_lbl}",
+                "region_or_lag": f"TPI_leads_+{lag_y}yr",
+                "statistic": r_l,
+                "p_param_or_mwu": p_r,
+                "p_stat_boot_L3_or_neff": p_e,
+                "p_ebisuzaki_phase": np.nan,
+                "n_obs": n_l,
+            })
+
+    ann92 = df92[df92["year"].between(1983, 2025)].groupby("year")["anom"].mean().sort_index()
+    for lag_y in (2, 3, 4):
+        tpi_vec = np.array([ipo_map.get(int(yr) - lag_y, np.nan) for yr in ann92.index])
+        r_lin, p_raw_lin, p_neff_lin, _, n_lin = _bretherton_corr(ann92.to_numpy(dtype=float), tpi_vec, n_controls=0)
+        rows.append({
+            "test_type": "Lagged_ENHM92_vs_annual_TPI",
+            "region_or_lag": f"All_92_reefs_TPI_leads_+{lag_y}yr",
+            "statistic": r_lin,
+            "p_param_or_mwu": p_raw_lin,
+            "p_stat_boot_L3_or_neff": p_neff_lin,
+            "p_ebisuzaki_phase": np.nan,
+            "n_obs": n_lin,
         })
     return pd.DataFrame(rows)
 
@@ -1003,7 +1185,7 @@ def main():
     fixed_t.to_csv(TABLES_DIR / "fixed_period_phase_sensitivity.csv", index=False)
     unfolded_lag = run_unfolded_timedomain_lag_test(residuals, coords, max_lag=7, n_perm=5000, seed=42)
     unfolded_lag.to_csv(TABLES_DIR / "unfolded_timedomain_lag_test.csv", index=False)
-    direct_lock = run_direct_ipo_phase_locking_check(periods, residuals, coords, v_speed=31.2, n_perm=5000, seed=42)
+    direct_lock = run_direct_ipo_phase_locking_check(periods, residuals, coords, v_speed=31.2, n_perm=20000, seed=42)
     direct_lock.to_csv(TABLES_DIR / "direct_ipo_phase_locking_check.csv", index=False)
     table_s1 = export_table_s1(periods, coords)
 

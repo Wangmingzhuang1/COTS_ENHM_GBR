@@ -32,25 +32,32 @@ ols_intercept_nonneg            58                 13              10      0.769
          3            92              58                 16              13        0.8125        21.297665          1.058     0.874068 North-to-South          30.951749
 
 6. All-58-reef (direction-constrained) & 2-yr lag spatial-alias diagnostics:
-               dataset  n_reefs  mean_period_years  k_north_to_south  R_north_to_south  speed_km_per_year_ns  p_uniform_ns  p_block_ns  p_ar1_ns  k_alias_neg  R_alias_neg  delta_k_alias
-       primary_12_lag3       13          21.297665             1.058          0.874068             30.951749      0.000500    0.001996  0.001996       -0.673     0.729843          1.731
-  all_58_weighted_lag3       58          21.297665             1.048          0.600626             31.247090      0.000500    0.001996  0.001996       -0.602     0.600166          1.650
-all_58_unweighted_lag3       58          21.297665             1.080          0.465638             30.321250      0.000500    0.001996  0.003992       -0.698     0.464384          1.778
-         lag2_17_reefs       17          19.521858             1.186          0.641879             30.122916      0.006497    0.003992  0.009980       -0.742     0.759029          1.928
+                              dataset  n_reefs  mean_period_years  k_north_to_south  R_north_to_south  speed_km_per_year_ns  p_uniform_ns  p_block_ns  p_ar1_ns  k_alias_neg  R_alias_neg  delta_k_alias
+                      primary_12_lag3       13          21.297665             1.058          0.874068             30.951749      0.000500    0.001996  0.001996       -0.673     0.729843          1.731
+                 all_58_weighted_lag3       58          21.297665             1.048          0.600626             31.247090      0.000500    0.001996  0.001996       -0.602     0.600166          1.650
+               all_58_unweighted_lag3       58          21.297665             1.080          0.465638             30.321250      0.000500    0.001996  0.003992       -0.698     0.464384          1.778
+                        lag2_17_reefs       17          19.521858             1.186          0.641879             30.122916      0.006497    0.003992  0.009980       -0.742     0.759029          1.928
+  north_central_le20.5S_weighted_lag3       49          21.297665             0.954          0.634427             34.325943      0.000500    0.001996  0.001996       -0.469     0.623366          1.423
+north_central_le20.5S_unweighted_lag3       49          21.297665             0.794          0.528664             41.243010      0.000500    0.001996  0.001996       -0.553     0.433268          1.347
+              all_80_enhm_fitted_lag3       80          21.297665             1.005          0.486307             32.584030      0.000500    0.001996  0.001996       -0.817     0.523888          1.822
+                all_112_raw_monitored      112          21.297665             1.046          0.506474             31.306836      0.000500    0.001996  0.001996       -0.796     0.389184          1.842
 
 7. Environmental sensitivity (NDJF Chl-a ex-Nino3.4, LP13 rivers, GLORYS subsets & NDJF):
-                                category   n      value     p_raw  p_eff_or_mw                                    detail
-                       chl_annual_vs_tpi  28  -0.459969  0.013787     0.045683                                 neff=19.3
-     chl_annual_vs_tpi_partial_ex_nino34  28  -0.363177  0.057489     0.180766                                 neff=15.1
-                         chl_ndjf_vs_tpi  27  -0.495502  0.008585     0.029784                                 neff=19.2
-       chl_ndjf_vs_tpi_partial_ex_nino34  27  -0.424775  0.027206     0.038512                                 neff=24.0
-             river_pascoe_lp13_diff_m3_s  18  13.998709  0.124650     0.124650                          neg_n=6,pos_n=12
-           river_burdekin_lp13_diff_m3_s  27 283.819319  0.019270     0.019270                          neg_n=9,pos_n=18
-            river_fitzroy_lp13_diff_m3_s  25 112.612067  0.192389     0.192389                         neg_n=10,pos_n=15
-                    glorys_annual_all113 113  81.415929 -0.008513     0.003235     pos_diff=92/113;burd=-0.0420->-0.0356
-                    glorys_annual_enhm92  92  85.869565 -0.007812     0.004608      pos_diff=79/92;burd=-0.0438->-0.0375
-                glorys_annual_screened58  58  86.206897 -0.014756    -0.003008      pos_diff=50/58;burd=-0.0464->-0.0399
-glorys_ndjf_central_16_20S_weakening_pct  51  27.158687 -0.074036    -0.053929 burd_weakening_pct=15.2(-0.0839->-0.0712)
+                                category   n      value     p_raw  p_eff_or_mw                                                                                                                  detail
+                       chl_annual_vs_tpi  28  -0.459969  0.013787     0.045683                                                                                                     neff=19.3;df=neff-2
+     chl_annual_vs_tpi_partial_ex_nino34  28  -0.363177  0.062606     0.198960                                                                                                     neff=15.1;df=neff-3
+                      chl_ndjf_vs_nino34  27  -0.298819  0.130006     0.132409                                                                                         neff=26.7;corr_tpi_nino34=0.939
+                         chl_ndjf_vs_tpi  27  -0.496198  0.008478     0.011285                                                                                      neff=25.2;contemporaneous_NDJF_TPI
+               chl_ndjf_vs_tpi_detrended  27  -0.538484  0.003760     0.004559                                                                                       neff=26.0;linearly_detrended_NDJF
+       chl_ndjf_vs_tpi_partial_ex_nino34  27  -0.655006  0.000282     0.008397                                                          neff=15.9;df=neff-3;corr_tpi_nino34=0.939;contemporaneous_NDJF
+      chl_ndjf_enhm92_reef_pixels_vs_tpi  27  -0.254554  0.200073     0.219450                                                                                     neff=25.0;midshelf_reef_pixels_only
+             river_pascoe_lp13_diff_m3_s  18  13.998709  0.124650     0.171429                                                                       neg_n=6,pos_n=12;mwu_p=0.1246;circ_shift_p=0.1714
+           river_burdekin_lp13_diff_m3_s  27 283.819319  0.019270     0.045455                                                                       neg_n=9,pos_n=18;mwu_p=0.0193;circ_shift_p=0.0455
+            river_fitzroy_lp13_diff_m3_s  25 112.612067  0.192389     0.236842                                                                      neg_n=10,pos_n=15;mwu_p=0.1924;circ_shift_p=0.2368
+                    glorys_annual_all113 113  81.415929 -0.008513     0.003235                                                                                   pos_diff=92/113;burd=-0.0420->-0.0356
+                    glorys_annual_enhm92  92  85.869565 -0.007812     0.004608                                                                                    pos_diff=79/92;burd=-0.0438->-0.0375
+                glorys_annual_screened58  58  86.206897 -0.014756    -0.003008                                                                                    pos_diff=50/58;burd=-0.0464->-0.0399
+glorys_ndjf_central_16_20S_weakening_pct  51  18.080488 -0.063752    -0.052226 contemporaneous_NDJF_TPI(n=13_vs_10);mwu_p=0.0881;cont_r=-0.267(p_neff=0.1404);burd_weakening_pct=8.6(-0.0769->-0.0703)
 
 8. Table S1 exported: 58 spectrally screened reefs
 
@@ -68,15 +75,26 @@ glorys_ndjf_central_16_20S_weakening_pct  51  27.158687 -0.074036    -0.053929 b
 
 10. Unfolded time-domain lag cross-correlation (half-cycle |lag|<=7 yr):
        dataset                              band_pair  best_ns_lag_yr  r_best_ns  n_years      neff  p_neff_two_sided  p_block_3yr_one_sided  best_sn_lag_yr  r_best_sn
- raw_113_reefs NorthInit_14_16.5S_to_Central_16.5_20S               6   0.617749       35 26.299858          0.000714               0.001600              -7   0.181249
- raw_113_reefs     Central_16.5_20S_to_South_20_23.5S               2   0.351220       39 20.978096          0.118706               0.082783              -1   0.269972
-enhm_residuals NorthInit_14_16.5S_to_Central_16.5_20S               5   0.408159       33 29.591134          0.026255               0.087383              -6  -0.012282
-enhm_residuals     Central_16.5_20S_to_South_20_23.5S               2   0.088405       36 27.702858          0.656515               0.331534              -3   0.521066
+ raw_113_reefs NorthInit_14_16.5S_to_Central_16.5_20S               6   0.617749       35 26.299858          0.000714               0.015197              -7   0.181249
+ raw_113_reefs     Central_16.5_20S_to_South_20_23.5S               2   0.351220       39 20.978096          0.118706               0.226355              -1   0.269972
+enhm_residuals NorthInit_14_16.5S_to_Central_16.5_20S               5   0.408159       33 29.591134          0.026255               0.218156              -6  -0.012282
+enhm_residuals     Central_16.5_20S_to_South_20_23.5S               2   0.088405       36 27.702858          0.656515               0.730854              -3   0.521066
 
 11. Direct 1:1 IPO phase-locking diagnostics (Test A de-lagged & Test B regional composites):
-                         test_type         region_or_lag  statistic  p_param_or_mwu  p_neff_or_block3yr  n_obs
-TestA_delagged_58reef_resid_vs_TPI         best_lag_+0yr   0.272042        0.077600            0.138694     43
-     TestB_resid_IPO_neg_minus_pos    NorthInit_14_16.5S  -0.018262        0.789383            0.752849     22
-     TestB_resid_IPO_neg_minus_pos        Central_16_20S   0.015165        0.640181            0.846231     22
-     TestB_resid_IPO_neg_minus_pos SouthFitzroy_20_23.5S   0.156577        0.305390            0.336733     20
-     TestB_resid_IPO_neg_minus_pos       All_58_screened   0.043279        0.462608            0.421916     22
+                         test_type                  region_or_lag  statistic  p_param_or_mwu  p_stat_boot_L3_or_neff  p_ebisuzaki_phase  n_obs
+   Window_ENHM92_TPI_neg_minus_pos         All_92_reefs_1983_2025   0.070758        0.023228                0.037448           0.054897     38
+   Window_ENHM92_TPI_neg_minus_pos All_92_reefs_1983_2019_pre2020   0.092958        0.010233                0.013499           0.017649     32
+   Window_ENHM92_TPI_neg_minus_pos     NorthInit_14_16.5S_92reefs   0.007707        0.745324                0.833458           0.851657     37
+   Window_ENHM92_TPI_neg_minus_pos         Central_16_20S_92reefs   0.008128        0.788102                0.868357           0.885056     38
+   Window_ENHM92_TPI_neg_minus_pos  SouthFitzroy_20_23.5S_92reefs   0.198250        0.020331                0.067397           0.064447     36
+   Window_Raw113_TPI_neg_minus_pos        All_113_reefs_1983_2025   0.020141        0.702770                0.680466           0.651367     43
+   Window_Raw113_TPI_neg_minus_pos SouthFitzroy_20_23.5S_113reefs   0.220912        0.012784                0.043248           0.090845     40
+Lagged_Delagged58_vs_TPI_1983_2025                 TPI_leads_+2yr   0.017669        0.910459                0.925565                NaN     43
+Lagged_Delagged58_vs_TPI_1983_2025                 TPI_leads_+3yr  -0.074015        0.637142                0.698923                NaN     43
+Lagged_Delagged58_vs_TPI_1983_2025                 TPI_leads_+4yr   0.076391        0.626344                0.681984                NaN     43
+Lagged_Delagged58_vs_TPI_1983_2019                 TPI_leads_+2yr   0.035105        0.836582                0.860759                NaN     37
+Lagged_Delagged58_vs_TPI_1983_2019                 TPI_leads_+3yr  -0.132427        0.434613                0.507316                NaN     37
+Lagged_Delagged58_vs_TPI_1983_2019                 TPI_leads_+4yr   0.052066        0.759573                0.795356                NaN     37
+       Lagged_ENHM92_vs_annual_TPI    All_92_reefs_TPI_leads_+2yr   0.033104        0.843591                0.865809                NaN     38
+       Lagged_ENHM92_vs_annual_TPI    All_92_reefs_TPI_leads_+3yr   0.290485        0.076857                0.132944                NaN     38
+       Lagged_ENHM92_vs_annual_TPI    All_92_reefs_TPI_leads_+4yr  -0.032933        0.844386                0.864503                NaN     38

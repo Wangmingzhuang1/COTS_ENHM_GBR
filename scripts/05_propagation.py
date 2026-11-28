@@ -260,11 +260,16 @@ def create_figure3():
         rng_ci = np.random.default_rng(42)
         boot_lines = np.empty((1000, len(x_line)), dtype=float)
         y_hat_obs = fit_at_lats - y_offset
+        w_mean_res = float(np.sum(w_norm * circ_resid))
+        circ_resid_centered = circ_resid - w_mean_res
+        X_lat = np.column_stack([np.ones_like(lats_all), lats_all])
+        XtW = X_lat.T * w_norm[None, :]
+        XtWX_inv = np.linalg.inv(XtW @ X_lat)
         for b_i in range(1000):
-            res_b = rng_ci.choice(circ_resid, size=len(lats_all), replace=True)
-            y_b = y_hat_obs + res_b
-            sl_b, ic_b, _, _, _ = stats.linregress(lats_all, y_b)
-            boot_lines[b_i] = (ic_b + sl_b * x_line) * rad_to_yr
+            idx_b = rng_ci.choice(len(lats_all), size=len(lats_all), replace=True)
+            y_b = y_hat_obs + circ_resid_centered[idx_b]
+            beta_b = XtWX_inv @ (XtW @ y_b)
+            boot_lines[b_i] = (beta_b[0] + beta_b[1] * x_line) * rad_to_yr
         ci_low = np.quantile(boot_lines, 0.025, axis=0)
         ci_high = np.quantile(boot_lines, 0.975, axis=0)
 
@@ -359,7 +364,7 @@ def create_figure3():
         ax_box.set_xlabel('NRM Region (significant reefs)', fontsize=10.5, fontweight='bold')
         ax_box.axhspan(15, 30, color=COLORS['success'], alpha=0.12, label='IPO band (15–30 yr)')
         ax_box.axhline(20, color=COLORS['secondary'], linestyle='--', lw=1.1, alpha=0.75, label='20 yr reference')
-        ax_box.legend(loc='lower left', fontsize=8.5, frameon=True, facecolor='white', framealpha=0.9)
+        ax_box.legend(loc='lower left', fontsize=7.6, handlelength=1.5, borderpad=0.35, labelspacing=0.3, frameon=True, facecolor='white', framealpha=0.92)
         ax_box.spines[['top', 'right']].set_visible(False)
         plt.setp(ax_box.xaxis.get_majorticklabels(), rotation=0, ha='center', fontsize=8.5)
     

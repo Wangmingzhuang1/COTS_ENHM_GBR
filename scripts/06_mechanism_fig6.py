@@ -120,9 +120,13 @@ def create_ultimate_figure():
                fontweight='bold', bbox=dict(facecolor='white', alpha=0.85, edgecolor='none', pad=2))
     
     r_coords = {'Pascoe': [143.05015, -12.65779], 'Burdekin': [147.24362, -19.75856], 'Fitzroy': [150.10714, -23.08897]}
+    r_offsets = {'Pascoe': (-0.45, -0.15, 'right'), 'Burdekin': (-0.45, -0.20, 'right'), 'Fitzroy': (-0.45, -0.15, 'right')}
     for n, c in r_coords.items():
-        ax_rain.plot(c[0], c[1], 'ko', markersize=4.5, transform=ccrs.PlateCarree())
-        ax_rain.text(c[0]+0.4, c[1], n, transform=ccrs.PlateCarree(), fontsize=9.5, fontweight='bold', va='center')
+        dx, dy, ha_lbl = r_offsets[n]
+        ax_rain.plot(c[0], c[1], 'ko', markersize=4.8, markeredgecolor='white', markeredgewidth=0.6, transform=ccrs.PlateCarree(), zorder=6)
+        ax_rain.text(c[0] + dx, c[1] + dy, n, transform=ccrs.PlateCarree(), fontsize=9.2, fontweight='bold',
+                     va='center', ha=ha_lbl, zorder=7,
+                     bbox=dict(facecolor='white', alpha=0.78, edgecolor='none', boxstyle='round,pad=0.15'))
 
     # --- B: Chl-a Anomaly ---
     ax_chl = fig.add_subplot(gs[0, 1], projection=ccrs.PlateCarree())
@@ -206,7 +210,15 @@ def create_ultimate_figure():
     # --- D: Area-Weighted Chl-a Anomaly vs Inverted Annual IPO (1998-2025) ---
     joined_chl = pd.concat([chl_ts.rename('chl'), ipo.rename('ipo')], axis=1).dropna().sort_index()
     cv = stats.zscore(joined_chl['chl'].to_numpy(dtype=float))
-    iv = stats.zscore(joined_chl['ipo'].to_numpy(dtype=float))
+    # Preserve NOAA TPI's physical 1971-2000 climatological zero (mean = 0.000) rather than re-centering on 1998-2025
+    ipo_full = ipo.sort_index().dropna()
+    clim_ref = ipo_full.loc[1971:2000] if 1971 in ipo_full.index else ipo_full
+    ipo_clim_mean = float(clim_ref.mean())
+    ipo_clim_sd = float(clim_ref.std(ddof=1))
+    iv = (joined_chl['ipo'].to_numpy(dtype=float) - ipo_clim_mean) / ipo_clim_sd
+    b_lp, a_lp = signal.butter(3, 1.0 / 6.5, btype='low')
+    ipo_lp_full = pd.Series(signal.filtfilt(b_lp, a_lp, ipo_full.to_numpy(dtype=float)), index=ipo_full.index)
+    iv_lp = (ipo_lp_full.reindex(joined_chl.index).to_numpy(dtype=float) - ipo_clim_mean) / ipo_clim_sd
     r_chl, p_chl = stats.pearsonr(cv, iv)
     # Bretherton et al. (1999) effective sample size adjustment for lag-1 autocorrelation
     r1_c = float(np.corrcoef(cv[:-1], cv[1:])[0, 1])
@@ -227,17 +239,20 @@ def create_ultimate_figure():
     }]).to_csv(TABLES_DIR / 'chl_ipo_correlation.csv', index=False)
 
     ax_ts.axhline(0, color='gray', linestyle=':', lw=0.9)
-    ax_ts.plot(joined_chl.index, -iv, color='black', linestyle='--', lw=1.6, label='Inverted annual TPI (−IPO)')
+    ax_ts.plot(joined_chl.index, -iv_lp, color='#5b7c99', linestyle='-', lw=2.0, alpha=0.75, label='13-yr low-pass −TPI')
+    ax_ts.plot(joined_chl.index, -iv, color='black', linestyle='--', lw=1.5, label='Inverted annual TPI (−TPI)')
     ax_ts.plot(joined_chl.index, cv, color=COLORS['success'], marker='o', markersize=3.8, lw=1.6, label='Area-weighted Chl-a')
+    r_disp = f"{r_chl:+.3f}".replace('-', '−')
     ax_ts.text(
         0.04, 0.96,
-        f'Raw IPO vs Chl-a: $r$ = {r_chl:.3f}\n$p$ = {p_chl:.3f} ($N_{{\\mathrm{{eff}}}}$ $p$ = {p_eff:.3f})',
+        f'Annual TPI vs Chl-a: $r$ = {r_disp}\n$p$ = {p_chl:.3f} ($N_{{\\mathrm{{eff}}}}$ $p$ = {p_eff:.3f})',
         transform=ax_ts.transAxes, va='top', ha='left', fontsize=8.8,
         bbox=dict(facecolor='white', alpha=0.88, edgecolor='none', pad=2),
     )
-    ax_ts.set(xlabel='Year', ylabel='Standardized anomaly (SD)', title='Chlorophyll-a and inverted annual IPO')
+    ax_ts.set_ylim(-2.15, 2.60)
+    ax_ts.set(xlabel='Year', ylabel='Standardized index / anomaly (SD)', title='Chlorophyll-a and inverted TPI (1971–2000 ref.)')
     ax_ts.text(-0.14, 1.08, 'D', transform=ax_ts.transAxes, fontsize=13, fontweight='bold', va='top', ha='left')
-    ax_ts.legend(loc='lower right', frameon=True, facecolor='white', framealpha=0.9, edgecolor='#cccccc', fontsize=8.8)
+    ax_ts.legend(loc='lower right', frameon=True, facecolor='white', framealpha=0.92, edgecolor='#cccccc', fontsize=8.3)
     for axis in (ax_box, ax_ts):
         axis.spines[['top', 'right']].set_visible(False)
 

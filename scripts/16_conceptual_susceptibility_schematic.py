@@ -280,14 +280,15 @@ def main():
         color=INK,
     )
     ax.text(
-        0.02,
-        0.97,
+        0.50,
+        0.965,
         "Pacific basin, Robinson projection (latitude-cropped)",
         transform=ax.transAxes,
         fontsize=7.5,
         color=MUTED,
-        ha="left",
+        ha="center",
         va="top",
+        bbox=dict(facecolor="white", alpha=0.82, edgecolor="none", boxstyle="round,pad=0.22"),
         zorder=30,
     )
 
@@ -299,12 +300,14 @@ def main():
     dashed_link(ax, (0.57, 0.50), (0.53, 0.355), color=BLUE_DARK, curve=0.06, head=9)
     ax.text(
         0.51,
-        0.405,
+        0.422,
         "modulates background susceptibility",
         transform=ax.transAxes,
         ha="center",
+        va="center",
         fontsize=7.0,
         color=BLUE_DARK,
+        bbox=dict(facecolor=OCEAN, alpha=0.92, edgecolor="none", boxstyle="round,pad=0.18"),
         zorder=31,
     )
 
@@ -375,12 +378,14 @@ def main():
         dashed_link(ax, start, (0.52, 0.255), curve=0.10 if start[0] < 0.52 else -0.10)
     ax.text(
         0.52,
-        0.205,
+        0.195,
         "candidate pathways",
         transform=ax.transAxes,
         ha="center",
+        va="center",
         fontsize=6.6,
         color=MUTED,
+        bbox=dict(facecolor=OCEAN, alpha=0.92, edgecolor="none", boxstyle="round,pad=0.16"),
         zorder=31,
     )
 

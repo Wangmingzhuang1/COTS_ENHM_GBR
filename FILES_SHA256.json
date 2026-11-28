@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.27",
+  "version": "2026.11.28",
   "files": [
     {
       "path": ".gitignore",
@@ -42,36 +42,6 @@
       "sha256": "449fcebfe0fa05a8e0254ff5954825375c343f0a4a9a352d41a27e96bb18299e"
     },
     {
-      "path": "pnas_aug/__init__.py",
-      "bytes": 0,
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    },
-    {
-      "path": "pnas_aug/config.py",
-      "bytes": 454,
-      "sha256": "4b2342b0050ac5515a4be4c088fbc44289367abd4fbefbd9f8bc5fa4d49f1ecc"
-    },
-    {
-      "path": "pnas_aug/scripts/05_reef_level_exclusivity.py",
-      "bytes": 7217,
-      "sha256": "d8837bc1fa22c4d60edf815881a6f6faf2dbc6115061ff3826b77d48f95ff90e"
-    },
-    {
-      "path": "pnas_aug/scripts/06_ipo_outbreak_transitions.py",
-      "bytes": 5787,
-      "sha256": "cbf1431764f58da3b5463995ed8d8efedcfc74dd41622bdb42cd0e6ae579dcea"
-    },
-    {
-      "path": "pnas_aug/scripts/__init__.py",
-      "bytes": 0,
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    },
-    {
-      "path": "pnas_aug/scripts/_common.py",
-      "bytes": 3629,
-      "sha256": "3e37eb19c1763ebad04fa823227246644b57fd3678587c54ed8b075811e880b3"
-    },
-    {
       "path": "README.md",
       "bytes": 6417,
       "sha256": "90635f752cf1b13dbbec1c2352aa50ff77c0b2c6f984ea9bc0203ce348ef1f1a"
@@ -98,13 +68,13 @@
     },
     {
       "path": "reference_results/tables/chl_ipo_correlation.csv",
-      "bytes": 187,
-      "sha256": "e8ba614716268ceaa7be15701727343f09d23d44756fed56d9c558756bc10461"
+      "bytes": 186,
+      "sha256": "093ef99d88fd078c6e959926a7a1392682dddd85ddc4729f97032529c65d3ce3"
     },
     {
       "path": "reference_results/tables/direct_ipo_phase_locking_check.csv",
-      "bytes": 631,
-      "sha256": "0f1d785804f4a7d5e064a27a44819d24f59cf441454108d609bb4c573368ab2b"
+      "bytes": 2132,
+      "sha256": "ddc5162475433162c43a5c412be9dad2db51104f72997f5c172ff3fe877dd8b7"
     },
     {
       "path": "reference_results/tables/figure5_summary.csv",
@@ -115,16 +85,6 @@
       "path": "reference_results/tables/fixed_period_phase_sensitivity.csv",
       "bytes": 1307,
       "sha256": "67c6e3ec130a04666bf4b50a9cc2480015b114e901d69e845e03b55f06c46087"
-    },
-    {
-      "path": "reference_results/tables/ipo_outbreak_transition_effects.csv",
-      "bytes": 1433,
-      "sha256": "503864da3d245da89bec33e8515b4f1523e2763fccd7e1db5e98b17ac27e08bd"
-    },
-    {
-      "path": "reference_results/tables/ipo_outbreak_transition_input.csv",
-      "bytes": 616592,
-      "sha256": "1b8531ac34f97eb41e21a946db152ad010f2f59b3176a69dc37ceaff59f63a9f"
     },
     {
       "path": "reference_results/tables/lag_analysis.csv",
@@ -148,8 +108,8 @@
     },
     {
       "path": "reference_results/tables/ndjf_and_tpi_sensitivity.csv",
-      "bytes": 1302,
-      "sha256": "7d8eb6b843c7fa6c906036d19ca7050d8d2da4040ecec1b3ba1c9bd6de74129b"
+      "bytes": 1955,
+      "sha256": "3a59eec69385cb4a83ec43656cf7e2d44a7474c6ddc753b376a9136f9f587ad3"
     },
     {
       "path": "reference_results/tables/period_results.csv",
@@ -158,8 +118,8 @@
     },
     {
       "path": "reference_results/tables/phase_sensitivity_diagnostics.csv",
-      "bytes": 960,
-      "sha256": "a0f68cf60b75a2578dc3ea41feab5cb4f856f29d49212c3d4f864790f3a71bab"
+      "bytes": 1809,
+      "sha256": "46afae8c6e72d624b416a17db8abb5d81ca37d7ef37e5a790890fda61abd246e"
     },
     {
       "path": "reference_results/tables/phase_slope_null.csv",
@@ -183,8 +143,8 @@
     },
     {
       "path": "reference_results/tables/robustness_null_comparison.txt",
-      "bytes": 8732,
-      "sha256": "2b64f17d4839363b840a8a57a926e1b3b6ce5070d9583e74c3e0ca10eae54c35"
+      "bytes": 12927,
+      "sha256": "917662930e7d97696341babe50ed6c7f26b663a36b8ee2a2946094f56e658ce2"
     },
     {
       "path": "reference_results/tables/significant_reefs.csv",
@@ -203,8 +163,8 @@
     },
     {
       "path": "reference_results/tables/unfolded_timedomain_lag_test.csv",
-      "bytes": 760,
-      "sha256": "e85e1447fb6ac3a48d7c13359f71bb4d2928ea6119ec1e6ade27d3d5642fb34b"
+      "bytes": 758,
+      "sha256": "723e99e376cfc1b04b41f13d6001e393f6ba4a79bf65e56cf8771306e09ddfbb"
     },
     {
       "path": "reference_results/tables/wtc_summary.csv",
@@ -253,13 +213,13 @@
     },
     {
       "path": "scripts/05_propagation.py",
-      "bytes": 19022,
-      "sha256": "c4ef35505f40a720ae6deba8550d36bb2381066e2daea55d8d22db5767740106"
+      "bytes": 19356,
+      "sha256": "70824f9b857c8b4a2430dd11731d716ad43ad047deba11ebea8544b3b661a56e"
     },
     {
       "path": "scripts/06_mechanism_fig6.py",
-      "bytes": 16711,
-      "sha256": "83e2209f2c35d788630cbbec26118b01e7d2e97275182687eb9796cc2a9d1ba6"
+      "bytes": 17945,
+      "sha256": "535bfe423bd5358e3cda35015d7e6d098b7227e9d5dbd0547eeb0ae86b2cd783"
     },
     {
       "path": "scripts/12_consistency_audit.py",
@@ -267,19 +227,14 @@
       "sha256": "72d8dccc90ae467536ce16e81f8d4ac452351febdd3b5c71802bcc59d92b0013"
     },
     {
-      "path": "scripts/13_environment_sensitivity.py",
-      "bytes": 798,
-      "sha256": "8446d4505a8f79d8c895bddc2f972f011b17bc41dabbd6ccdb2cc97eccc9bc1a"
-    },
-    {
       "path": "scripts/13_robustness_null_comparison.py",
-      "bytes": 52473,
-      "sha256": "47459d47bee87d7d650fd48ed76f209c61e040cc67325e75f89645bdd4a76498"
+      "bytes": 64137,
+      "sha256": "7ae9dc1f653584b96ecd9543f71d26f984e4b79473e200c997b79f93a9b1751f"
     },
     {
       "path": "scripts/16_conceptual_susceptibility_schematic.py",
-      "bytes": 12173,
-      "sha256": "d67f323dd2c15ff5dce6e78ada2fe14a662bfb05e84353090961574f274cfb29"
+      "bytes": 12499,
+      "sha256": "d3c27cbe7213dbdc56a873869f85b698ca9251c893f69345f72422f6df76f779"
     },
     {
       "path": "scripts/17_environment_source_data.py",
@@ -300,11 +255,6 @@
       "path": "scripts/config.py",
       "bytes": 1483,
       "sha256": "a7b65c4b515f8daf432a0e14ceee53b9ca07cc9f529fdcaf5878749c2aa43648"
-    },
-    {
-      "path": "scripts/prepare_ecology.py",
-      "bytes": 1358,
-      "sha256": "bc122ca46d899c720572d0082171fe607e208cb3cb2b02ec10dbe0c601c50f1b"
     },
     {
       "path": "scripts/publication_style.py",
@@ -349,7 +299,7 @@
     {
       "path": "VERSION",
       "bytes": 12,
-      "sha256": "4854e3e86989ca0515da959e050697d74aee5d9b17481af12e4796fc99c34472"
+      "sha256": "3f8b91b713e5e38ca72c04944f93098cf770d6daba7affbe03993adfc88e4caa"
     }
   ]
 }
